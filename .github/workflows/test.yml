@@ -22,11 +22,11 @@ jobs:
 #     runs-on: [self-hosted, macOS, kishor]
 
     env:
-      BRIDGE_polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-      BRIDGE_polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL }}
-      BRIDGE_polaris_application_name: testapp1
-      BRIDGE_polaris_project_name: testproj1
-      BRIDGE_polaris_assessment_types: "[\"SCA\"]"
+#       BRIDGE_polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+#       BRIDGE_polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL }}
+#       BRIDGE_polaris_application_name: central-scm-sast
+#       BRIDGE_polaris_project_name: central-scm-proj
+#       BRIDGE_polaris_assessment_types: "[\"SCA\"]"
 #      POLARIS_FF_TEST_COVERITY_BETA_VERSIONS: true
       MAC_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.20/ci-package-0.1.20-macosx.zip"
       LINUX_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.20/ci-package-0.1.20-linux64.zip"
@@ -57,27 +57,27 @@ jobs:
 #           ./bridge --stage polaris
 #         shell: bash
 #
-      - name: Synopsys-action for Linux
-        if: ${{  runner.os == 'Linux'  }}
-        run: |
-          var="$(which unzip)"
-          if [[ $var =~ "not found" ]]; then
-            sudo apt-get install unzip
-          fi 
-          curl -o bridge.zip -L $LINUX_BRIDGE_URL
-          unzip bridge.zip
-          ./bridge --stage polaris
-        shell: bash
+#       - name: Synopsys-action for Linux
+#         if: ${{  runner.os == 'Linux'  }}
+#         run: |
+#           var="$(which unzip)"
+#           if [[ $var =~ "not found" ]]; then
+#             sudo apt-get install unzip
+#           fi 
+#           curl -o bridge.zip -L $LINUX_BRIDGE_URL
+#           unzip bridge.zip
+#           ./bridge --stage polaris
+#         shell: bash
 
-#       - name: Use synopsys unified-action
-#         # Use the action defined in this repository
-#         uses: ./
-#         with:
-#           polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL }}
-#           polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-#           polaris_application_name: "testapp1"
-#           polaris_project_name: "testproj1"
-#           polaris_assessment_types: '["SCA"]'
+      - name: Use synopsys unified-action
+        # Use the action defined in this repository
+        uses: ./
+        with:
+          polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL }}
+          polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+          polaris_application_name: "central-scm-sast"
+          polaris_project_name: "central-scm-proj"
+          polaris_assessment_types: '["SCA"]'
 #           bridge_download_url: ${{ env.WINDOWS_BRIDGE_URL }}
 
 #      - name: Use synopsys unified-action - coverity-connect
