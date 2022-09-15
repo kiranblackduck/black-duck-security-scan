@@ -48,7 +48,7 @@ jobs:
       - name: Synopsys-action for MAC
         if: ${{  runner.os == 'macOS'  }}
         run: |
-          brew install unzip
+          arch -arm64 brew install unzip
           curl -o bridge.zip -L $MAC_BRIDGE_URL
           unzip bridge.zip
           ./bridge --stage polaris
