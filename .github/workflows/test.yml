@@ -73,10 +73,10 @@ jobs:
         # Use the action defined in this repository
         uses: ./
         with:
-          polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL }}
-          polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-          polaris_application_name: "central-scm-sast"
-          polaris_project_name: "central-scm-proj"
+          polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL_FORX }}#${{ secrets.POLARIS_SEVER_URL }}
+          polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN_FORX }}#${{ secrets.POLARIS_ACCESS_TOKEN }}
+          polaris_application_name: "App1"
+          polaris_project_name: "Proj1"
           polaris_assessment_types: '["SCA"]'
 #          bridge_download_url: ${{ env.LINUX_BRIDGE_URL }}
 
