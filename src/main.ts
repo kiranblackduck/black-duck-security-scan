@@ -57,7 +57,7 @@ async function run() {
   try {
     const sb = new SynopsysBridge()
     await sb.executeBridgeCommand(formattedCommand, getWorkSpaceDirectory()).catch(reason => {
-      throw reason
+      setFailed(reason)
     })
   } catch (error: any) {
     setFailed(error)
