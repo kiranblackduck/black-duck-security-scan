@@ -1,4 +1,4 @@
-import {debug, info, setFailed, warning} from '@actions/core'
+import {debug, info, setFailed, warning, error} from '@actions/core'
 import {SynopsysToolsParameter} from './synopsys-action/tools-parameter'
 import {cleanupTempDir, createTempDir} from './synopsys-action/utility'
 import {getBridgeDefaultPath, SynopsysBridge, validateBridgeURL} from './synopsys-action/synopsys-bridge'
