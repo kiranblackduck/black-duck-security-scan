@@ -74,9 +74,9 @@ jobs:
         uses: ./
         with:
           polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL_FORX }}#${{ secrets.POLARIS_SEVER_URL }}
-          polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN_FORX }}#${{ secrets.POLARIS_ACCESS_TOKEN }}
-          polaris_application_name: "App1"
-          polaris_project_name: "Proj1"
+          polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN_FORX }}#${{ secrets.POLARIS_ACCESS_TOKEN_POC }}
+          polaris_application_name: "sast_sca_app"
+          polaris_project_name: "sast_sca_proj"
           polaris_assessment_types: '["SCA"]'
           bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
 
