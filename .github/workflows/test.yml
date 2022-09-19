@@ -28,7 +28,7 @@ jobs:
 #       BRIDGE_polaris_project_name: central-scm-proj
 #       BRIDGE_polaris_assessment_types: "[\"SCA\"]"
 #      POLARIS_FF_TEST_COVERITY_BETA_VERSIONS: true
-      MAC_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.20/ci-package-0.1.20-macosx.zip"
+      MAC_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/polaris-ci/0.1.81/polaris-ci-0.1.81-macosx.zip"
       LINUX_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.20/ci-package-0.1.20-linux64.zip"
       WINDOWS_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.20/ci-package-0.1.20-win64.zip"
 
