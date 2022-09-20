@@ -13,6 +13,8 @@ import * as fs from 'fs'
 async function run() {
   info('Synopsys Action started...')
 
+  info('Runner agent is - '.concat(String(process.env['RUNNER_NAME'])))
+
   const tempDir = await createTempDir()
   let formattedCommand = ''
 
