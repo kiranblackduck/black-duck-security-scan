@@ -36,6 +36,7 @@ inputs:
     description: 'Scan Mode. (true for intelligent scan & false for rapid scan)'
     required: false
   configureFromRepo:
+  configure_from_repo:
     description: "Enable to configure the bridge from repository directly"
     required: false
 runs:
