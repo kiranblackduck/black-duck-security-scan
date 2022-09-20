@@ -8,6 +8,7 @@ import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-varia
 import {DownloadFileResponse, extractZipped, getRemoteFile} from './synopsys-action/download-utility'
 import {rmRF} from '@actions/io'
 import path from 'path'
+import * as fs from 'fs'
 
 async function run() {
   info('Synopsys Action started...')
@@ -18,14 +19,15 @@ async function run() {
   // Automatically configure bridge if Bridge download url is provided
   if (CONFIGURE_FROM_REPO && CONFIGURE_FROM_REPO.toLowerCase() === 'true') {
     info('Configuring Bridge from synopsys-action repository')
-    let configFilePath = getWorkSpaceDirectory()
+    let configFilePath = path.join(getWorkSpaceDirectory(), 'bridge')
     const osName = process.platform
+
     if (osName === 'darwin') {
-      configFilePath = path.join(configFilePath, '/bridge/bridge-mac.zip')
+      configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'mac'))
     } else if (osName === 'win32') {
-      configFilePath = path.join(configFilePath, '\\bridge\\bridge-win.zip')
+      configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'win'))
     } else {
-      configFilePath = path.join(configFilePath, '/bridge/bridge-linux.zip')
+      configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'linux'))
     }
 
     const extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
@@ -78,6 +80,15 @@ async function run() {
   } finally {
     await cleanupTempDir(tempDir)
   }
+}
+
+function getRequiredFileNameWithPattern(directoryPath: string, fileSubString: string): string {
+  const files: string[] = fs.readdirSync(directoryPath)
+  const fileName = files.find(file => {
+    return file.includes(fileSubString)
+  })
+
+  return String(fileName)
 }
 
 run()
