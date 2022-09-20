@@ -2,6 +2,7 @@ import {info} from '@actions/core'
 import path from 'path'
 import {downloadTool, extractZip} from '@actions/tool-cache'
 import * as fs from 'fs'
+import {chmod} from '@actions/io/lib/io-util'
 
 export interface DownloadFileResponse {
   filePath: string
@@ -43,6 +44,8 @@ export async function extractZipped(file: string, destinationPath: string): Prom
   }
 
   try {
+    await chmod(file, 777)
+    await chmod(destinationPath, 777)
     await extractZip(file, destinationPath)
     info('Extraction complete.')
     return Promise.resolve(true)

@@ -9,6 +9,7 @@ import {DownloadFileResponse, extractZipped, getRemoteFile} from './synopsys-act
 import {rmRF} from '@actions/io'
 import path from 'path'
 import * as fs from 'fs'
+import {exec} from '@actions/exec'
 
 async function run() {
   info('Synopsys Action started...')
@@ -23,6 +24,8 @@ async function run() {
     info('Configuring Bridge from synopsys-action repository')
     let configFilePath = path.join(getWorkSpaceDirectory(), 'bridge')
     const osName = process.platform
+
+    // await exec()
 
     if (osName === 'darwin') {
       configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'mac'))
