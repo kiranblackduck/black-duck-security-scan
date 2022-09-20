@@ -4,6 +4,7 @@ import {debug, info} from '@actions/core'
 import {SYNOPSYS_BRIDGE_DEFAULT_PATH_LINUX, SYNOPSYS_BRIDGE_DEFAULT_PATH_MAC, SYNOPSYS_BRIDGE_DEFAULT_PATH_WINDOWS} from '../application-constants'
 import {tryGetExecutablePath} from '@actions/io/lib/io-util'
 import path from 'path'
+import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
 
 export class SynopsysBridge {
   bridgeExecutablePath: string
@@ -66,6 +67,11 @@ export class SynopsysBridge {
 }
 
 export function getBridgeDefaultPath(): string {
+  const isGithubHostedAgent: boolean = String(process.env['RUNNER_NAME']).includes('Hosted Agent')
+  if (isGithubHostedAgent) {
+    return getWorkSpaceDirectory()
+  }
+
   let bridgeDefaultPath = ''
   const osName = process.platform
 

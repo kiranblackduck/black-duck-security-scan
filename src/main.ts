@@ -18,7 +18,7 @@ async function run() {
   const tempDir = await createTempDir()
   let formattedCommand = ''
 
-  // Automatically configure bridge if Bridge download url is provided
+  const isGithubHostedAgent: boolean = String(process.env['RUNNER_NAME']).includes('Hosted Agent')
   if (CONFIGURE_FROM_REPO && CONFIGURE_FROM_REPO.toLowerCase() === 'true') {
     info('Configuring Bridge from synopsys-action repository')
     let configFilePath = path.join(getWorkSpaceDirectory(), 'bridge')
@@ -32,10 +32,16 @@ async function run() {
       configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'linux'))
     }
 
-    const extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
+    let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
+
+    if (isGithubHostedAgent) {
+      extractZippedFilePath = getWorkSpaceDirectory()
+    }
+
     await rmRF(extractZippedFilePath)
     await extractZipped(configFilePath, extractZippedFilePath)
   } else if (BRIDGE_DOWNLOAD_URL) {
+    // Automatically configure bridge if Bridge download url is provided
     if (!validateBridgeURL(BRIDGE_DOWNLOAD_URL)) {
       setFailed('Provided Bridge url is either not valid for the platform')
       return Promise.reject('Provided Bridge url is either not valid for the platform')
@@ -44,7 +50,11 @@ async function run() {
     // Download file in temporary directory
     info('Downloading and configuring Synopsys Bridge')
     const downloadResponse: DownloadFileResponse = await getRemoteFile(tempDir, BRIDGE_DOWNLOAD_URL)
-    const extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
+    let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
+
+    if (isGithubHostedAgent) {
+      extractZippedFilePath = getWorkSpaceDirectory()
+    }
 
     // Clear the existing bridge, if available
     await rmRF(extractZippedFilePath)
