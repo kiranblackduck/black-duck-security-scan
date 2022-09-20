@@ -1,8 +1,9 @@
 import {info} from '@actions/core'
-import path from 'path'
+import path, {relative} from 'path'
 import {downloadTool, extractZip} from '@actions/tool-cache'
 import * as fs from 'fs'
 import {chmod} from '@actions/io/lib/io-util'
+import {getWorkSpaceDirectory} from "@actions/artifact/lib/internal/config-variables";
 
 export interface DownloadFileResponse {
   filePath: string
@@ -44,9 +45,9 @@ export async function extractZipped(file: string, destinationPath: string): Prom
   }
 
   try {
-    await chmod(file, 777)
-    await chmod(destinationPath, 777)
-    await extractZip(file, destinationPath)
+    // await chmod(file, 777)
+    // await chmod(destinationPath, 777)
+    await extractZip(relative(getWorkSpaceDirectory(), file), destinationPath)
     info('Extraction complete.')
     return Promise.resolve(true)
   } catch (error) {
