@@ -7,6 +7,7 @@ import {BRIDGE_DOWNLOAD_URL, POLARIS_ACCESS_TOKEN, POLARIS_APPLICATION_NAME, POL
 import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
 import {DownloadFileResponse, extractZipped, getRemoteFile} from './synopsys-action/download-utility'
 import {rmRF} from '@actions/io'
+import path from 'path'
 
 async function run() {
   info('Synopsys Action started...')
@@ -20,11 +21,11 @@ async function run() {
     let configFilePath = getWorkSpaceDirectory()
     const osName = process.platform
     if (osName === 'darwin') {
-      configFilePath.concat('/bridge/bridge-mac.zip')
+      configFilePath = path.join(configFilePath, '/bridge/bridge-mac.zip')
     } else if (osName === 'win32') {
-      configFilePath.concat('/bridge/bridge-win.zip')
+      configFilePath = path.join(configFilePath, '\\bridge\\bridge-win.zip')
     } else {
-      configFilePath.concat('/bridge/bridge-linux.zip')
+      configFilePath = path.join(configFilePath, '/bridge/bridge-linux.zip')
     }
 
     const extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
