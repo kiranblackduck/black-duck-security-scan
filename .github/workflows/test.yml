@@ -69,16 +69,16 @@ jobs:
 #           ./bridge --stage polaris
 #         shell: bash
 
-      - name: Use synopsys unified-action
-        # Use the action defined in this repository
-        uses: ./
-        with:
-          polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL }}
-          polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-          polaris_application_name: "App1"
-          polaris_project_name: "Proj1"
-          polaris_assessment_types: '["SCA"]'
-          bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
+#      - name: Use synopsys unified-action
+#        # Use the action defined in this repository
+#        uses: ./
+#        with:
+#          polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL }}
+#          polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+#          polaris_application_name: "App1"
+#          polaris_project_name: "Proj1"
+#          polaris_assessment_types: '["SCA"]'
+#          bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
 
 #      - name: Use synopsys unified-action - coverity-connect
 #        # Use the action defined in this repository

@@ -35,6 +35,9 @@ inputs:
   blackduck_scan_full:
     description: 'Scan Mode. (true for intelligent scan & false for rapid scan)'
     required: false
+  configureFromRepo:
+    description: "Enable to configure the bridge from repository directly"
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -23,3 +23,5 @@ export const BLACKDUCK_URL = getInput('blackduck_url')
 export const BLACKDUCK_API_TOKEN = getInput('blackduck_apiToken')
 export const BLACKDUCK_INSTALL_DIRECTORY = getInput('blackduck_install_directory')
 export const BLACKDUCK_SCAN_FULL = getInput('blackduck_scan_full')
+
+export const CONFIGURE_FROM_REPO = getInput('configureFromRepo')

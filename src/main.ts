@@ -2,7 +2,7 @@ import {debug, info, setFailed, warning, error} from '@actions/core'
 import {SynopsysToolsParameter} from './synopsys-action/tools-parameter'
 import {cleanupTempDir, createTempDir} from './synopsys-action/utility'
 import {getBridgeDefaultPath, SynopsysBridge, validateBridgeURL} from './synopsys-action/synopsys-bridge'
-import {BRIDGE_DOWNLOAD_URL, POLARIS_ACCESS_TOKEN, POLARIS_APPLICATION_NAME, POLARIS_ASSESSMENT_TYPES, POLARIS_PROJECT_NAME, POLARIS_SERVER_URL, SYNOPSYS_BRIDGE_PATH, COVERITY_URL, COVERITY_USER, COVERITY_PASSPHRASE, COVERITY_PROJECT_NAME, BLACKDUCK_URL, BLACKDUCK_API_TOKEN, BLACKDUCK_INSTALL_DIRECTORY, BLACKDUCK_SCAN_FULL} from './synopsys-action/inputs'
+import {BRIDGE_DOWNLOAD_URL, POLARIS_ACCESS_TOKEN, POLARIS_APPLICATION_NAME, POLARIS_ASSESSMENT_TYPES, POLARIS_PROJECT_NAME, POLARIS_SERVER_URL, SYNOPSYS_BRIDGE_PATH, COVERITY_URL, COVERITY_USER, COVERITY_PASSPHRASE, COVERITY_PROJECT_NAME, BLACKDUCK_URL, BLACKDUCK_API_TOKEN, BLACKDUCK_INSTALL_DIRECTORY, BLACKDUCK_SCAN_FULL, CONFIGURE_FROM_REPO} from './synopsys-action/inputs'
 
 import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
 import {DownloadFileResponse, extractZipped, getRemoteFile} from './synopsys-action/download-utility'
@@ -15,7 +15,10 @@ async function run() {
   let formattedCommand = ''
 
   // Automatically configure bridge if Bridge download url is provided
-  if (BRIDGE_DOWNLOAD_URL) {
+  if (CONFIGURE_FROM_REPO && CONFIGURE_FROM_REPO.toLowerCase() === 'true') {
+    let configFilePath = ''
+
+  } else if (BRIDGE_DOWNLOAD_URL) {
     if (!validateBridgeURL(BRIDGE_DOWNLOAD_URL)) {
       setFailed('Provided Bridge url is either not valid for the platform')
       return Promise.reject('Provided Bridge url is either not valid for the platform')
@@ -25,9 +28,6 @@ async function run() {
     info('Downloading and configuring Synopsys Bridge')
     const downloadResponse: DownloadFileResponse = await getRemoteFile(tempDir, BRIDGE_DOWNLOAD_URL)
     const extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
-
-    // Clear the existing bridge, if available
-    await rmRF(extractZippedFilePath)
 
     // Clear the existing bridge, if available
     await rmRF(extractZippedFilePath)
