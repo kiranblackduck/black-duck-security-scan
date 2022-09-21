@@ -40,7 +40,7 @@ async function run() {
       availableFileName = getRequiredFileNameWithPattern(configFilePath, 'linux')
       // configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'linux'))
     }
-    configFilePath = path.join(configFilePath, availableFileName)
+    // configFilePath = path.join(configFilePath, availableFileName)
 
     let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
 
