@@ -29,14 +29,18 @@ async function run() {
     // chmodSync(configFilePath, 777)
 
     // await exec()
-
+    let availableFileName = ''
     if (osName === 'darwin') {
-      configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'mac'))
+      availableFileName = getRequiredFileNameWithPattern(configFilePath, 'mac')
+      // configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'mac'))
     } else if (osName === 'win32') {
-      configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'win'))
+      availableFileName = getRequiredFileNameWithPattern(configFilePath, 'win')
+      // configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'win'))
     } else {
-      configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'linux'))
+      availableFileName = getRequiredFileNameWithPattern(configFilePath, 'linux')
+      // configFilePath = path.join(configFilePath, getRequiredFileNameWithPattern(configFilePath, 'linux'))
     }
+    configFilePath = path.join(configFilePath, availableFileName)
 
     let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
 
@@ -44,8 +48,9 @@ async function run() {
       extractZippedFilePath = getWorkSpaceDirectory()
     }
 
-    const configFilePathTemp = getWorkSpaceDirectory().concat('/bridge.zip')
-    await cp(configFilePath, configFilePathTemp, {force: true, copySourceDirectory: false})
+    await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false})
+
+    const configFilePathTemp = path.join(tempDir, availableFileName)
 
     if (!isGithubHostedAgent) {
       await rmRF(extractZippedFilePath)
