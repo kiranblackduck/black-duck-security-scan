@@ -58,6 +58,7 @@ async function run() {
     // info('--------------------------------')
 
     const configFilePathTemp = path.join(tempDir, availableFileName)
+    chmodSync(configFilePathTemp, 777)
 
     if (!isGithubHostedAgent) {
       await rmRF(extractZippedFilePath)
