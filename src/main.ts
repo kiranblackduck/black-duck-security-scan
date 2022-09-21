@@ -9,7 +9,7 @@ import {DownloadFileResponse, extractZipped, getRemoteFile} from './synopsys-act
 import {cp, rmRF} from '@actions/io'
 import path from 'path'
 import * as fs from 'fs'
-import {exec} from '@actions/exec'
+import {exec, ExecOutput, getExecOutput} from '@actions/exec'
 import {chmodSync} from 'fs'
 
 async function run() {
@@ -48,7 +48,12 @@ async function run() {
       extractZippedFilePath = getWorkSpaceDirectory()
     }
 
-    await cp(configFilePath, path.join(tempDir, 'bridge.zip'), {force: true, copySourceDirectory: false})
+    await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false})
+
+    const lsOutput: ExecOutput = await getExecOutput('ls '.concat(tempDir))
+    info('--------------------------------')
+    info(lsOutput.stdout)
+    info('--------------------------------')
 
     const configFilePathTemp = path.join(tempDir, 'bridge.zip')
 
