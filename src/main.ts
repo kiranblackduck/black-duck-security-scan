@@ -45,7 +45,8 @@ async function run() {
 
     let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
 
-    await mkdir(extractZippedFilePath)
+    await exec('sudo mkdir '.concat(extractZippedFilePath))
+    // await mkdir(extractZippedFilePath)
 
     if (isGithubHostedAgent) {
       extractZippedFilePath = getWorkSpaceDirectory()
