@@ -58,6 +58,8 @@ async function run() {
     //   extractZippedFilePath = getWorkSpaceDirectory()
     // }
 
+    await exec('whoami')
+
     info('Starting to copy the bridge')
     await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false, recursive: true})
     info('Copy completed')
