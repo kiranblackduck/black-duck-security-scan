@@ -48,12 +48,14 @@ async function run() {
       extractZippedFilePath = getWorkSpaceDirectory()
     }
 
+    info('Starting to copy the bridge')
     await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false})
+    info('Copy completed')
 
-    const lsOutput: ExecOutput = await getExecOutput('ls '.concat(tempDir))
-    info('--------------------------------')
-    info(lsOutput.stdout)
-    info('--------------------------------')
+    /*const lsOutput: ExecOutput = */ await exec('ls '.concat(tempDir))
+    // info('--------------------------------')
+    // info(lsOutput.stdout)
+    // info('--------------------------------')
 
     const configFilePathTemp = path.join(tempDir, 'bridge.zip')
 
