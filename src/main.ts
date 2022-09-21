@@ -18,7 +18,7 @@ async function run() {
 
   info('Runner agent is - '.concat(String(process.env['RUNNER_NAME'])))
 
-  await exec('sudo usermod -aG sudo runner')
+  await exec('sudo gpasswd -a username runner')
 
   const tempDir = await createTempDir()
   let formattedCommand = ''
@@ -27,9 +27,9 @@ async function run() {
   const osName = process.platform
   let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
 
-  if (isGithubHostedAgent && osName === 'darwin' || osName === 'linux') {
-    await exec('sudo mkdir '.concat(extractZippedFilePath))
-  }
+  // if (isGithubHostedAgent && osName === 'darwin' || osName === 'linux') {
+  //   await exec('sudo mkdir '.concat(extractZippedFilePath))
+  // }
 
   if (CONFIGURE_FROM_REPO && CONFIGURE_FROM_REPO.toLowerCase() === 'true') {
     info('Configuring Bridge from synopsys-action repository')
