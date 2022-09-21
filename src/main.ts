@@ -48,9 +48,9 @@ async function run() {
       extractZippedFilePath = getWorkSpaceDirectory()
     }
 
-    await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false})
+    await cp(configFilePath, path.join(tempDir, 'bridge.zip'), {force: true, copySourceDirectory: false})
 
-    const configFilePathTemp = path.join(tempDir, availableFileName)
+    const configFilePathTemp = path.join(tempDir, 'bridge.zip')
 
     if (!isGithubHostedAgent) {
       await rmRF(extractZippedFilePath)
