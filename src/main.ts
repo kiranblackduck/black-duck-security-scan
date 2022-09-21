@@ -57,7 +57,7 @@ async function run() {
     // info(lsOutput.stdout)
     // info('--------------------------------')
 
-    const configFilePathTemp = path.join(tempDir, 'bridge.zip')
+    const configFilePathTemp = path.join(tempDir, availableFileName)
 
     if (!isGithubHostedAgent) {
       await rmRF(extractZippedFilePath)
