@@ -6,7 +6,7 @@ import {BRIDGE_DOWNLOAD_URL, POLARIS_ACCESS_TOKEN, POLARIS_APPLICATION_NAME, POL
 
 import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
 import {DownloadFileResponse, extractZipped, getRemoteFile} from './synopsys-action/download-utility'
-import {rmRF} from '@actions/io'
+import {cp, rmRF} from '@actions/io'
 import path from 'path'
 import * as fs from 'fs'
 import {exec} from '@actions/exec'
@@ -26,7 +26,7 @@ async function run() {
     let configFilePath = path.join(getWorkSpaceDirectory(), 'bridge')
     const osName = process.platform
 
-    chmodSync(configFilePath, 777)
+    // chmodSync(configFilePath, 777)
 
     // await exec()
 
@@ -44,8 +44,13 @@ async function run() {
       extractZippedFilePath = getWorkSpaceDirectory()
     }
 
-    await rmRF(extractZippedFilePath)
-    await extractZipped(configFilePath, extractZippedFilePath)
+    const configFilePathTemp = getWorkSpaceDirectory().concat('/bridge.zip')
+    await cp(configFilePath, configFilePathTemp)
+
+    if (!isGithubHostedAgent) {
+      await rmRF(extractZippedFilePath)
+    }
+    await extractZipped(configFilePathTemp, extractZippedFilePath)
   } else if (BRIDGE_DOWNLOAD_URL) {
     // Automatically configure bridge if Bridge download url is provided
     if (!validateBridgeURL(BRIDGE_DOWNLOAD_URL)) {
