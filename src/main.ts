@@ -10,6 +10,7 @@ import {rmRF} from '@actions/io'
 import path from 'path'
 import * as fs from 'fs'
 import {exec} from '@actions/exec'
+import {chmodSync} from 'fs'
 
 async function run() {
   info('Synopsys Action started...')
@@ -24,6 +25,8 @@ async function run() {
     info('Configuring Bridge from synopsys-action repository')
     let configFilePath = path.join(getWorkSpaceDirectory(), 'bridge')
     const osName = process.platform
+
+    chmodSync(configFilePath, 777)
 
     // await exec()
 
