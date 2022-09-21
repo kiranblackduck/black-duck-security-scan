@@ -10,7 +10,8 @@ import {cp, rmRF} from '@actions/io'
 import path from 'path'
 import * as fs from 'fs'
 import {exec, ExecOutput, getExecOutput} from '@actions/exec'
-import {chmodSync} from 'fs'
+import {chmodSync, mkdirSync} from 'fs'
+import {mkdir} from '@actions/io/lib/io-util'
 
 async function run() {
   info('Synopsys Action started...')
@@ -44,8 +45,10 @@ async function run() {
 
     let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
 
+    await mkdir(extractZippedFilePath)
+
     if (isGithubHostedAgent) {
-      extractZippedFilePath = '/github/home/'//getWorkSpaceDirectory()
+      extractZippedFilePath = '/github/home/' //getWorkSpaceDirectory()
     }
 
     info('Starting to copy the bridge')
