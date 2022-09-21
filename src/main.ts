@@ -48,7 +48,7 @@ async function run() {
     await mkdir(extractZippedFilePath)
 
     if (isGithubHostedAgent) {
-      extractZippedFilePath = '/github/home/' //getWorkSpaceDirectory()
+      extractZippedFilePath = getWorkSpaceDirectory()
     }
 
     info('Starting to copy the bridge')

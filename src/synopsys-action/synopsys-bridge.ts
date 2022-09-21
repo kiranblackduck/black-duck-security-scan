@@ -68,9 +68,9 @@ export class SynopsysBridge {
 
 export function getBridgeDefaultPath(): string {
   const isGithubHostedAgent: boolean = String(process.env['RUNNER_NAME']).includes('Hosted Agent')
-  if (isGithubHostedAgent) {
+  /*if (isGithubHostedAgent) {
     return getWorkSpaceDirectory()
-  }
+  }*/
 
   let bridgeDefaultPath = ''
   const osName = process.platform
