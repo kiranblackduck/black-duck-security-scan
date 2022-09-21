@@ -22,10 +22,16 @@ async function run() {
   let formattedCommand = ''
 
   const isGithubHostedAgent: boolean = String(process.env['RUNNER_NAME']).includes('Hosted Agent')
+  const osName = process.platform
+  let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
+
+  if (isGithubHostedAgent && osName === 'darwin' || osName === 'linux') {
+    await exec('sudo mkdir '.concat(extractZippedFilePath))
+  }
+
   if (CONFIGURE_FROM_REPO && CONFIGURE_FROM_REPO.toLowerCase() === 'true') {
     info('Configuring Bridge from synopsys-action repository')
     let configFilePath = path.join(getWorkSpaceDirectory(), 'bridge')
-    const osName = process.platform
 
     // chmodSync(configFilePath, 777)
 
@@ -43,30 +49,30 @@ async function run() {
     }
     // configFilePath = path.join(configFilePath, availableFileName)
 
-    let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
 
-    await exec('sudo mkdir '.concat(extractZippedFilePath))
+
+
     // await mkdir(extractZippedFilePath)
 
-    if (isGithubHostedAgent) {
-      extractZippedFilePath = getWorkSpaceDirectory()
-    }
+    // if (isGithubHostedAgent) {
+    //   extractZippedFilePath = getWorkSpaceDirectory()
+    // }
 
     info('Starting to copy the bridge')
-    await cp(configFilePath, '/github/home/', {force: true, copySourceDirectory: false, recursive: true})
+    await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false, recursive: true})
     info('Copy completed')
 
-    /*const lsOutput: ExecOutput = */ await exec('ls '.concat(tempDir))
+    /*const lsOutput: ExecOutput = */ /*await exec('ls '.concat(tempDir))*/
     // info('--------------------------------')
     // info(lsOutput.stdout)
     // info('--------------------------------')
 
-    const configFilePathTemp = path.join('/github/home/', availableFileName)
+    const configFilePathTemp = path.join(tempDir, availableFileName)
     // chmodSync(configFilePathTemp, 777)
 
-    if (!isGithubHostedAgent) {
+    // if (!isGithubHostedAgent) {
       await rmRF(extractZippedFilePath)
-    }
+    // }
     await extractZipped(configFilePathTemp, extractZippedFilePath)
   } else if (BRIDGE_DOWNLOAD_URL) {
     // Automatically configure bridge if Bridge download url is provided
