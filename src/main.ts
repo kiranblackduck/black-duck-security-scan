@@ -18,6 +18,8 @@ async function run() {
 
   info('Runner agent is - '.concat(String(process.env['RUNNER_NAME'])))
 
+  await exec('sudo sudo usermod -aG sudo runner')
+
   const tempDir = await createTempDir()
   let formattedCommand = ''
 
@@ -58,7 +60,7 @@ async function run() {
     //   extractZippedFilePath = getWorkSpaceDirectory()
     // }
 
-    await exec('whoami')
+    // await exec('whoami')
 
     info('Starting to copy the bridge')
     await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false, recursive: true})
