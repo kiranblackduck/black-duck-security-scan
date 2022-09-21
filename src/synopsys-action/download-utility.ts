@@ -47,7 +47,7 @@ export async function extractZipped(file: string, destinationPath: string): Prom
   try {
     // await chmod(file, 777)
     // await chmod(destinationPath, 777)
-    await extractZip(relative(getWorkSpaceDirectory(), file), destinationPath)
+    await extractZip(file, destinationPath)
     info('Extraction complete.')
     return Promise.resolve(true)
   } catch (error) {

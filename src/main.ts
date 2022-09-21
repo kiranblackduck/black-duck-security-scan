@@ -45,11 +45,11 @@ async function run() {
     let extractZippedFilePath: string = SYNOPSYS_BRIDGE_PATH || getBridgeDefaultPath()
 
     if (isGithubHostedAgent) {
-      extractZippedFilePath = getWorkSpaceDirectory()
+      extractZippedFilePath = '/github/home/'//getWorkSpaceDirectory()
     }
 
     info('Starting to copy the bridge')
-    await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false, recursive: true})
+    await cp(configFilePath, '/github/home/', {force: true, copySourceDirectory: false, recursive: true})
     info('Copy completed')
 
     /*const lsOutput: ExecOutput = */ await exec('ls '.concat(tempDir))
@@ -57,8 +57,8 @@ async function run() {
     // info(lsOutput.stdout)
     // info('--------------------------------')
 
-    const configFilePathTemp = path.join(tempDir, availableFileName)
-    chmodSync(configFilePathTemp, 777)
+    const configFilePathTemp = path.join('/github/home/', availableFileName)
+    // chmodSync(configFilePathTemp, 777)
 
     if (!isGithubHostedAgent) {
       await rmRF(extractZippedFilePath)
