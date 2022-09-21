@@ -49,7 +49,7 @@ async function run() {
     }
 
     info('Starting to copy the bridge')
-    await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false})
+    await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false, recursive: true})
     info('Copy completed')
 
     /*const lsOutput: ExecOutput = */ await exec('ls '.concat(tempDir))
