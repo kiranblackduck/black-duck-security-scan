@@ -18,7 +18,7 @@ async function run() {
 
   info('Runner agent is - '.concat(String(process.env['RUNNER_NAME'])))
 
-  await exec('sudo su -')
+  await exec('sudo -s')
 
   const tempDir = await createTempDir()
   let formattedCommand = ''
