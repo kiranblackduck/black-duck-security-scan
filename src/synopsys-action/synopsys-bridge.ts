@@ -5,6 +5,7 @@ import {SYNOPSYS_BRIDGE_DEFAULT_PATH_LINUX, SYNOPSYS_BRIDGE_DEFAULT_PATH_MAC, SY
 import {tryGetExecutablePath} from '@actions/io/lib/io-util'
 import path from 'path'
 import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
+import {checkIfGithubHostedAndLinux} from "./utility";
 
 export class SynopsysBridge {
   bridgeExecutablePath: string
@@ -53,6 +54,10 @@ export class SynopsysBridge {
           cwd: workingDirectory
         }
         try {
+          if (checkIfGithubHostedAndLinux()) {
+            return await exec('sudo '.concat(this.bridgeExecutablePath.concat(' ', bridgeCommand)), [], exectOp)
+          }
+
           return await exec(this.bridgeExecutablePath.concat(' ', bridgeCommand), [], exectOp)
         } catch (error) {
           throw error

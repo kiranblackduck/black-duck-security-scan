@@ -249,6 +249,7 @@ const core_1 = __nccwpck_require__(186);
 const application_constants_1 = __nccwpck_require__(293);
 const io_util_1 = __nccwpck_require__(962);
 const path_1 = __importDefault(__nccwpck_require__(622));
+const utility_1 = __nccwpck_require__(643);
 class SynopsysBridge {
     constructor() {
         this.bridgeExecutablePath = '';
@@ -294,6 +295,9 @@ class SynopsysBridge {
                         cwd: workingDirectory
                     };
                     try {
+                        if ((0, utility_1.checkIfGithubHostedAndLinux)()) {
+                            return yield (0, exec_1.exec)('sudo '.concat(this.bridgeExecutablePath.concat(' ', bridgeCommand)), [], exectOp);
+                        }
                         return yield (0, exec_1.exec)(this.bridgeExecutablePath.concat(' ', bridgeCommand), [], exectOp);
                     }
                     catch (error) {
