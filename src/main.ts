@@ -1,6 +1,6 @@
 import {debug, info, setFailed, warning, error} from '@actions/core'
 import {SynopsysToolsParameter} from './synopsys-action/tools-parameter'
-import {cleanupTempDir, createTempDir} from './synopsys-action/utility'
+import {checkIfGithubHostedAndLinux, cleanupTempDir, createTempDir} from './synopsys-action/utility'
 import {getBridgeDefaultPath, SynopsysBridge, validateBridgeURL} from './synopsys-action/synopsys-bridge'
 import {BRIDGE_DOWNLOAD_URL, POLARIS_ACCESS_TOKEN, POLARIS_APPLICATION_NAME, POLARIS_ASSESSMENT_TYPES, POLARIS_PROJECT_NAME, POLARIS_SERVER_URL, SYNOPSYS_BRIDGE_PATH, COVERITY_URL, COVERITY_USER, COVERITY_PASSPHRASE, COVERITY_PROJECT_NAME, BLACKDUCK_URL, BLACKDUCK_API_TOKEN, BLACKDUCK_INSTALL_DIRECTORY, BLACKDUCK_SCAN_FULL, CONFIGURE_FROM_REPO} from './synopsys-action/inputs'
 
@@ -18,7 +18,7 @@ async function run() {
 
   info('Runner agent is - '.concat(String(process.env['RUNNER_NAME'])))
 
-  await exec('sudo -s')
+  // await exec('sudo -s')
 
   const tempDir = await createTempDir()
   let formattedCommand = ''
@@ -60,7 +60,7 @@ async function run() {
     //   extractZippedFilePath = getWorkSpaceDirectory()
     // }
 
-    await exec('whoami')
+    // await exec('whoami')
 
     info('Starting to copy the bridge')
     await cp(configFilePath, tempDir, {force: true, copySourceDirectory: false, recursive: true})
@@ -75,7 +75,11 @@ async function run() {
     // chmodSync(configFilePathTemp, 777)
 
     // if (!isGithubHostedAgent) {
+    if (!checkIfGithubHostedAndLinux()) {
+      // await exec('sudo rm -rf '.concat(extractZippedFilePath))
+    // } else {
       await rmRF(extractZippedFilePath)
+    }
     // }
     await extractZipped(configFilePathTemp, extractZippedFilePath)
   } else if (BRIDGE_DOWNLOAD_URL) {
