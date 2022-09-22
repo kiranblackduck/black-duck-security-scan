@@ -47,6 +47,11 @@
   extends:
     - .pop_blackduck
     - .retry
+  before_script:
+    - |
+      apt -y update
+      apt -y install make
+      sudo apt-get install jq
 
 .version:
   extends:
