@@ -51,7 +51,7 @@
     - |
       apt -y update
       apt -y install make
-      sudo apt-get install jq
+      apt-get install jq -y
 
 .version:
   extends:
