@@ -21,7 +21,7 @@ jobs:
 #     runs-on: [self-hosted, macOS, kishor]
 #    runs-on: [self-hosted, Windows, tithi]
 #    runs-on: [self-hosted, Linux, kishor-linux]
-    runs-on: macos-latest
+    runs-on: windows-latest
 
     env:
 #      BRIDGE_blackduck_url: ${{ secrets.BLACKDUCK_URL }}
@@ -78,4 +78,4 @@ jobs:
            blackduck_scan_full: false
            blackduck_install_directory: /Users/kishori/synopsys-bridge
            configure_from_repo: true
-           bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
+#           bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
