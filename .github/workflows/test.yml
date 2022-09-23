@@ -19,8 +19,8 @@ jobs:
   build:
     # The type of runner that the job will run on
 #    runs-on: [self-hosted, Linux, kishor-linux]
-#    runs-on: [self-hosted, macOS, kishor]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, kishor]
+#    runs-on: ubuntu-latest
 
     env:
 #       BRIDGE_polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
@@ -79,8 +79,8 @@ jobs:
           polaris_application_name: "App1"
           polaris_project_name: "Proj1"
           polaris_assessment_types: '["SCA"]'
-          configure_from_repo: true
-#          bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
+#          configure_from_repo: true
+          bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
 
 #      - name: Use synopsys unified-action - coverity-connect
 #        # Use the action defined in this repository
