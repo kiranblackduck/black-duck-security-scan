@@ -317,7 +317,7 @@ exports.BLACKDUCK_URL = (0, core_1.getInput)('blackduck_url');
 exports.BLACKDUCK_API_TOKEN = (0, core_1.getInput)('blackduck_apiToken');
 exports.BLACKDUCK_INSTALL_DIRECTORY = (0, core_1.getInput)('blackduck_install_directory');
 exports.BLACKDUCK_SCAN_FULL = (0, core_1.getInput)('blackduck_scan_full');
-exports.CONFIGURE_FROM_REPO = (0, core_1.getInput)('configureFromRepo');
+exports.CONFIGURE_FROM_REPO = (0, core_1.getInput)('configure_from_repo');
 
 
 /***/ }),
