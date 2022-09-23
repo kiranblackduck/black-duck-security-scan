@@ -21,7 +21,7 @@ jobs:
 #     runs-on: [self-hosted, macOS, kishor]
 #    runs-on: [self-hosted, Windows, tithi]
 #    runs-on: [self-hosted, Linux, kishor-linux]
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     env:
 #      BRIDGE_blackduck_url: ${{ secrets.BLACKDUCK_URL }}
