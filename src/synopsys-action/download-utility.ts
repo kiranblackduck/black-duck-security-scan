@@ -2,8 +2,8 @@ import {info} from '@actions/core'
 import path from 'path'
 import {downloadTool, extractZip} from '@actions/tool-cache'
 import * as fs from 'fs'
-import {checkIfGithubHostedAndLinux} from "./utility";
-import {exec} from "@actions/exec";
+import {checkIfGithubHostedAndLinux} from './utility'
+import {exec} from '@actions/exec'
 // import {chmod} from '@actions/io/lib/io-util'
 // import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
 

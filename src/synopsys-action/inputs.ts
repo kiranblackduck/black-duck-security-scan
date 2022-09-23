@@ -25,4 +25,3 @@ export const BLACKDUCK_INSTALL_DIRECTORY = getInput('blackduck_install_directory
 export const BLACKDUCK_SCAN_FULL = getInput('blackduck_scan_full')
 
 export const CONFIGURE_FROM_REPO = getInput('configureFromRepo')
-export const CONFIGURE_FROM_REPO = getInput('configure_from_repo')

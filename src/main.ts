@@ -51,9 +51,6 @@ async function run() {
     }
     // configFilePath = path.join(configFilePath, availableFileName)
 
-
-
-
     // await mkdir(extractZippedFilePath)
 
     // if (isGithubHostedAgent) {
@@ -77,7 +74,7 @@ async function run() {
     // if (!isGithubHostedAgent) {
     if (!checkIfGithubHostedAndLinux()) {
       // await exec('sudo rm -rf '.concat(extractZippedFilePath))
-    // } else {
+      // } else {
       await rmRF(extractZippedFilePath)
     }
     // }
