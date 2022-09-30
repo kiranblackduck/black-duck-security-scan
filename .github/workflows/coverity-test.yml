@@ -19,7 +19,7 @@ jobs:
   build:
     # The type of runner that the job will run on
 #    runs-on: [self-hosted]
-    runs-on: [self-hosted, Linux, kishori]
+    runs-on: [self-hosted, macOS, kishori]
 
     env:
       MAC_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.47/ci-package-0.1.47-macosx.zip"
@@ -81,4 +81,4 @@ jobs:
           coverity_branch_name: ${{ secrets.COVERITY_BRANCH_NAME }}
           # Mandatory for windows hosted environment
           coverity_install_directory: ${{ secrets.COVERITY_INSTALL_DIRECTORY }}
-          bridge_download_url: ${{ env.LINUX_BRIDGE_URL }}
+          bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
