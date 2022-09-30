@@ -6,7 +6,7 @@ name: CI-Blackduck
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: [ "demo-unified-package" ]
   pull_request:
     branches: [ "main" ]
 
@@ -18,7 +18,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-   runs-on: [self-hosted, Linux, kishori]
+   runs-on: [self-hosted, Windows, tithi]
 #    runs-on: [self-hosted, Windows, kiran]
 #    runs-on: [self-hosted, Linux, kishor-linux]
 
@@ -28,7 +28,7 @@ jobs:
 #      BRIDGE_blackduck_install_directory: "/Users/kishori/synopsys-bridge"
       MAC_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.47/ci-package-0.1.47-macosx.zip"
       LINUX_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.47/ci-package-0.1.47-linux64.zip"
-      WINDOWS_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/blackduck-hub/0.1.22/blackduck_hub-0.1.22-win64.zip"
+      WINDOWS_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-action/0.1.47/ci-package-0.1.47-win64.zip"
 
     # Steps represent a sequence of tasks that will be executed as part of the job
    steps:
@@ -77,4 +77,4 @@ jobs:
           blackduck_scan_full: true
           blackduck_install_directory: /Users/kishori/synopsys-bridge
           blackduck_scan_failure_severities: "[\"BLOCKER\", \"CRITICAL\", \"TRIVIAL\"]"
-          bridge_download_url: ${{ env.LINUX_BRIDGE_URL }}
+          bridge_download_url: ${{ env.WINDOWS_BRIDGE_URL }}
