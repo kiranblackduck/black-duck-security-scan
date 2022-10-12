@@ -27,9 +27,9 @@ jobs:
 #      BRIDGE_polaris_project_name: testproj1
 #      BRIDGE_polaris_assessment_types: "[\"SAST\"]"
 #      POLARIS_FF_TEST_COVERITY_BETA_VERSIONS: true
-      MAC_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/polaris-ci/0.1.81/polaris-ci-0.1.81-macosx.zip"
-      LINUX_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/polaris-ci/0.1.81/polaris-ci-0.1.81-linux64.zip"
-      WINDOWS_BRIDGE_URL: "https://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/polaris-ci/0.1.81/polaris-ci-0.1.81-win64.zip"
+      MAC_BRIDGE_URL: "https://sig-repo.synopsys.com/artifactory/bds-integrations-release/com/synopsys/integration/synopsys-action/0.1.67/ci-package-0.1.67-macosx.zip"
+      LINUX_BRIDGE_URL: "https://sig-repo.synopsys.com/artifactory/bds-integrations-release/com/synopsys/integration/synopsys-action/0.1.67/ci-package-0.1.67-linux.zip"
+      WINDOWS_BRIDGE_URL: "https://sig-repo.synopsys.com/artifactory/bds-integrations-release/com/synopsys/integration/synopsys-action/0.1.67/ci-package-0.1.67-win64.zip"
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -66,7 +66,7 @@ jobs:
         # Use the action defined in this repository
         uses: ./
         with:
-          polaris_serverUrl: ${{ secrets.POLARIS_SEVER_URL }}
+          polaris_serverUrl: "https://polaris.synopsys.com/"
           polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
           polaris_application_name: "App1"
           polaris_project_name: "Proj1"
