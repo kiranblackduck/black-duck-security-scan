@@ -18,7 +18,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: [macos-latest]
+    runs-on: [windows-latest]
 
     env:
 #      BRIDGE_polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
@@ -71,7 +71,7 @@ jobs:
           polaris_application_name: "GA_Testing_Application"
           polaris_project_name: "GA_Testing_Project"
           polaris_assessment_types: '["SAST"]'
-          bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
+          bridge_download_url: ${{ env.WINDOWS_BRIDGE_URL }}
 
 #      - name: Use synopsys unified-action - coverity-connect
 #        # Use the action defined in this repository
