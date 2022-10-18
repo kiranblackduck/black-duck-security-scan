@@ -67,9 +67,9 @@ jobs:
         uses: ./
         with:
           polaris_serverUrl: "https://polaris.synopsys.com/"
-          polaris_accessToken: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-          polaris_application_name: "App1"
-          polaris_project_name: "Proj1"
+          polaris_accessToken: "t8mj38ii950jn1brrl9qhqg8nqesqkancpg46clel1p99124n02ec1ri7pb1nuamat9m4p8pi4q0g"
+          polaris_application_name: "GA_Testing_Application"
+          polaris_project_name: "GA_Testing_Project"
           polaris_assessment_types: '["SAST"]'
           bridge_download_url: ${{ env.LINUX_BRIDGE_URL }}
 
