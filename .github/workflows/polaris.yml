@@ -45,6 +45,7 @@ jobs:
         with:
           path: |
             /home/runner/.bridge/
+            /home/runner/work/synopsys-action/synopsys-action/.bridge/
             bridge.log
             bridge_state.json
           name: diagnostics_${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}
