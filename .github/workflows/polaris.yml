@@ -43,5 +43,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: diagnostics
-          path: |
-            $pwd/ci-package-0.1.192-linux64.zip
+          path: $pwd
