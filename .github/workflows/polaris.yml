@@ -43,9 +43,5 @@ jobs:
       - name: Include diagnostics
         uses: actions/upload-artifact@v3
         with:
-          run: |
-            pwd
-            ls -la
-          shell: bash
-          name: diagnostics
-          path: ${GITHUB_WORKSPACE}
+          path: ${{ github.workspace }}
+          name: ${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}
