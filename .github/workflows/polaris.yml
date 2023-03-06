@@ -22,19 +22,11 @@ jobs:
 
     env:
       MAC_BRIDGE_URL: "http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-bridge/latest/synopsys-bridge-0.1.211-macosx.zip"
-      LINUX_BRIDGE_URL: "http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-bridge/latest/synopsys-bridge-0.1.211-linux64.zip"
+      LINUX_BRIDGE_URL: "https://sig-repo.synopsys.com/artifactory/bds-integrations-release/com/synopsys/integration/synopsys-action/0.1.72/ci-package-0.1.192-linux64.zip"
       WINDOWS_BRIDGE_URL: "http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-bridge/latest/synopsys-bridge-0.1.211-win64.zip"
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Include diagnostics
-        uses: actions/upload-artifact@v3
-        with:
-          name: diagnostics
-          path: |
-            pwd
-            ls -la
-            bridge_diagnostics.zip
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       - name: Use synopsys unified-action
@@ -47,3 +39,9 @@ jobs:
           polaris_project_name: "tb_proj"
           polaris_assessment_types: "SCA"
           bridge_download_url: ${{ env.LINUX_BRIDGE_URL }}
+      - name: Include diagnostics
+        uses: actions/upload-artifact@v3
+        with:
+          name: diagnostics
+          path: |
+            ci-package-0.1.192-linux64.zip
