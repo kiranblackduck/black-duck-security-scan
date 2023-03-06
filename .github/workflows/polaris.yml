@@ -24,6 +24,7 @@ jobs:
       MAC_BRIDGE_URL: "http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-bridge/latest/synopsys-bridge-0.1.211-macosx.zip"
       LINUX_BRIDGE_URL: "https://sig-repo.synopsys.com/artifactory/bds-integrations-release/com/synopsys/integration/synopsys-action/0.1.192/ci-package-0.1.192-linux64.zip"
       WINDOWS_BRIDGE_URL: "http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-bridge/latest/synopsys-bridge-0.1.211-win64.zip"
+      workspace: ${{ env.GITHUB_WORKSPACE }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -43,4 +44,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: diagnostics
-          path: ${{ env.GITHUB_WORKSPACE }}
+          path: ${{ env.workspace }}
