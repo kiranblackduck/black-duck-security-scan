@@ -44,4 +44,4 @@ jobs:
         with:
           name: diagnostics
           path: |
-            ci-package-0.1.192-linux64.zip
+            $pwd/ci-package-0.1.192-linux64.zip
