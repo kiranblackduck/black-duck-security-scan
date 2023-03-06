@@ -60,3 +60,14 @@ jobs:
           #coverity_install_directory: "/root"
           bridge_download_url: ${{ env.LINUX_BRIDGE_URL }}
 
+
+      - name: Include diagnostics
+        uses: actions/upload-artifact@v3
+        with:
+          path: |
+            /home/runner/.bridge/
+            /home/runner/work/synopsys-action/synopsys-action/.bridge/
+            bridge.log
+            bridge_state.json
+          name: diagnostics_${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}
+
