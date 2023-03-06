@@ -43,5 +43,8 @@ jobs:
       - name: Include diagnostics
         uses: actions/upload-artifact@v3
         with:
-          path: /home/runner/.bridge/
+          path: |
+            /home/runner/.bridge/
+            bridge.log
+            bridge_state.json
           name: diagnostics_${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}
