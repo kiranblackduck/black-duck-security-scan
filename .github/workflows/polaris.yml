@@ -46,5 +46,6 @@ jobs:
           run: |
             pwd
             ls -la
+          shell: bash
           name: diagnostics
           path: ${GITHUB_WORKSPACE}
