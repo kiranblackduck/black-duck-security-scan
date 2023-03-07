@@ -18,7 +18,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: [self-hosted, macos, lokesh]
+    runs-on: [self-hosted, lokesh]
 
     env:
       MAC_BRIDGE_URL: "http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-bridge/latest/synopsys-bridge-0.1.215-macosx.zip"
@@ -60,14 +60,12 @@ jobs:
           # Mandatory for windows hosted environment
           #coverity_install_directory: "/root"
           bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
+          include_diagnostics: ${{ env.INCLUDE_DIAGNOSTICS }}
 
       - name: Include diagnostics
         uses: actions/upload-artifact@v3
         if: failure() || ${{ env.INCLUDE_DIAGNOSTICS }} == true
         with:
-          path: |
-            ${{ github.workspace }}/.bridge/
-            ${{ github.workspace }}/bridge.log
-            ${{ github.workspace }}/bridge_state.json
+          path: ${{ github.workspace }}/.bridge/
           name: bridge_diagnostics
 
