@@ -48,7 +48,7 @@ jobs:
         if: failure() || (${{ env.INCLUDE_DIAGNOSTICS }} == true)
         with:
           path: |
-            ${{ github_workspace }}/.bridge/
-            bridge.log
-            bridge_state.json
+            ${{ github.workspace }}/.bridge/
+            ${{ github.workspace }}/bridge.log
+            ${{ github.workspace }}/bridge_state.json
           name: diagnostics_${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}
