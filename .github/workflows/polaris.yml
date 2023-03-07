@@ -51,4 +51,4 @@ jobs:
             ${{ github.workspace }}/.bridge/
             ${{ github.workspace }}/bridge.log
             ${{ github.workspace }}/bridge_state.json
-          name: diagnostics_${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}
+          name: bridge_diagnostics
