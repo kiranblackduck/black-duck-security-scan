@@ -45,7 +45,7 @@ jobs:
 
       - name: Include diagnostics
         uses: actions/upload-artifact@v3
-        if: failure() || (${{ env.INCLUDE_DIAGNOSTICS }} == true)
+        if: ${{ env.INCLUDE_DIAGNOSTICS }} == true
         with:
           path: |
             ${{ github.workspace }}/.bridge/
