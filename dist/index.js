@@ -552,7 +552,7 @@ class SynopsysBridge {
                 }
                 (0, core_1.info)('diagnostics flag: '.concat(inputs.INCLUDE_DIAGNOSTICS));
                 if (inputs.INCLUDE_DIAGNOSTICS) {
-                    formattedCommand.concat(tools_parameter_1.SynopsysToolsParameter.SPACE).concat(tools_parameter_1.SynopsysToolsParameter.DIAGNOSTICS_OPTION);
+                    formattedCommand = formattedCommand.concat(tools_parameter_1.SynopsysToolsParameter.SPACE).concat(tools_parameter_1.SynopsysToolsParameter.DIAGNOSTICS_OPTION);
                 }
                 (0, core_1.debug)('Formatted command is - '.concat(formattedCommand));
                 return formattedCommand;

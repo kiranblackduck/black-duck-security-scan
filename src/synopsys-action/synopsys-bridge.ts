@@ -183,7 +183,7 @@ export class SynopsysBridge {
 
       info('diagnostics flag: '.concat(inputs.INCLUDE_DIAGNOSTICS))
       if (inputs.INCLUDE_DIAGNOSTICS) {
-        formattedCommand.concat(SynopsysToolsParameter.SPACE).concat(SynopsysToolsParameter.DIAGNOSTICS_OPTION)
+        formattedCommand = formattedCommand.concat(SynopsysToolsParameter.SPACE).concat(SynopsysToolsParameter.DIAGNOSTICS_OPTION)
       }
 
       debug('Formatted command is - '.concat(formattedCommand))
