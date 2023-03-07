@@ -18,7 +18,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: [ubuntu-latest]
+    runs-on: [self-hosted, macos, lokesh]
 
     env:
       MAC_BRIDGE_URL: "http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/synopsys-bridge/latest/synopsys-bridge-0.1.215-macosx.zip"
