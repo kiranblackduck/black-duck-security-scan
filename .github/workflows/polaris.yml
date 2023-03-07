@@ -48,8 +48,7 @@ jobs:
         if: failure() || (${{ env.INCLUDE_DIAGNOSTICS }} == true)
         with:
           path: |
-            /home/lokesha/actions-runner/.bridge/
-            /home/runner/work/synopsys-action/synopsys-action/.bridge/
+            /Users/lokesha/synopsys-bridge/synopsys-bridge/.bridge/
             bridge.log
             bridge_state.json
           name: diagnostics_${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}
