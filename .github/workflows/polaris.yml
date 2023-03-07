@@ -48,7 +48,7 @@ jobs:
         if: failure() || (${{ env.INCLUDE_DIAGNOSTICS }} == true)
         with:
           path: |
-            /Users/lokesha/synopsys-bridge/.bridge/
+            ${{ github_workspace }}/.bridge/
             bridge.log
             bridge_state.json
           name: diagnostics_${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}
