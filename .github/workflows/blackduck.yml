@@ -41,6 +41,7 @@ jobs:
           blackduck_apiToken: ${{ secrets.BLACKDUCK_API_TOKEN_NEW }}
           bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
           include_diagnostics: ${{ env.INCLUDE_DIAGNOSTICS }}
+          blackduck_automation_fixpr: false
 
       - name: Include diagnostics
         uses: actions/upload-artifact@v3
