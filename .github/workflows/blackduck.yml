@@ -27,7 +27,7 @@ jobs:
      LINUX_BRIDGE_URL: "https://sig-repo.synopsys.com/artifactory/bds-integrations-release/com/synopsys/integration/synopsys-action/0.1.72/ci-package-0.1.72-linux64.zip"
      WINDOWS_BRIDGE_URL: "https://sig-repo.synopsys.com/artifactory/bds-integrations-release/com/synopsys/integration/synopsys-action/0.1.72/ci-package-0.1.72-win64.zip"
      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     INCLUDE_DIAGNOSTICS: false
+     INCLUDE_DIAGNOSTICS: true
 
     # Steps represent a sequence of tasks that will be executed as part of the job
    steps:
@@ -41,7 +41,7 @@ jobs:
           blackduck_apiToken: ${{ secrets.BLACKDUCK_API_TOKEN_NEW }}
           bridge_download_url: ${{ env.MAC_BRIDGE_URL }}
           include_diagnostics: ${{ env.INCLUDE_DIAGNOSTICS }}
-          #blackduck_automation_fixpr: false
+          blackduck_automation_fixpr: false
 
       - name: Include diagnostics
         uses: actions/upload-artifact@v3
