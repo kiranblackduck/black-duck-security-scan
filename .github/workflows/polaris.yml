@@ -47,8 +47,8 @@ jobs:
         uses: actions/upload-artifact@v3
         if: failure() || ${{ env.INCLUDE_DIAGNOSTICS }} == true
         with:
-          path: |
-            ${{ github.workspace }}/.bridge/
-            ${{ github.workspace }}/bridge.log
-            ${{ github.workspace }}/bridge_state.json
+          # If a path (or paths), result in no files being found for the artifact, the action will succeed but print out a warning.
+          path: ${{ github.workspace }}/.bridge/
           name: bridge_diagnostics
+          # Artifacts are retained for 90 days by default
+          retention-days: 10
