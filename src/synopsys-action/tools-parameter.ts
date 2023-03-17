@@ -176,7 +176,7 @@ export class SynopsysToolsParameter {
         blackduckData.data.blackduck.scan = {failure: {severities: failureSeverityEnums}}
       }
     }
-
+    info('inputs.BLACKDUCK_AUTOMATION_FIXPR.toLowerCase()'.concat(inputs.BLACKDUCK_AUTOMATION_FIXPR.toLowerCase()))
     // Check and put environment variable for fix pull request
     if (inputs.BLACKDUCK_AUTOMATION_FIXPR.toLowerCase() !== 'false') {
       this.setGithubData(blackduckData)
