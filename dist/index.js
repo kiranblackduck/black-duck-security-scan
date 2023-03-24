@@ -857,6 +857,9 @@ class SynopsysToolsParameter {
             throw new Error('Missing required github token for fix pull request/automation comment');
         }
         (0, core_1.info)(String(isCommentFlow && githubPrNumber == null));
+        (0, core_1.info)(String(isCommentFlow));
+        (0, core_1.info)(String(githubPrNumber == null));
+        (0, core_1.info)(String(githubPrNumber));
         if (isCommentFlow && githubPrNumber == null) {
             throw new Error('Coverity/Blackduck automation PR comment can be run only by raising PR/MR');
         }

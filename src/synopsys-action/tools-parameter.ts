@@ -233,6 +233,9 @@ export class SynopsysToolsParameter {
     }
 
     info(String(isCommentFlow && githubPrNumber == null))
+    info(String(isCommentFlow))
+    info(String(githubPrNumber == null))
+    info(String(githubPrNumber))
     if (isCommentFlow && githubPrNumber == null) {
       throw new Error('Coverity/Blackduck automation PR comment can be run only by raising PR/MR')
     }
