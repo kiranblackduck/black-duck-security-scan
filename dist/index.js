@@ -856,15 +856,6 @@ class SynopsysToolsParameter {
         if (githubToken == null) {
             throw new Error('Missing required github token for fix pull request/automation comment');
         }
-        (0, core_1.info)(String(isCommentFlow && githubPrNumber == null));
-        (0, core_1.info)(String(isCommentFlow));
-        (0, core_1.info)(String(githubPrNumber == null));
-        (0, core_1.info)(String(githubPrNumber));
-        (0, core_1.info)(String(githubRef));
-        (0, core_1.info)(String(githubBranchName));
-        if (isCommentFlow && githubPrNumber == null) {
-            throw new Error('Coverity/Blackduck automation PR comment can be run only by raising PR/MR');
-        }
         // This condition is required as per ts-lint as these fields may have undefined as well
         if (githubRepo != null && githubBranchName != null && githubRepoOwner != null) {
             const githubData = {
@@ -884,6 +875,9 @@ class SynopsysToolsParameter {
             };
             if (githubPrNumber != null) {
                 githubData.repository.pull.number = Number(githubPrNumber);
+                if (isCommentFlow && isNaN(githubData.repository.pull.number)) {
+                    throw new Error('Coverity/Blackduck automation PR comment can be run only by raising PR/MR');
+                }
             }
             return githubData;
         }

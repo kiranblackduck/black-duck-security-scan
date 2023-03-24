@@ -232,16 +232,6 @@ export class SynopsysToolsParameter {
       throw new Error('Missing required github token for fix pull request/automation comment')
     }
 
-    info(String(isCommentFlow && githubPrNumber == null))
-    info(String(isCommentFlow))
-    info(String(githubPrNumber == null))
-    info(String(githubPrNumber))
-    info(String(githubRef))
-    info(String(githubBranchName))
-    if (isCommentFlow && githubPrNumber == null) {
-      throw new Error('Coverity/Blackduck automation PR comment can be run only by raising PR/MR')
-    }
-
     // This condition is required as per ts-lint as these fields may have undefined as well
     if (githubRepo != null && githubBranchName != null && githubRepoOwner != null) {
       const githubData: GithubData = {
@@ -262,6 +252,10 @@ export class SynopsysToolsParameter {
 
       if (githubPrNumber != null) {
         githubData.repository.pull.number = Number(githubPrNumber)
+
+        if (isCommentFlow && isNaN(githubData.repository.pull.number)) {
+          throw new Error('Coverity/Blackduck automation PR comment can be run only by raising PR/MR')
+        }
       }
       return githubData
     }
