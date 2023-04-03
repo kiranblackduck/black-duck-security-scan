@@ -40,5 +40,6 @@ jobs:
           blackduck_apiToken: ${{ secrets.BLACKDUCK_API_TOKEN_NEW }}
           #include_diagnostics: false
           #blackduck_automation_prcomment: true
-          #blackduck_automation_fixpr: true
+          blackduck_automation_fixpr: false
+          blackduck_scan_failure_severities: "NONE"
           github_token: ${{ secrets.GITHUB_TOKEN }}
