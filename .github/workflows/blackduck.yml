@@ -39,5 +39,5 @@ jobs:
           blackduck_url: ${{ secrets.BLACKDUCK_URL }}
           blackduck_apiToken: ${{ secrets.BLACKDUCK_API_TOKEN_NEW }}
           include_diagnostics: true
-          diagnostics_retention_days: 0
+          diagnostics_retention_days: -1
           github_token: ${{ secrets.GITHUB_TOKEN }}
