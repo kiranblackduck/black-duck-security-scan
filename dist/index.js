@@ -523,16 +523,11 @@ class SynopsysBridge {
         return __awaiter(this, void 0, void 0, function* () {
             this.synopsysBridgePath = inputs_1.SYNOPSYS_BRIDGE_PATH;
             const osName = process.platform;
-            let versionFilePath = '';
-            let versionFileExists = false;
+            let versionFilePath;
+            let versionFileExists;
             if (!this.synopsysBridgePath) {
                 (0, core_1.info)('Looking for synopsys bridge in default path');
                 this.synopsysBridgePath = this.getBridgeDefaultPath();
-            }
-            else {
-                if (!(0, utility_1.checkIfPathExists)(this.synopsysBridgePath)) {
-                    throw new Error('Path '.concat(this.synopsysBridgePath, ' does not exists'));
-                }
             }
             if (osName === 'win32') {
                 this.bridgeExecutablePath = yield (0, io_util_1.tryGetExecutablePath)(this.synopsysBridgePath.concat('\\synopsys-bridge'), ['.exe']);
@@ -580,7 +575,14 @@ class SynopsysBridge {
                 // Automatically configure bridge if Bridge download url is provided
                 let bridgeUrl = '';
                 let bridgeVersion = '';
-                if (inputs.BRIDGE_DOWNLOAD_VERSION) {
+                if (inputs.SYNOPSYS_BRIDGE_PATH) {
+                    if (!(0, utility_1.checkIfPathExists)(inputs.SYNOPSYS_BRIDGE_PATH)) {
+                        throw new Error('Path '.concat(this.synopsysBridgePath, ' does not exists'));
+                    }
+                    (0, core_1.info)('Bridge already exists, download has been skipped');
+                    return;
+                }
+                else if (inputs.BRIDGE_DOWNLOAD_VERSION) {
                     if (yield this.validateBridgeVersion(inputs.BRIDGE_DOWNLOAD_VERSION)) {
                         bridgeUrl = this.getVersionUrl(inputs.BRIDGE_DOWNLOAD_VERSION.trim()).trim();
                         bridgeVersion = inputs.BRIDGE_DOWNLOAD_VERSION.trim();
@@ -602,7 +604,7 @@ class SynopsysBridge {
                     bridgeUrl = this.getVersionUrl(latestVersion).trim();
                     bridgeVersion = latestVersion;
                 }
-                if ((yield this.checkIfSynopsysBridgeExists(bridgeVersion)) === false) {
+                if (!(yield this.checkIfSynopsysBridgeExists(bridgeVersion))) {
                     (0, core_1.info)('Downloading and configuring Synopsys Bridge');
                     (0, core_1.info)('Bridge URL is - '.concat(bridgeUrl));
                     const downloadResponse = yield (0, download_utility_1.getRemoteFile)(tempDir, bridgeUrl);
@@ -622,9 +624,6 @@ class SynopsysBridge {
                         this.bridgeExecutablePath = yield (0, io_util_1.tryGetExecutablePath)(this.synopsysBridgePath.concat('/synopsys-bridge'), []);
                     }
                     (0, core_1.info)('Download and configuration of Synopsys Bridge completed');
-                }
-                else {
-                    (0, core_1.info)('Bridge already exists, download has been skipped');
                 }
             }
             catch (e) {

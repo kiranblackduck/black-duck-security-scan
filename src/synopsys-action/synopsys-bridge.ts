@@ -49,16 +49,12 @@ export class SynopsysBridge {
   async checkIfSynopsysBridgeExists(bridgeVersion: string): Promise<boolean> {
     this.synopsysBridgePath = SYNOPSYS_BRIDGE_PATH
     const osName = process.platform
-    let versionFilePath = ''
-    let versionFileExists = false
+    let versionFilePath: string
+    let versionFileExists: boolean
 
     if (!this.synopsysBridgePath) {
       info('Looking for synopsys bridge in default path')
       this.synopsysBridgePath = this.getBridgeDefaultPath()
-    } else {
-      if (!checkIfPathExists(this.synopsysBridgePath)) {
-        throw new Error('Path '.concat(this.synopsysBridgePath, ' does not exists'))
-      }
     }
 
     if (osName === 'win32') {
@@ -104,7 +100,14 @@ export class SynopsysBridge {
       // Automatically configure bridge if Bridge download url is provided
       let bridgeUrl = ''
       let bridgeVersion = ''
-      if (inputs.BRIDGE_DOWNLOAD_VERSION) {
+
+      if (inputs.SYNOPSYS_BRIDGE_PATH) {
+        if (!checkIfPathExists(inputs.SYNOPSYS_BRIDGE_PATH)) {
+          throw new Error('Path '.concat(this.synopsysBridgePath, ' does not exists'))
+        }
+        info('Bridge already exists, download has been skipped')
+        return
+      } else if (inputs.BRIDGE_DOWNLOAD_VERSION) {
         if (await this.validateBridgeVersion(inputs.BRIDGE_DOWNLOAD_VERSION)) {
           bridgeUrl = this.getVersionUrl(inputs.BRIDGE_DOWNLOAD_VERSION.trim()).trim()
           bridgeVersion = inputs.BRIDGE_DOWNLOAD_VERSION.trim()
@@ -124,7 +127,7 @@ export class SynopsysBridge {
         bridgeVersion = latestVersion
       }
 
-      if ((await this.checkIfSynopsysBridgeExists(bridgeVersion)) === false) {
+      if (!(await this.checkIfSynopsysBridgeExists(bridgeVersion))) {
         info('Downloading and configuring Synopsys Bridge')
         info('Bridge URL is - '.concat(bridgeUrl))
         const downloadResponse: DownloadFileResponse = await getRemoteFile(tempDir, bridgeUrl)
@@ -145,8 +148,6 @@ export class SynopsysBridge {
           this.bridgeExecutablePath = await tryGetExecutablePath(this.synopsysBridgePath.concat('/synopsys-bridge'), [])
         }
         info('Download and configuration of Synopsys Bridge completed')
-      } else {
-        info('Bridge already exists, download has been skipped')
       }
     } catch (e) {
       const errorObject = (e as Error).message
