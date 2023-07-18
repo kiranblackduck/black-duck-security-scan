@@ -122,17 +122,18 @@ jobs:
         
 ```
 
-|Input Parameter   |Description                           |Mandatory / Optional |
-|-------------------|---------------------------------------|----------|
-| `coverity_url`    | URL for Coverity server               | Mandatory     |
-| `coverity_user`        | Username for Coverity            | Mandatory     |
-| `coverity_passphrase`        | Passphrase for Coverity    | Mandatory     |
-| `coverity_project_name`        | Project name in Coverity. <br> Many customers prefer to set their Coverity project and stream names to match the GitHub repository name  </br>                     | Mandatory     |
-| `coverity_stream_name`        | Stream name in Coverity   | Mandatory     |
-| `coverity_install_directory`        | Directory path to install Coverity | Optional    |
-| `coverity_policy_view`        | ID number of a saved view to apply as a "break the build" policy. If any defects are found within this view when applied to the project, the build will be failed with an exit code. <br> Example: coverity_policy_view: 100001 </br>       | Optional    |
-| `coverity_automation_prcomment`        | To enable feedback from Coverity security testing as pull request comment. <br> Supported values: true or false </br> | Optional     |
-| `github_token` | It is mandatory to pass github_token parameter with required permissions. The token can be github specified secrets.GITHUB_TOKEN with required permissions. <br> Example:  github_token: ${{ secrets.GITHUB_TOKEN }}   </br>      | Mandatory if  coverity_automation_prcomment is set true. |
+| Input Parameter                 |Description                           |Mandatory / Optional |
+|---------------------------------|---------------------------------------|----------|
+| `coverity_url`                  | URL for Coverity server               | Mandatory     |
+| `coverity_user`                 | Username for Coverity            | Mandatory     |
+| `coverity_passphrase`           | Passphrase for Coverity    | Mandatory     |
+| `coverity_project_name`         | Project name in Coverity. <br> Many customers prefer to set their Coverity project and stream names to match the GitHub repository name  </br>                     | Mandatory     |
+| `coverity_stream_name`          | Stream name in Coverity   | Mandatory     |
+| `coverity_local`                | If enabled, Synopsys Action will install the ‘Coverity Thick Client’ on the local system in order to execute the scan. 'coverity_install_directory' can also be given to keep the files for future scans.   | Optional     |
+| `coverity_install_directory`    | Directory path to install Coverity | Optional    |
+| `coverity_policy_view`          | ID number of a saved view to apply as a "break the build" policy. If any defects are found within this view when applied to the project, the build will be failed with an exit code. <br> Example: coverity_policy_view: 100001 </br>       | Optional    |
+| `coverity_automation_prcomment` | To enable feedback from Coverity security testing as pull request comment. <br> Supported values: true or false </br> | Optional     |
+| `github_token`                  | It is mandatory to pass github_token parameter with required permissions. The token can be github specified secrets.GITHUB_TOKEN with required permissions. <br> Example:  github_token: ${{ secrets.GITHUB_TOKEN }}   </br>      | Mandatory if  coverity_automation_prcomment is set true. |
 
           
 ## Synopsys GitHub Action - Black Duck
