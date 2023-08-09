@@ -1,0 +1,71 @@
+name: synopsys-action
+
+on:
+  push:
+    branches: [ pop-jobs-setup ]
+  
+jobs:
+  build:
+    runs-on: [ ubuntu-22.04-4core ]
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+      - name: Install Nodejs  
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - name: Install Dependencies
+        run: npm ci
+      - name: Code Coverage
+        run: npm test -- --coverage --collectCoverageFrom='src/**/*.{ts,jxs}'  
+      - name: Unit Tests  
+        run: npm run all
+      - name: Contract Tests  
+        run: npm run all 
+
+  code_coverage:
+    runs-on: [ ubuntu-22.04-4core ]
+    needs: build
+    steps:
+      - name: Configure Nodejs  
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - name: Code Coverage
+        run: npm test -- --coverage --collectCoverageFrom='src/**/*.{ts,jxs}'
+  
+  versioning:
+    runs-on: [ ubuntu-22.04-4core ]
+    needs: [build, code_coverage]   
+    outputs:
+      synopsys-action-version: ${{ steps.version-info.outputs.version }}
+    steps:
+      - name: Get Version Information  
+        id: version-info
+        run: |
+          version=$(grep -oE '"version":\s*"[^"]+"' package.json | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          echo version=$version >> "$GITHUB_OUTPUT" 
+          echo "Package Version: $version"
+    
+  # analysis:
+  #   runs-on: [ ubuntu-22.04-4core ]
+  #   needs: [build, code_coverage, versioning]
+  #   steps:      
+  #     - name: pop_polaris
+  #       uses: synopsys-sig/synopsys-action@v1.2.0
+  #       with:
+  #         polaris_serverUrl: ${{ secrets.POLARIS_SERVERURL }}
+  #         polaris_accessToken: ${{ secrets.POLARIS_ACCESSTOKEN }}
+  #         polaris_application_name: node-goat-1
+  #         polaris_project_name: node-goat-1
+  #         polaris_assessment_types: "SAST"
+          
+  #     - name: pop_blackduck
+  #       if: always()
+  #       uses: synopsys-sig/synopsys-action@v1.2.0
+  #       env:
+  #         DETECT_PROJECT_NAME: spurohitsynopsys-${{ github.event.repository.name }}
+  #         DETECT_PROJECT_VERSION_NAME: ${{ github.event.repository.name }}-${{needs.versioning.outputs.synopsys-action-version}}
+  #       with:
+  #         blackduck_url: ${{ secrets.BLACKDUCK_URL }}
+  #         blackduck_apiToken: ${{ secrets.BLACKDUCK_API_TOKEN }}
