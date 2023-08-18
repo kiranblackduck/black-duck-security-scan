@@ -2,7 +2,7 @@ name: synopsys-action
 
 on:
   push:
-    branches: [ pop-jobs-setup ]
+    branches: [ ubuntu-22.04-4core ]
   
 jobs:
   build:
