@@ -2,11 +2,11 @@ name: synopsys-action
 
 on:
   push:
-    branches: [ ubuntu-22.04-4core ]
+    branches: [ pop-jobs-setup ]
   
 jobs:
   build:
-    runs-on: [ sig-default ]
+    runs-on: [ ubuntu-22.04-4core ]
     steps:
       - name: Checkout Source
         uses: actions/checkout@v3
