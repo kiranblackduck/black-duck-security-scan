@@ -47,7 +47,7 @@ test('downloads a 35 byte file (dest)', async () => {
     expect(fs.statSync(downPath).size).toBe(35)
   } finally {
     try {
-      await fs.promises.unlink(destPath)
+      //await fs.promises.unlink(destPath)
     } catch {
       // intentionally empty
     }
