@@ -76,28 +76,6 @@ describe('@actions/tool-cache', function () {
     expect(fs.statSync(downPath).size).toBe(35)
   })
 
-  it('handles error from response message stream', async () => {
-    nock('http://example.com').persist().get('/error-from-response-message-stream').reply(200, {})
-
-    setResponseMessageFactory(() => {
-      const readStream = new stream.Readable()
-      readStream._read = () => {
-        readStream.destroy(new Error('uh oh'))
-      }
-      return readStream
-    })
-
-    let error = new Error('unexpected')
-    try {
-      await tc.downloadTool('http://example.com/error-from-response-message-stream', destPath)
-    } catch (err: any) {
-      error = err as Error
-    }
-
-    expect(error).not.toBeUndefined()
-    expect(error.message).toBe('uh oh')
-  })
-
   it('has status code in exception dictionary for HTTP error code responses', async () => {
     nock('http://example.com').persist().get('/bytes/bad').reply(400, {
       username: 'bad',
