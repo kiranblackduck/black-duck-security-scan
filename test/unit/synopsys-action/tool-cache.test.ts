@@ -24,6 +24,7 @@ describe('@actions/tool-cache', function () {
   beforeEach(async function () {
     await io.mkdirP(tempPath)
     destPath = tempPath.concat('/test-download-file')
+    console.info("destPath:".concat(destPath))
     setResponseMessageFactory(undefined)
   })
 
