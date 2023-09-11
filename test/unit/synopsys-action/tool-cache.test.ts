@@ -71,6 +71,18 @@ test('downloads a 35 byte file (dest requires mkdirp)', async () => {
   }
 })
 
+test('retries 429s', async function () {
+  nock('http://example.com').get('/too-many-requests-429').times(3).reply(429, undefined)
+  nock('http://example.com').get('/too-many-requests-429').reply(500, undefined)
+
+  try {
+    const statusCodeUrl = 'http://example.com/too-many-requests-429'
+    await tc.downloadTool(statusCodeUrl, destPath)
+  } catch (err: any) {
+    expect(err.toString()).toContain('500')
+  }
+})
+
 
 /**
  * Sets up a mock response body for downloadTool. This function works around a limitation with
