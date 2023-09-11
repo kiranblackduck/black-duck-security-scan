@@ -1,25 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import * as io from '@actions/io'
-import * as exec from '@actions/exec'
 import * as stream from 'stream'
 import nock from 'nock'
-
-const cachePath = path.join(__dirname, 'CACHE')
-const tempPath = path.join(__dirname, 'TEMP')
-// Set temp and tool directories before importing (used to set global state)
-process.env['RUNNER_TEMP'] = tempPath
-process.env['RUNNER_TOOL_CACHE'] = cachePath
 
 // eslint-disable-next-line import/first
 import * as tc from '../../../src/synopsys-action/tool-cache-local'
 import * as constants from '../../../src/application-constants'
 
-const IS_WINDOWS = process.platform === 'win32'
-const IS_MAC = process.platform === 'darwin'
-
 describe('@actions/tool-cache', function () {
-  beforeAll(function () {
+  beforeAll(async function () {
     nock('http://example.com').persist().get('/bytes/35').reply(200, {
       username: 'abc',
       password: 'def'
@@ -30,22 +19,8 @@ describe('@actions/tool-cache', function () {
     Object.defineProperty(constants, 'NON_RETRY_HTTP_CODES', {value: new Set([200, 201, 401, 403, 416]), configurable: true})
   })
 
-  beforeEach(async function () {
-    await io.rmRF(cachePath)
-    await io.rmRF(tempPath)
-    await io.mkdirP(cachePath)
-    await io.mkdirP(tempPath)
-  })
-
   afterEach(function () {
     setResponseMessageFactory(undefined)
-  })
-
-  afterAll(async function () {
-    await io.rmRF(tempPath)
-    await io.rmRF(cachePath)
-    setGlobal('TEST_DOWNLOAD_TOOL_RETRY_MIN_SECONDS', undefined)
-    setGlobal('TEST_DOWNLOAD_TOOL_RETRY_MAX_SECONDS', undefined)
   })
 
   it('downloads a 35 byte file', async () => {
@@ -258,13 +233,4 @@ function setGlobal<T>(key: string, value: T | undefined): void {
   } else {
     g[key] = value
   }
-}
-
-function removePWSHFromPath(pathEnv: string | undefined): string {
-  return (pathEnv || '')
-    .split(';')
-    .filter(segment => {
-      return !segment.startsWith(`C:\\Program Files\\PowerShell`)
-    })
-    .join(';')
 }
