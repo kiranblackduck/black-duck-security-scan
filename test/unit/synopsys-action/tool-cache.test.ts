@@ -8,194 +8,191 @@ import * as tc from '../../../src/synopsys-action/tool-cache-local'
 import * as constants from '../../../src/application-constants'
 const tempPath = path.join(__dirname, 'TEMP')
 let destPath: string
-describe('@actions/tool-cache', function () {
-
-  beforeAll(function () {
-    nock('http://example.com').persist().get('/bytes/35').reply(200, {
-      username: 'abc',
-      password: 'def'
-    })
-
-    Object.defineProperty(constants, 'RETRY_COUNT', {value: 3})
-    Object.defineProperty(constants, 'RETRY_DELAY_IN_MILLISECONDS', {value: 100})
-    Object.defineProperty(constants, 'NON_RETRY_HTTP_CODES', {value: new Set([200, 201, 401, 403, 416]), configurable: true})
+beforeAll(function () {
+  nock('http://example.com').persist().get('/bytes/35').reply(200, {
+    username: 'abc',
+    password: 'def'
   })
 
-  beforeEach(async function () {
-    await io.mkdirP(tempPath)
-    destPath = tempPath.concat('/test-download-file')
-    console.info("destPath:".concat(destPath))
-    setResponseMessageFactory(undefined)
-  })
+  Object.defineProperty(constants, 'RETRY_COUNT', {value: 3})
+  Object.defineProperty(constants, 'RETRY_DELAY_IN_MILLISECONDS', {value: 100})
+  Object.defineProperty(constants, 'NON_RETRY_HTTP_CODES', {value: new Set([200, 201, 401, 403, 416]), configurable: true})
+})
 
-  afterEach(async function () {
-    await io.rmRF(tempPath)
-    setResponseMessageFactory(undefined)
-  })
+beforeEach(async function () {
+  await io.mkdirP(tempPath)
+  destPath = tempPath.concat('/test-download-file')
+  console.info('destPath:'.concat(destPath))
+  setResponseMessageFactory(undefined)
+})
 
-  it('downloads a 35 byte file', async () => {
+afterEach(async function () {
+  await io.rmRF(tempPath)
+  setResponseMessageFactory(undefined)
+})
+
+test('downloads a 35 byte file', async () => {
+  const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
+
+  expect(fs.existsSync(downPath)).toBeTruthy()
+  expect(fs.statSync(downPath).size).toBe(35)
+})
+
+test('downloads a 35 byte file (dest)', async () => {
+  try {
     const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
 
+    expect(downPath).toEqual(destPath)
     expect(fs.existsSync(downPath)).toBeTruthy()
     expect(fs.statSync(downPath).size).toBe(35)
-  })
-
-  it('downloads a 35 byte file (dest)', async () => {
+  } finally {
     try {
-      const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
-
-      expect(downPath).toEqual(destPath)
-      expect(fs.existsSync(downPath)).toBeTruthy()
-      expect(fs.statSync(downPath).size).toBe(35)
-    } finally {
-      try {
-        await fs.promises.unlink(destPath)
-      } catch {
-        // intentionally empty
-      }
+      await fs.promises.unlink(destPath)
+    } catch {
+      // intentionally empty
     }
-  })
+  }
+})
 
-  it('downloads a 35 byte file (dest requires mkdirp)', async () => {
-    try {
-      const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
+test('downloads a 35 byte file (dest requires mkdirp)', async () => {
+  try {
+    const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
 
-      expect(downPath).toEqual(destPath)
-      expect(fs.existsSync(downPath)).toBeTruthy()
-      expect(fs.statSync(downPath).size).toBe(35)
-    } finally {
-      try {
-        await fs.promises.unlink(destPath)
-        await fs.promises.rmdir(path.dirname(destPath))
-      } catch {
-        // intentionally empty
-      }
-    }
-  })
-
-  it('downloads a 35 byte file after a redirect', async () => {
-    nock('http://example.com').persist().get('/redirect-to').reply(303, undefined, {
-      location: 'http://example.com/bytes/35'
-    })
-
-    const downPath: string = await tc.downloadTool('http://example.com/redirect-to', destPath)
-
+    expect(downPath).toEqual(destPath)
     expect(fs.existsSync(downPath)).toBeTruthy()
     expect(fs.statSync(downPath).size).toBe(35)
-  })
-
-  it('has status code in exception dictionary for HTTP error code responses', async () => {
-    nock('http://example.com').persist().get('/bytes/bad').reply(400, {
-      username: 'bad',
-      password: 'file'
-    })
-
-    expect.assertions(2)
-
+  } finally {
     try {
-      const errorCodeUrl = 'http://example.com/bytes/bad'
-      await tc.downloadTool(errorCodeUrl, destPath)
-    } catch (err: any) {
-      expect(err.toString()).toContain('Unexpected HTTP response: 400')
-      expect(err['httpStatusCode']).toBe(400)
+      await fs.promises.unlink(destPath)
+      await fs.promises.rmdir(path.dirname(destPath))
+    } catch {
+      // intentionally empty
     }
+  }
+})
+
+test('downloads a 35 byte file after a redirect', async () => {
+  nock('http://example.com').persist().get('/redirect-to').reply(303, undefined, {
+    location: 'http://example.com/bytes/35'
   })
 
-  it('works with redirect code 302', async function () {
-    nock('http://example.com').persist().get('/redirect-to').reply(302, undefined, {
-      location: 'http://example.com/bytes/35'
-    })
+  const downPath: string = await tc.downloadTool('http://example.com/redirect-to', destPath)
 
-    const downPath: string = await tc.downloadTool('http://example.com/redirect-to', destPath)
+  expect(fs.existsSync(downPath)).toBeTruthy()
+  expect(fs.statSync(downPath).size).toBe(35)
+})
 
-    expect(fs.existsSync(downPath)).toBeTruthy()
-    expect(fs.statSync(downPath).size).toBe(35)
+test('has status code in exception dictionary for HTTP error code responses', async () => {
+  nock('http://example.com').persist().get('/bytes/bad').reply(400, {
+    username: 'bad',
+    password: 'file'
   })
 
-  it('works with a 502 temporary failure', async function () {
-    nock('http://example.com').get('/temp502').twice().reply(502, undefined)
-    nock('http://example.com').get('/temp502').reply(200, undefined)
+  expect.assertions(2)
 
-    const statusCodeUrl = 'http://example.com/temp502'
+  try {
+    const errorCodeUrl = 'http://example.com/bytes/bad'
+    await tc.downloadTool(errorCodeUrl, destPath)
+  } catch (err: any) {
+    expect(err.toString()).toContain('Unexpected HTTP response: 400')
+    expect(err['httpStatusCode']).toBe(400)
+  }
+})
+
+test('works with redirect code 302', async function () {
+  nock('http://example.com').persist().get('/redirect-to').reply(302, undefined, {
+    location: 'http://example.com/bytes/35'
+  })
+
+  const downPath: string = await tc.downloadTool('http://example.com/redirect-to', destPath)
+
+  expect(fs.existsSync(downPath)).toBeTruthy()
+  expect(fs.statSync(downPath).size).toBe(35)
+})
+
+test('works with a 502 temporary failure', async function () {
+  nock('http://example.com').get('/temp502').twice().reply(502, undefined)
+  nock('http://example.com').get('/temp502').reply(200, undefined)
+
+  const statusCodeUrl = 'http://example.com/temp502'
+  await tc.downloadTool(statusCodeUrl, destPath)
+})
+
+test("doesn't retry 502s more than 3 times", async function () {
+  nock('http://example.com').get('/perm502').times(3).reply(502, undefined)
+
+  expect.assertions(1)
+
+  try {
+    const statusCodeUrl = 'http://example.com/perm502'
     await tc.downloadTool(statusCodeUrl, destPath)
-  })
+  } catch (err: any) {
+    expect(err.toString()).toContain('502')
+  }
+})
 
-  it("doesn't retry 502s more than 3 times", async function () {
-    nock('http://example.com').get('/perm502').times(3).reply(502, undefined)
+test('retries 429s', async function () {
+  nock('http://example.com').get('/too-many-requests-429').times(3).reply(429, undefined)
+  nock('http://example.com').get('/too-many-requests-429').reply(500, undefined)
 
-    expect.assertions(1)
+  try {
+    const statusCodeUrl = 'http://example.com/too-many-requests-429'
+    await tc.downloadTool(statusCodeUrl, destPath)
+  } catch (err: any) {
+    expect(err.toString()).toContain('500')
+  }
+})
 
-    try {
-      const statusCodeUrl = 'http://example.com/perm502'
-      await tc.downloadTool(statusCodeUrl, destPath)
-    } catch (err: any) {
-      expect(err.toString()).toContain('502')
+test("doesn't retry 404", async function () {
+  nock('http://example.com').get('/not-found-404').reply(404, undefined)
+  nock('http://example.com').get('/not-found-404').reply(500, undefined)
+
+  try {
+    const statusCodeUrl = 'http://example.com/not-found-404'
+    await tc.downloadTool(statusCodeUrl, destPath)
+  } catch (err: any) {
+    expect(err.toString()).toContain('404')
+  }
+})
+
+test('supports authorization headers', async function () {
+  nock('http://example.com', {
+    reqheaders: {
+      authorization: 'token abc123'
     }
   })
+    .get('/some-file-that-needs-authorization')
+    .reply(200, undefined)
 
-  it('retries 429s', async function () {
-    nock('http://example.com').get('/too-many-requests-429').times(3).reply(429, undefined)
-    nock('http://example.com').get('/too-many-requests-429').reply(500, undefined)
+  await tc.downloadTool('http://example.com/some-file-that-needs-authorization', destPath, 'token abc123')
+})
 
-    try {
-      const statusCodeUrl = 'http://example.com/too-many-requests-429'
-      await tc.downloadTool(statusCodeUrl, destPath)
-    } catch (err: any) {
-      expect(err.toString()).toContain('500')
-    }
-  })
-
-  it("doesn't retry 404", async function () {
-    nock('http://example.com').get('/not-found-404').reply(404, undefined)
-    nock('http://example.com').get('/not-found-404').reply(500, undefined)
-
-    try {
-      const statusCodeUrl = 'http://example.com/not-found-404'
-      await tc.downloadTool(statusCodeUrl, destPath)
-    } catch (err: any) {
-      expect(err.toString()).toContain('404')
-    }
-  })
-
-  it('supports authorization headers', async function () {
-    nock('http://example.com', {
-      reqheaders: {
-        authorization: 'token abc123'
-      }
-    })
-      .get('/some-file-that-needs-authorization')
-      .reply(200, undefined)
-
-    await tc.downloadTool('http://example.com/some-file-that-needs-authorization', destPath, 'token abc123')
-  })
-
-  it('supports custom headers', async function () {
-    nock('http://example.com', {
-      reqheaders: {
-        accept: 'application/octet-stream'
-      }
-    })
-      .get('/some-file-that-needs-headers')
-      .reply(200, undefined)
-
-    await tc.downloadTool('http://example.com/some-file-that-needs-headers', destPath, undefined, {
+test('supports custom headers', async function () {
+  nock('http://example.com', {
+    reqheaders: {
       accept: 'application/octet-stream'
-    })
+    }
   })
+    .get('/some-file-that-needs-headers')
+    .reply(200, undefined)
 
-  it('supports authorization and custom headers', async function () {
-    nock('http://example.com', {
-      reqheaders: {
-        accept: 'application/octet-stream',
-        authorization: 'token abc123'
-      }
-    })
-      .get('/some-file-that-needs-authorization-and-headers')
-      .reply(200, undefined)
+  await tc.downloadTool('http://example.com/some-file-that-needs-headers', destPath, undefined, {
+    accept: 'application/octet-stream'
+  })
+})
 
-    await tc.downloadTool('http://example.com/some-file-that-needs-authorization-and-headers', destPath, 'token abc123', {
-      accept: 'application/octet-stream'
-    })
+test('supports authorization and custom headers', async function () {
+  nock('http://example.com', {
+    reqheaders: {
+      accept: 'application/octet-stream',
+      authorization: 'token abc123'
+    }
+  })
+    .get('/some-file-that-needs-authorization-and-headers')
+    .reply(200, undefined)
+
+  await tc.downloadTool('http://example.com/some-file-that-needs-authorization-and-headers', destPath, 'token abc123', {
+    accept: 'application/octet-stream'
   })
 })
 
