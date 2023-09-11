@@ -100,4 +100,23 @@ describe('retry-helper tests', () => {
     expect(info[0]).toBe('some error 1')
     expect(info[1]).toMatch(/Synopsys Bridge download has been failed, Retries left: .+/)
   })
+
+  it('all attempts fail', async () => {
+    let attempts = 0
+    let error: Error = null as unknown as Error
+    try {
+      await retryHelper.execute(() => {
+        throw new Error(`some error ${++attempts}`)
+      })
+    } catch (err) {
+      error = err as Error
+    }
+    expect((error as Error).message).toBe('some error 4')
+    expect(attempts).toBe(4)
+    expect(info).toHaveLength(6)
+    expect(info[0]).toBe('some error 1')
+    expect(info[1]).toMatch(/Synopsys Bridge download has been failed, Retries left: .+/)
+    expect(info[2]).toBe('some error 2')
+    expect(info[3]).toMatch(/Synopsys Bridge download has been failed, Retries left: .+/)
+  })
 })
