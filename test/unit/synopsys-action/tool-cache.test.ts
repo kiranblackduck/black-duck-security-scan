@@ -54,6 +54,23 @@ test('downloads a 35 byte file (dest)', async () => {
   }
 })
 
+test('downloads a 35 byte file (dest requires mkdirp)', async () => {
+  try {
+    const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
+
+    expect(downPath).toEqual(destPath)
+    expect(fs.existsSync(downPath)).toBeTruthy()
+    expect(fs.statSync(downPath).size).toBe(35)
+  } finally {
+    try {
+      //await fs.promises.unlink(destPath)
+      await fs.promises.rmdir(path.dirname(destPath))
+    } catch {
+      // intentionally empty
+    }
+  }
+})
+
 
 /**
  * Sets up a mock response body for downloadTool. This function works around a limitation with
