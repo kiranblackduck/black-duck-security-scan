@@ -7,8 +7,9 @@ import * as io from '@actions/io'
 import * as tc from '../../../src/synopsys-action/tool-cache-local'
 import * as constants from '../../../src/application-constants'
 const tempPath = path.join(__dirname, 'TEMP')
+let destPath: string
 describe('@actions/tool-cache', function () {
-  const destPath = tempPath.concat('/test-download-file')
+
   beforeAll(function () {
     nock('http://example.com').persist().get('/bytes/35').reply(200, {
       username: 'abc',
@@ -18,6 +19,12 @@ describe('@actions/tool-cache', function () {
     Object.defineProperty(constants, 'RETRY_COUNT', {value: 3})
     Object.defineProperty(constants, 'RETRY_DELAY_IN_MILLISECONDS', {value: 100})
     Object.defineProperty(constants, 'NON_RETRY_HTTP_CODES', {value: new Set([200, 201, 401, 403, 416]), configurable: true})
+  })
+
+  beforeEach(async function () {
+    await io.mkdirP(tempPath)
+    destPath = tempPath.concat('/test-download-file')
+    setResponseMessageFactory(undefined)
   })
 
   afterEach(async function () {
@@ -31,7 +38,7 @@ describe('@actions/tool-cache', function () {
     expect(fs.existsSync(downPath)).toBeTruthy()
     expect(fs.statSync(downPath).size).toBe(35)
   })
-/*
+
   it('downloads a 35 byte file (dest)', async () => {
     try {
       const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
@@ -63,7 +70,7 @@ describe('@actions/tool-cache', function () {
         // intentionally empty
       }
     }
-  })*/
+  })
 
   it('downloads a 35 byte file after a redirect', async () => {
     nock('http://example.com').persist().get('/redirect-to').reply(303, undefined, {
