@@ -6,7 +6,10 @@ let info: string[]
 let retryHelper: RetryHelper
 
 describe('retry-helper tests', () => {
-  beforeAll(() => {
+  beforeEach(() => {
+    jest.setTimeout(20000)
+    // Reset info
+    info = []
     // Mock @actions/core info()
     jest.spyOn(core, 'info').mockImplementation((message: string) => {
       info.push(message)
@@ -17,17 +20,6 @@ describe('retry-helper tests', () => {
     Object.defineProperty(constants, 'RETRY_COUNT', {value: 3})
     Object.defineProperty(constants, 'RETRY_DELAY_IN_MILLISECONDS', {value: 100})
     Object.defineProperty(constants, 'NON_RETRY_HTTP_CODES', {value: new Set([200, 201, 401, 403, 416]), configurable: true})
-  })
-
-  beforeEach(() => {
-    jest.setTimeout(20000)
-    // Reset info
-    info = []
-  })
-
-  afterAll(() => {
-    // Restore
-    jest.restoreAllMocks()
   })
 
   it('first attempt succeeds', async () => {
