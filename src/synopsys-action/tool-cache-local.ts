@@ -31,7 +31,7 @@ const userAgent = 'actions/tool-cache'
  * @param headers   other headers
  * @returns         path to downloaded tool
  */
-export async function downloadTool(url: string, dest?: string, auth?: string, headers?: OutgoingHttpHeaders): Promise<string> {
+export async function downloadTool(url: string, dest: string, auth?: string, headers?: OutgoingHttpHeaders): Promise<string> {
   dest = dest || path.join(os.tmpdir(), uuidv4())
   await io.mkdirP(path.dirname(dest))
   core.debug(`Downloading ${url}`)

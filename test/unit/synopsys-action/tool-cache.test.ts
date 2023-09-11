@@ -2,13 +2,14 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as stream from 'stream'
 import nock from 'nock'
-
+import * as io from '@actions/io'
 // eslint-disable-next-line import/first
 import * as tc from '../../../src/synopsys-action/tool-cache-local'
 import * as constants from '../../../src/application-constants'
-
+const tempPath = path.join(__dirname, 'TEMP')
 describe('@actions/tool-cache', function () {
-  beforeAll(async function () {
+  const destPath = tempPath.concat('/test-download-file')
+  beforeAll(function () {
     nock('http://example.com').persist().get('/bytes/35').reply(200, {
       username: 'abc',
       password: 'def'
@@ -19,28 +20,28 @@ describe('@actions/tool-cache', function () {
     Object.defineProperty(constants, 'NON_RETRY_HTTP_CODES', {value: new Set([200, 201, 401, 403, 416]), configurable: true})
   })
 
-  afterEach(function () {
+  afterEach(async function () {
+    await io.rmRF(tempPath)
     setResponseMessageFactory(undefined)
   })
 
   it('downloads a 35 byte file', async () => {
-    const downPath: string = await tc.downloadTool('http://example.com/bytes/35')
+    const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
 
     expect(fs.existsSync(downPath)).toBeTruthy()
     expect(fs.statSync(downPath).size).toBe(35)
   })
 
   it('downloads a 35 byte file (dest)', async () => {
-    const dest = 'test-download-file'
     try {
-      const downPath: string = await tc.downloadTool('http://example.com/bytes/35', dest)
+      const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
 
-      expect(downPath).toEqual(dest)
+      expect(downPath).toEqual(destPath)
       expect(fs.existsSync(downPath)).toBeTruthy()
       expect(fs.statSync(downPath).size).toBe(35)
     } finally {
       try {
-        await fs.promises.unlink(dest)
+        await fs.promises.unlink(destPath)
       } catch {
         // intentionally empty
       }
@@ -48,17 +49,16 @@ describe('@actions/tool-cache', function () {
   })
 
   it('downloads a 35 byte file (dest requires mkdirp)', async () => {
-    const dest = 'test-download-dir/test-download-file'
     try {
-      const downPath: string = await tc.downloadTool('http://example.com/bytes/35', dest)
+      const downPath: string = await tc.downloadTool('http://example.com/bytes/35', destPath)
 
-      expect(downPath).toEqual(dest)
+      expect(downPath).toEqual(destPath)
       expect(fs.existsSync(downPath)).toBeTruthy()
       expect(fs.statSync(downPath).size).toBe(35)
     } finally {
       try {
-        await fs.promises.unlink(dest)
-        await fs.promises.rmdir(path.dirname(dest))
+        await fs.promises.unlink(destPath)
+        await fs.promises.rmdir(path.dirname(destPath))
       } catch {
         // intentionally empty
       }
@@ -70,7 +70,7 @@ describe('@actions/tool-cache', function () {
       location: 'http://example.com/bytes/35'
     })
 
-    const downPath: string = await tc.downloadTool('http://example.com/redirect-to')
+    const downPath: string = await tc.downloadTool('http://example.com/redirect-to', destPath)
 
     expect(fs.existsSync(downPath)).toBeTruthy()
     expect(fs.statSync(downPath).size).toBe(35)
@@ -89,7 +89,7 @@ describe('@actions/tool-cache', function () {
 
     let error = new Error('unexpected')
     try {
-      await tc.downloadTool('http://example.com/error-from-response-message-stream')
+      await tc.downloadTool('http://example.com/error-from-response-message-stream', destPath)
     } catch (err: any) {
       error = err as Error
     }
@@ -108,7 +108,7 @@ describe('@actions/tool-cache', function () {
 
     try {
       const errorCodeUrl = 'http://example.com/bytes/bad'
-      await tc.downloadTool(errorCodeUrl)
+      await tc.downloadTool(errorCodeUrl, destPath)
     } catch (err: any) {
       expect(err.toString()).toContain('Unexpected HTTP response: 400')
       expect(err['httpStatusCode']).toBe(400)
@@ -120,7 +120,7 @@ describe('@actions/tool-cache', function () {
       location: 'http://example.com/bytes/35'
     })
 
-    const downPath: string = await tc.downloadTool('http://example.com/redirect-to')
+    const downPath: string = await tc.downloadTool('http://example.com/redirect-to', destPath)
 
     expect(fs.existsSync(downPath)).toBeTruthy()
     expect(fs.statSync(downPath).size).toBe(35)
@@ -131,7 +131,7 @@ describe('@actions/tool-cache', function () {
     nock('http://example.com').get('/temp502').reply(200, undefined)
 
     const statusCodeUrl = 'http://example.com/temp502'
-    await tc.downloadTool(statusCodeUrl)
+    await tc.downloadTool(statusCodeUrl, destPath)
   })
 
   it("doesn't retry 502s more than 3 times", async function () {
@@ -141,7 +141,7 @@ describe('@actions/tool-cache', function () {
 
     try {
       const statusCodeUrl = 'http://example.com/perm502'
-      await tc.downloadTool(statusCodeUrl)
+      await tc.downloadTool(statusCodeUrl, destPath)
     } catch (err: any) {
       expect(err.toString()).toContain('502')
     }
@@ -153,7 +153,7 @@ describe('@actions/tool-cache', function () {
 
     try {
       const statusCodeUrl = 'http://example.com/too-many-requests-429'
-      await tc.downloadTool(statusCodeUrl)
+      await tc.downloadTool(statusCodeUrl, destPath)
     } catch (err: any) {
       expect(err.toString()).toContain('500')
     }
@@ -165,7 +165,7 @@ describe('@actions/tool-cache', function () {
 
     try {
       const statusCodeUrl = 'http://example.com/not-found-404'
-      await tc.downloadTool(statusCodeUrl)
+      await tc.downloadTool(statusCodeUrl, destPath)
     } catch (err: any) {
       expect(err.toString()).toContain('404')
     }
@@ -180,7 +180,7 @@ describe('@actions/tool-cache', function () {
       .get('/some-file-that-needs-authorization')
       .reply(200, undefined)
 
-    await tc.downloadTool('http://example.com/some-file-that-needs-authorization', undefined, 'token abc123')
+    await tc.downloadTool('http://example.com/some-file-that-needs-authorization', destPath, 'token abc123')
   })
 
   it('supports custom headers', async function () {
@@ -192,7 +192,7 @@ describe('@actions/tool-cache', function () {
       .get('/some-file-that-needs-headers')
       .reply(200, undefined)
 
-    await tc.downloadTool('http://example.com/some-file-that-needs-headers', undefined, undefined, {
+    await tc.downloadTool('http://example.com/some-file-that-needs-headers', destPath, undefined, {
       accept: 'application/octet-stream'
     })
   })
@@ -207,7 +207,7 @@ describe('@actions/tool-cache', function () {
       .get('/some-file-that-needs-authorization-and-headers')
       .reply(200, undefined)
 
-    await tc.downloadTool('http://example.com/some-file-that-needs-authorization-and-headers', undefined, 'token abc123', {
+    await tc.downloadTool('http://example.com/some-file-that-needs-authorization-and-headers', destPath, 'token abc123', {
       accept: 'application/octet-stream'
     })
   })

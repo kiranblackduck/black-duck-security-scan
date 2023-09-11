@@ -7,7 +7,6 @@ let retryHelper: RetryHelper
 
 describe('retry-helper tests', () => {
   beforeEach(() => {
-    jest.setTimeout(20000)
     // Reset info
     info = []
     // Mock @actions/core info()
