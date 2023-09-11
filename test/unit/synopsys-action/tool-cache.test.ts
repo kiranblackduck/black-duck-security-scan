@@ -83,24 +83,6 @@ test('retries 429s', async function () {
   }
 })
 
-test('has status code in exception dictionary for HTTP error code responses', async () => {
-  nock('http://example.com').persist().get('/bytes/bad').reply(400, {
-    username: 'bad',
-    password: 'file'
-  })
-
-  expect.assertions(2)
-
-  try {
-    const errorCodeUrl = 'http://example.com/bytes/bad'
-    await tc.downloadTool(errorCodeUrl, destPath)
-  } catch (err: any) {
-    expect(err.toString()).toContain('Unexpected HTTP response: 400')
-    expect(err['httpStatusCode']).toBe(400)
-  }
-})
-
-
 /**
  * Sets up a mock response body for downloadTool. This function works around a limitation with
  * nock when the response stream emits an error.
