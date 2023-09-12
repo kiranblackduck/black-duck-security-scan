@@ -16,7 +16,6 @@ beforeEach(() => {
   })
 })
 
-jest.mock('@actions/artifact')
 
 describe('uploadDiagnostics - success', () => {
   it('should call uploadArtifact with the correct arguments', async () => {
