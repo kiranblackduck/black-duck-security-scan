@@ -21,6 +21,8 @@ describe('@actions/tool-cache', function () {
 
     cachePath = path.join(__dirname, 'CACHE')
     tempPath = path.join(__dirname, 'TEMP')
+    console.info('tempPath: ' + tempPath)
+    console.info('cachePath: ' + cachePath)
     // Set temp and tool directories before importing (used to set global state)
     process.env['RUNNER_TEMP'] = tempPath
     process.env['RUNNER_TOOL_CACHE'] = cachePath

@@ -1118,6 +1118,7 @@ function downloadToolAttempt(url, dest, auth, headers) {
             if (!succeeded) {
                 core.debug('download failed');
                 try {
+                    core.info(`Remove path when failed: ${dest}`);
                     yield io.rmRF(dest);
                 }
                 catch (err) {
