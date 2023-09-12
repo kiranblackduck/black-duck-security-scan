@@ -1,0 +1,34 @@
+name: Test Cases and Code Coverage
+
+on:
+  push:
+    branches:
+      - main
+      - test-cases-workflow
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  test-cases-and-code-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 16.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit Test Cases
+        run: npm run test
+
+      - name: Contract Test Cases
+        run: npm run contract-test
