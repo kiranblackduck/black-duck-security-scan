@@ -1118,6 +1118,8 @@ function downloadToolAttempt(url, dest, auth, headers) {
             if (!succeeded) {
                 core.debug('download failed');
                 try {
+                    core.info(`pwd '${__dirname}'`);
+                    core.info(`Failed to delete '${dest}'`);
                     yield io.rmRF(dest);
                 }
                 catch (err) {

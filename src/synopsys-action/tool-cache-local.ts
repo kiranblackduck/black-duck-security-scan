@@ -96,6 +96,8 @@ async function downloadToolAttempt(url: string, dest: string, auth?: string, hea
     if (!succeeded) {
       core.debug('download failed')
       try {
+        core.info(`pwd '${__dirname}'`)
+        core.info(`Failed to delete '${dest}'`)
         await io.rmRF(dest)
       } catch (err) {
         core.debug(`Failed to delete '${dest}'. ${err}`)
