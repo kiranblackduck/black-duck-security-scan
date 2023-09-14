@@ -120,9 +120,10 @@ describe('@actions/tool-cache', function () {
   //   expect(error.message).toBe('uh oh')
   // })
 
-  /*it('retries error from response message stream', async () => {
+  it('retries error from response message stream', async () => {
     nock('http://example.com').persist().get('/retries-error-from-response-message-stream').reply(200, {})
 
+    jest.spyOn(io, 'rmRF').mockReturnValue(Promise.resolve())
     let attempt = 1
     setResponseMessageFactory(() => {
       const readStream = new stream.Readable()
@@ -148,7 +149,7 @@ describe('@actions/tool-cache', function () {
 
     expect(fs.existsSync(downPath)).toBeTruthy()
     expect(fs.statSync(downPath).size).toBe(35)
-  })*/
+  })
 
   it('has status code in exception dictionary for HTTP error code responses', async () => {
     nock('http://example.com').persist().get('/bytes/bad').reply(400, {
