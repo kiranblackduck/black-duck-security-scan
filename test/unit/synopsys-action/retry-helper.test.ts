@@ -20,7 +20,7 @@ describe('retry-helper tests', () => {
     retryHelper = new RetryHelper(3, 100)
 
     Object.defineProperty(constants, 'RETRY_COUNT', {value: 3})
-    Object.defineProperty(constants, 'RETRY_DELAY_IN_MILLISECONDS', {value: 100})
+    Object.defineProperty(constants, 'RETRY_DELAY_IN_MILLISECONDS', {value: 1})
     Object.defineProperty(constants, 'NON_RETRY_HTTP_CODES', {value: new Set([200, 201, 401, 403, 416]), configurable: true})
   })
 

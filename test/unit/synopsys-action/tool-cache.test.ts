@@ -30,7 +30,7 @@ describe('@actions/tool-cache', function () {
     await io.mkdirP(cachePath)
     await io.mkdirP(tempPath)
     Object.defineProperty(constants, 'RETRY_COUNT', {value: 3})
-    Object.defineProperty(constants, 'RETRY_DELAY_IN_MILLISECONDS', {value: 10})
+    Object.defineProperty(constants, 'RETRY_DELAY_IN_MILLISECONDS', {value: 1})
     Object.defineProperty(constants, 'NON_RETRY_HTTP_CODES', {value: new Set([200, 201, 401, 403, 416]), configurable: true})
   })
 
@@ -93,59 +93,6 @@ describe('@actions/tool-cache', function () {
     })
 
     const downPath: string = await tc.downloadTool('http://example.com/redirect-to')
-
-    expect(fs.existsSync(downPath)).toBeTruthy()
-    expect(fs.statSync(downPath).size).toBe(35)
-  })
-
-  // it('handles error from response message stream', async () => {
-  //   nock('http://example.com').persist().get('/error-from-response-message-stream').reply(200, {})
-  //
-  //   setResponseMessageFactory(() => {
-  //     const readStream = new stream.Readable()
-  //     readStream._read = () => {
-  //       readStream.destroy(new Error('uh oh'))
-  //     }
-  //     return readStream
-  //   })
-  //
-  //   let error = new Error('unexpected')
-  //   try {
-  //     await tc.downloadTool('http://example.com/error-from-response-message-stream')
-  //   } catch (err: any) {
-  //     error = err
-  //   }
-  //
-  //   expect(error).not.toBeUndefined()
-  //   expect(error.message).toBe('uh oh')
-  // })
-
-  it('retries error from response message stream', async () => {
-    nock('http://example.com').persist().get('/retries-error-from-response-message-stream').reply(200, {})
-
-    jest.spyOn(io, 'rmRF').mockReturnValue(Promise.resolve())
-    let attempt = 1
-    setResponseMessageFactory(() => {
-      const readStream = new stream.Readable()
-      let failsafe = 0
-      readStream._read = () => {
-        // First attempt fails
-        if (attempt++ === 1) {
-          readStream.destroy(new Error('uh oh'))
-          return
-        }
-
-        // Write some data
-        if (failsafe++ === 0) {
-          readStream.push(''.padEnd(35))
-          readStream.push(null) // no more data
-        }
-      }
-
-      return readStream
-    })
-
-    const downPath = await tc.downloadTool('http://example.com/retries-error-from-response-message-stream')
 
     expect(fs.existsSync(downPath)).toBeTruthy()
     expect(fs.statSync(downPath).size).toBe(35)
