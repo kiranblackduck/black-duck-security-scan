@@ -308,6 +308,7 @@ export class SynopsysToolsParameter {
     if (githubPrNumber != null) {
       githubData.repository.pull.number = Number(githubPrNumber)
     }
+    info('setGithubData:record::'.concat(JSON.stringify(githubData)))
     return githubData
   }
 }

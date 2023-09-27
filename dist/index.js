@@ -1436,6 +1436,7 @@ class SynopsysToolsParameter {
         if (githubPrNumber != null) {
             githubData.repository.pull.number = Number(githubPrNumber);
         }
+        (0, core_1.info)("setGithubData:record::".concat(JSON.stringify(githubData)));
         return githubData;
     }
 }
