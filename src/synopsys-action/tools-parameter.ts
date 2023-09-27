@@ -302,7 +302,7 @@ export class SynopsysToolsParameter {
         }
       },
       api: {
-        url: apiurl
+        url: apiurl.replace('/api/v3', '')
       }
     }
     if (githubPrNumber != null) {

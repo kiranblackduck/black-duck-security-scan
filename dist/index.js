@@ -1430,13 +1430,13 @@ class SynopsysToolsParameter {
                 }
             },
             api: {
-                url: apiurl
+                url: apiurl.replace("/api/v3", "")
             }
         };
         if (githubPrNumber != null) {
             githubData.repository.pull.number = Number(githubPrNumber);
         }
-        (0, core_1.info)("setGithubData:record::".concat(JSON.stringify(githubData)));
+      (0, core_1.info)("setGithubData:record::".concat(JSON.stringify(githubData)));
         return githubData;
     }
 }
