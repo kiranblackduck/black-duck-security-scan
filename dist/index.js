@@ -124,9 +124,9 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         (0, core_1.info)('Synopsys Action started...');
         const blackDuckUrlState = core.getState("BLACKDUCK_URL");
-        const bdUrlId = yield core.getIDToken("BLACKDUCK_URL");
+        // const bdUrlId = await core.getIDToken("BLACKDUCK_URL");
         console.log(blackDuckUrlState);
-        console.log(bdUrlId);
+        // console.log(bdUrlId)
         /*const tempDir = await createTempDir()
         let formattedCommand = ''
       

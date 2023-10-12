@@ -11,10 +11,10 @@ import * as core from '@actions/core'
 export async function run() {
   info('Synopsys Action started...')
   const blackDuckUrlState = core.getState("BLACKDUCK_URL");
-  const bdUrlId = await core.getIDToken("BLACKDUCK_URL");
+  // const bdUrlId = await core.getIDToken("BLACKDUCK_URL");
 
   console.log(blackDuckUrlState)
-  console.log(bdUrlId)
+  // console.log(bdUrlId)
   /*const tempDir = await createTempDir()
   let formattedCommand = ''
 
