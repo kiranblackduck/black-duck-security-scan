@@ -6,9 +6,16 @@ import * as constants from './application-constants'
 import * as inputs from './synopsys-action/inputs'
 import {uploadDiagnostics} from './synopsys-action/diagnostics'
 
+import * as core from '@actions/core'
+
 export async function run() {
   info('Synopsys Action started...')
-  const tempDir = await createTempDir()
+  const blackDuckUrlState = core.getState("BLACKDUCK_URL");
+  const bdUrlId = await core.getIDToken("BLACKDUCK_URL");
+
+  console.log(blackDuckUrlState)
+  console.log(bdUrlId)
+  /*const tempDir = await createTempDir()
   let formattedCommand = ''
 
   try {
@@ -35,7 +42,7 @@ export async function run() {
       await uploadDiagnostics()
     }
     await cleanupTempDir(tempDir)
-  }
+  }*/
 }
 
 export function logBridgeExitCodes(message: string): string {
