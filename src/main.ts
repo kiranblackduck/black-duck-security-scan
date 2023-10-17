@@ -6,6 +6,8 @@ import * as constants from './application-constants'
 import * as inputs from './synopsys-action/inputs'
 import {uploadDiagnostics} from './synopsys-action/diagnostics'
 
+import * as okta from '@actions/github'
+
 import * as core from '@actions/core'
 
 export async function run() {
@@ -14,6 +16,10 @@ export async function run() {
   // const bdUrlId = await core.getIDToken("BLACKDUCK_URL");
 
   console.log(blackDuckUrlState)
+
+  console.log(process.env);
+
+  // okta.context.action
   // console.log(bdUrlId)
   /*const tempDir = await createTempDir()
   let formattedCommand = ''
