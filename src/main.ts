@@ -1,8 +1,9 @@
 import {info, setFailed} from '@actions/core'
 import {cleanupTempDir, createTempDir, isPullRequestEvent, parseToBoolean} from './synopsys-action/utility'
 import {SynopsysBridge} from './synopsys-action/synopsys-bridge'
-import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
+// import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
 import * as constants from './application-constants'
+import * as httpm from 'typed-rest-client/HttpClient'
 import * as inputs from './synopsys-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './synopsys-action/artifacts'
 import {GithubClientService} from './synopsys-action/github-client-service'
@@ -10,7 +11,20 @@ import {isNullOrEmptyValue} from './synopsys-action/validators'
 
 export async function run() {
   info('Synopsys Action started...')
-  const tempDir = await createTempDir()
+  let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action'
+  const httpClient = new httpm.HttpClient('greeter-service')
+  console.log(httpClient.userAgent?.toString())
+  const httpResponse = await httpClient.get(endPoint, {
+    Accept: 'application/json'
+  })
+
+  if (httpResponse.message.statusCode === 200) {
+    const azurePrResponse = await httpResponse.readBody()
+    console.log(azurePrResponse)
+  } else {
+    console.log('Non 200 response code')
+  }
+  /*const tempDir = await createTempDir()
   let formattedCommand = ''
   let isBridgeExecuted = false
 
@@ -64,7 +78,7 @@ export async function run() {
       }
     }
     await cleanupTempDir(tempDir)
-  }
+  }*/
 }
 
 export function logBridgeExitCodes(message: string): string {
