@@ -193,18 +193,24 @@ function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         (0, core_1.info)('Synopsys Action started...');
-        let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action';
-        const httpClient = new httpm.HttpClient('greeter-service');
-        console.log((_a = httpClient.userAgent) === null || _a === void 0 ? void 0 : _a.toString());
-        const httpResponse = yield httpClient.get(endPoint, {
-            Accept: 'application/json'
-        });
-        if (httpResponse.message.statusCode === 200) {
-            const azurePrResponse = yield httpResponse.readBody();
-            console.log(azurePrResponse);
+        try {
+            let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action';
+            const httpClient = new httpm.HttpClient('greeter-service');
+            console.log((_a = httpClient.userAgent) === null || _a === void 0 ? void 0 : _a.toString());
+            const httpResponse = yield httpClient.get(endPoint, {
+                Accept: 'application/json'
+            });
+            if (httpResponse.message.statusCode === 200) {
+                const azurePrResponse = yield httpResponse.readBody();
+                console.log(azurePrResponse);
+            }
+            else {
+                console.log('Non 200 response code');
+            }
         }
-        else {
-            console.log('Non 200 response code');
+        catch (e) {
+            console.log('Rest api with self signed certificate failed');
+            console.log(e);
         }
     });
 }

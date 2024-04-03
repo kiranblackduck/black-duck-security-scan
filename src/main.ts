@@ -11,18 +11,23 @@ import {isNullOrEmptyValue} from './synopsys-action/validators'
 
 export async function run() {
   info('Synopsys Action started...')
-  let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action'
-  const httpClient = new httpm.HttpClient('greeter-service')
-  console.log(httpClient.userAgent?.toString())
-  const httpResponse = await httpClient.get(endPoint, {
-    Accept: 'application/json'
-  })
+  try {
+    let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action'
+    const httpClient = new httpm.HttpClient('greeter-service')
+    console.log(httpClient.userAgent?.toString())
+    const httpResponse = await httpClient.get(endPoint, {
+      Accept: 'application/json'
+    })
 
-  if (httpResponse.message.statusCode === 200) {
-    const azurePrResponse = await httpResponse.readBody()
-    console.log(azurePrResponse)
-  } else {
-    console.log('Non 200 response code')
+    if (httpResponse.message.statusCode === 200) {
+      const azurePrResponse = await httpResponse.readBody()
+      console.log(azurePrResponse)
+    } else {
+      console.log('Non 200 response code')
+    }
+  } catch (e) {
+    console.log('Rest api with self signed certificate failed')
+    console.log(e)
   }
   /*const tempDir = await createTempDir()
   let formattedCommand = ''
