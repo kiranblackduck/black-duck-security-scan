@@ -12,6 +12,8 @@ import {isNullOrEmptyValue} from './synopsys-action/validators'
 export async function run() {
   info('Synopsys Action started...')
   try {
+    // @ts-ignore
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
     let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action'
     const httpClient = new httpm.HttpClient('greeter-service')
     console.log(httpClient.userAgent?.toString())

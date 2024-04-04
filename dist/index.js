@@ -194,6 +194,8 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         (0, core_1.info)('Synopsys Action started...');
         try {
+            // @ts-ignore
+            process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
             let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action';
             const httpClient = new httpm.HttpClient('greeter-service');
             console.log((_a = httpClient.userAgent) === null || _a === void 0 ? void 0 : _a.toString());
