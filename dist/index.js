@@ -200,7 +200,7 @@ function run() {
             // Option with trust all certificates
             // const httpClient = new httpm.HttpClient('greeter-service', [], {ignoreSslError: true})
             const httpClient = new httpm.HttpClient('greeter-service', [], {
-                cert: { certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.crt' }
+                cert: { certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem' }
             });
             console.log((_a = httpClient.userAgent) === null || _a === void 0 ? void 0 : _a.toString());
             const httpResponse = yield httpClient.get(endPoint, {
