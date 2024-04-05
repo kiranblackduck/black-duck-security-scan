@@ -197,7 +197,11 @@ function run() {
             // @ts-ignore
             // process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
             let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action';
-            const httpClient = new httpm.HttpClient('greeter-service', [], { ignoreSslError: true });
+            // Option with trust all certificates
+            // const httpClient = new httpm.HttpClient('greeter-service', [], {ignoreSslError: true})
+            const httpClient = new httpm.HttpClient('greeter-service', [], {
+                cert: { certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.crt' }
+            });
             console.log((_a = httpClient.userAgent) === null || _a === void 0 ? void 0 : _a.toString());
             const httpResponse = yield httpClient.get(endPoint, {
                 Accept: 'application/json'
