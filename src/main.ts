@@ -22,15 +22,15 @@ export async function run() {
     // const httpClient = new httpm.HttpClient('greeter-service', [], {ignoreSslError: true})
 
     //Option to pass certificate for http communication
-    // const httpClient = new httpm.HttpClient('greeter-service', [], {
-    //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'}
-    // })
+    const httpClient = new httpm.HttpClient('greeter-service', [], {
+      cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'}
+    })
 
-    https.globalAgent.options.cert = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
+    // https.globalAgent.options.ca = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
     // https.globalAgent.options.rejectUnauthorized = false
 
     // process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
-    const httpClient = new httpm.HttpClient('greeter-service')
+    // const httpClient = new httpm.HttpClient('greeter-service')
     console.log(httpClient.userAgent?.toString())
     const httpResponse = await httpClient.get(endPoint, {
       Accept: 'application/json'
