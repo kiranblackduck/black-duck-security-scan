@@ -52,6 +52,7 @@
     "@actions/io": "^1.1.2",
     "@actions/tool-cache": "^2.0.1",
     "@types/unzipper": "^0.10.5",
+    "crypto": "^1.0.1",
     "dom-parser": "^0.1.6",
     "nock": "^13.3.3",
     "path": "^0.12.7",

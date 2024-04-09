@@ -4,6 +4,7 @@ import {SynopsysBridge} from './synopsys-action/synopsys-bridge'
 // import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
 import * as constants from './application-constants'
 import * as httpm from 'typed-rest-client/HttpClient'
+import * as crypto from 'crypto'
 import * as inputs from './synopsys-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './synopsys-action/artifacts'
 import {GithubClientService} from './synopsys-action/github-client-service'
@@ -21,16 +22,19 @@ export async function run() {
     // Option with trust all certificates
     // const httpClient = new httpm.HttpClient('greeter-service', [], {ignoreSslError: true})
 
+    const x5Cert = new crypto.X509Certificate(fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'))
+    // @ts-ignore
+    const caCert = x5Cert.issuerCertificate.toString()
     //Option to pass certificate for http communication
-    const httpClient = new httpm.HttpClient('greeter-service', [], {
-      cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'}
-    })
+    // const httpClient = new httpm.HttpClient('greeter-service', [], {
+    //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'}
+    // })
 
-    // https.globalAgent.options.ca = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
+    https.globalAgent.options.ca = caCert //fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
     // https.globalAgent.options.rejectUnauthorized = false
 
     // process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
-    // const httpClient = new httpm.HttpClient('greeter-service')
+    const httpClient = new httpm.HttpClient('greeter-service')
     console.log(httpClient.userAgent?.toString())
     const httpResponse = await httpClient.get(endPoint, {
       Accept: 'application/json'
