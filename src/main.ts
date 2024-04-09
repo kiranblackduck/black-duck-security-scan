@@ -23,6 +23,7 @@ export async function run() {
     // const httpClient = new httpm.HttpClient('greeter-service', [], {ignoreSslError: true})
 
     const x5Cert = new crypto.X509Certificate(fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'))
+    console.log('Issuer Certificate - ' + x5Cert.issuerCertificate)
     // @ts-ignore
     const caCert = x5Cert.issuerCertificate.toString()
     //Option to pass certificate for http communication
