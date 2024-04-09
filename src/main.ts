@@ -8,6 +8,8 @@ import * as inputs from './synopsys-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './synopsys-action/artifacts'
 import {GithubClientService} from './synopsys-action/github-client-service'
 import {isNullOrEmptyValue} from './synopsys-action/validators'
+import * as https from 'https'
+import fs from 'fs'
 
 export async function run() {
   info('Synopsys Action started...')
@@ -23,7 +25,9 @@ export async function run() {
     //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'}
     // })
 
-    process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
+    https.globalAgent.options.ca = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem')
+
+    // process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
     const httpClient = new httpm.HttpClient('greeter-service')
     console.log(httpClient.userAgent?.toString())
     const httpResponse = await httpClient.get(endPoint, {
