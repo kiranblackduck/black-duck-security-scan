@@ -183,9 +183,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getBridgeExitCode = exports.logBridgeExitCodes = exports.run = void 0;
 const core_1 = __nccwpck_require__(2186);
@@ -193,7 +190,6 @@ const core_1 = __nccwpck_require__(2186);
 const constants = __importStar(__nccwpck_require__(9717));
 const httpm = __importStar(__nccwpck_require__(5538));
 const https = __importStar(__nccwpck_require__(7211));
-const fs_1 = __importDefault(__nccwpck_require__(5747));
 function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -209,8 +205,8 @@ function run() {
             //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'}
             // })
             // https.globalAgent.options.ca = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem')
-            https.globalAgent.options.cert = fs_1.default.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem');
-            // https.globalAgent.options.rejectUnauthorized = false;
+            // https.globalAgent.options.cert = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem')
+            https.globalAgent.options.rejectUnauthorized = false;
             // process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
             const httpClient = new httpm.HttpClient('greeter-service');
             console.log((_a = httpClient.userAgent) === null || _a === void 0 ? void 0 : _a.toString());
