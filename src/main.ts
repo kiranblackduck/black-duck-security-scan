@@ -17,9 +17,14 @@ export async function run() {
     let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action'
     // Option with trust all certificates
     // const httpClient = new httpm.HttpClient('greeter-service', [], {ignoreSslError: true})
-    const httpClient = new httpm.HttpClient('greeter-service', [], {
-      cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'}
-    })
+
+    //Option to pass certificate for http communication
+    // const httpClient = new httpm.HttpClient('greeter-service', [], {
+    //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'}
+    // })
+
+    process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
+    const httpClient = new httpm.HttpClient('greeter-service')
     console.log(httpClient.userAgent?.toString())
     const httpResponse = await httpClient.get(endPoint, {
       Accept: 'application/json'
