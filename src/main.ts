@@ -26,10 +26,8 @@ export async function run() {
     //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'}
     // })
 
-    // https.globalAgent.options.ca = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem')
-    // https.globalAgent.options.cert = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem')
+    https.globalAgent.options.ca = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
     // https.globalAgent.options.rejectUnauthorized = false
-    https.globalAgent.options.requestCert = false
 
     // process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
     const httpClient = new httpm.HttpClient('greeter-service')
