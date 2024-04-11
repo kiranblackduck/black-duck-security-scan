@@ -192,7 +192,6 @@ const core_1 = __nccwpck_require__(2186);
 // import {getWorkSpaceDirectory} from '@actions/artifact/lib/internal/config-variables'
 const constants = __importStar(__nccwpck_require__(9717));
 const httpm = __importStar(__nccwpck_require__(5538));
-const crypto = __importStar(__nccwpck_require__(6417));
 const https = __importStar(__nccwpck_require__(7211));
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 function run() {
@@ -205,15 +204,15 @@ function run() {
             let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action';
             // Option with trust all certificates
             // const httpClient = new httpm.HttpClient('greeter-service', [], {ignoreSslError: true})
-            const x5Cert = new crypto.X509Certificate(fs_1.default.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'));
-            console.log('Issuer Certificate - ' + x5Cert.issuerCertificate);
+            // require('ssl-root-cas/latest').inject().addFile('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
+            // const x5Cert = new crypto.X509Certificate(fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'))
+            // console.log('Issuer Certificate - ' + x5Cert.toString())
             // @ts-ignore
-            const caCert = x5Cert.issuerCertificate.toString();
             //Option to pass certificate for http communication
             // const httpClient = new httpm.HttpClient('greeter-service', [], {
             //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'}
             // })
-            https.globalAgent.options.ca = caCert; //fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
+            https.globalAgent.options.ca = fs_1.default.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/ca-cert.pem');
             // https.globalAgent.options.rejectUnauthorized = false
             // process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
             const httpClient = new httpm.HttpClient('greeter-service');

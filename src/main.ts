@@ -21,17 +21,17 @@ export async function run() {
     let endPoint = 'https://localhost:8443/greet/' + 'synopsys-action'
     // Option with trust all certificates
     // const httpClient = new httpm.HttpClient('greeter-service', [], {ignoreSslError: true})
+    // require('ssl-root-cas/latest').inject().addFile('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
 
-    const x5Cert = new crypto.X509Certificate(fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'))
-    console.log('Issuer Certificate - ' + x5Cert.issuerCertificate)
+    // const x5Cert = new crypto.X509Certificate(fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'))
+    // console.log('Issuer Certificate - ' + x5Cert.toString())
     // @ts-ignore
-    const caCert = x5Cert.issuerCertificate.toString()
     //Option to pass certificate for http communication
     // const httpClient = new httpm.HttpClient('greeter-service', [], {
     //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'}
     // })
 
-    https.globalAgent.options.ca = caCert //fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem')
+    https.globalAgent.options.ca = fs.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/ca-cert.pem')
     // https.globalAgent.options.rejectUnauthorized = false
 
     // process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
