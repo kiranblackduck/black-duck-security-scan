@@ -212,7 +212,7 @@ function run() {
             // const httpClient = new httpm.HttpClient('greeter-service', [], {
             //   cert: {certFile: '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/server-cert.pem'}
             // })
-            https.globalAgent.options.ca = fs_1.default.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/ca-cert.pem');
+            https.globalAgent.options.ca = fs_1.default.readFileSync('/Users/kishori/Project/trial-projects/Greeter/src/main/resources/X509Certificate.crt');
             // https.globalAgent.options.rejectUnauthorized = false
             // process.env['NODE_EXTRA_CA_CERTS'] = '/Users/kishori/Project/trial-projects/Greeter/src/main/resources/springboot.pem'
             const httpClient = new httpm.HttpClient('greeter-service');
