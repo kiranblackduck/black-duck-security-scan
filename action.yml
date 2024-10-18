@@ -1,4 +1,4 @@
-name: 'Black Duck Security Action'
+name: 'Black Duck Security Scan'
 branding:
   icon: 'shield'
   color: 'purple'

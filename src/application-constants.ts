@@ -117,7 +117,7 @@ export const DETECT_INSTALL_DIRECTORY_KEY = 'detect_install_directory'
  * @deprecated Use detect_scan_full instead. This can be removed in future release.
  */
 export const BLACKDUCK_SCAN_FULL_KEY = 'blackduck_scan_full'
-export const DETECT_SCAN_FULL_KEY = 'detect_scan_full'
+export const BLACKDUCKSCA_SCAN_FULL_KEY = 'blackducksca_scan_full'
 /**
  * @deprecated Use blackducksca_scan_failure_severities instead. This can be removed in future release.
  */
@@ -199,7 +199,15 @@ export const DETECT_CONFIG_PATH_KEY = 'detect_config_path'
 export const BLACKDUCK_ARGS_KEY = 'blackduck_args'
 export const DETECT_ARGS_KEY = 'detect_args'
 
+/**
+ * @deprecated Use blackduck_policy_badges_create instead. This can be removed in future release.
+ */
+export const BLACKDUCK_POLICY_BADGES_CREATE_KEY = 'blackduck_policy_badges_create'
 export const BLACKDUCKSCA_POLICY_BADGES_CREATE_KEY = 'blackducksca_policy_badges_create'
+/**
+ * @deprecated Use blackduck_policy_badges_maxCount instead. This can be removed in future release.
+ */
+export const BLACKDUCK_POLICY_BADGES_MAX_COUNT_KEY = 'blackduck_policy_badges_maxCount'
 export const BLACKDUCKSCA_POLICY_BADGES_MAX_COUNT_KEY = 'blackducksca_policy_badges_maxCount'
 
 export const GITHUB_HOST_URL_KEY = 'github_host_url'
@@ -228,7 +236,7 @@ export const NON_RETRY_HTTP_CODES = new Set([200, 201, 401, 403, 416])
 export const GITHUB_CLOUD_URL = 'https://github.com'
 export const GITHUB_CLOUD_API_URL = 'https://api.github.com'
 export const BRIDGE_LOCAL_DIRECTORY = '.bridge'
-export const BLACKDUCK_SARIF_GENERATOR_DIRECTORY = 'Blackduck SARIF Generator'
+export const BLACKDUCK_SARIF_GENERATOR_DIRECTORY = 'Blackduck SCA SARIF Generator'
 export const BLACKDUCK_SARIF_ARTIFACT_NAME = 'blackduck_sarif_report'
 export const POLARIS_SARIF_GENERATOR_DIRECTORY = 'Polaris SARIF Generator'
 export const POLARIS_SARIF_ARTIFACT_NAME = 'polaris_sarif_report'

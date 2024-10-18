@@ -351,15 +351,14 @@ export class BridgeToolsParameter {
       blackduckData.data.detect.install = {directory: inputs.DETECT_INSTALL_DIRECTORY}
     }
 
-    if (inputs.DETECT_SCAN_FULL) {
+    if (inputs.BLACKDUCKSCA_SCAN_FULL) {
       let scanFullValue = false
-      if (inputs.DETECT_SCAN_FULL.toLowerCase() === 'true' || inputs.DETECT_SCAN_FULL.toLowerCase() === 'false') {
-        scanFullValue = inputs.DETECT_SCAN_FULL.toLowerCase() === 'true'
+      if (inputs.BLACKDUCKSCA_SCAN_FULL.toLowerCase() === 'true' || inputs.BLACKDUCKSCA_SCAN_FULL.toLowerCase() === 'false') {
+        scanFullValue = inputs.BLACKDUCKSCA_SCAN_FULL.toLowerCase() === 'true'
       } else {
         throw new Error(constants.MISSING_BOOLEAN_VALUE_ERROR.concat(constants.BLACKDUCK_SCAN_FULL_KEY))
       }
-      blackduckData.data.detect = blackduckData.data.detect || {}
-      blackduckData.data.detect.scan = {full: scanFullValue}
+      blackduckData.data.blackducksca.scan = {full: scanFullValue}
     }
 
     if (failureSeverities && failureSeverities.length > 0) {
@@ -453,8 +452,8 @@ export class BridgeToolsParameter {
       blackduckData.data.blackducksca.policy = {
         badges: {
           create: true,
-          ...(Number.isInteger(parseInt(inputs.BLACKDUCK_POLICY_BADGES_MAX_COUNT)) && {
-            maxCount: parseInt(inputs.BLACKDUCK_POLICY_BADGES_MAX_COUNT)
+          ...(Number.isInteger(parseInt(inputs.BLACKDUCKSCA_POLICY_BADGES_MAX_COUNT)) && {
+            maxCount: parseInt(inputs.BLACKDUCKSCA_POLICY_BADGES_MAX_COUNT)
           })
         }
       }

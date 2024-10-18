@@ -131,7 +131,7 @@ test('Blackduck - With one or more non-mandatory fields', async () => {
   Object.defineProperty(inputs, 'BLACKDUCKSCA_URL', {value: 'BLACKDUCKSCA_URL'})
   Object.defineProperty(inputs, 'BLACKDUCKSCA_TOKEN', {value: 'BLACKDUCKSCA_TOKEN'})
   Object.defineProperty(inputs, 'DETECT_INSTALL_DIRECTORY', {value: 'DETECT_INSTALL_DIRECTORY'})
-  Object.defineProperty(inputs, 'DETECT_SCAN_FULL', {value: 'TRUE'})
+  Object.defineProperty(inputs, 'BLACKDUCKSCA_SCAN_FULL', {value: 'TRUE'})
   Object.defineProperty(inputs, 'BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES', {value: '["ALL"]'})
 
   let response = validateBlackDuckInputs()
@@ -143,7 +143,7 @@ test('Blackduck - With one or more non-mandatory fields', async () => {
 test('Blackduck - With mandatory fields', async () => {
   Object.defineProperty(inputs, 'BLACKDUCKSCA_URL', {value: 'BLACKDUCKSCA_URL'})
   Object.defineProperty(inputs, 'BLACKDUCKSCA_TOKEN', {value: 'BLACKDUCKSCA_TOKEN'})
-  Object.defineProperty(inputs, 'DETECT_SCAN_FULL', {value: 'TRUE'})
+  Object.defineProperty(inputs, 'BLACKDUCKSCA_SCAN_FULL', {value: 'TRUE'})
   Object.defineProperty(inputs, 'BRIDGE_CLI_DOWNLOAD_URL', {value: 'http://download-bridge-win.zip'})
 
   let response = validateBlackDuckInputs()

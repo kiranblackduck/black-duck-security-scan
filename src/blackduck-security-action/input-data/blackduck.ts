@@ -26,7 +26,7 @@ export interface BlackDuckSCA {
 export interface BlackDuckSCAData extends AsyncMode {
   url: string
   token: string
-  scan?: {failure?: {severities: BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES[]}}
+  scan?: {full?: boolean; failure?: {severities: BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES[]}}
   automation?: AutomationData
   fixpr?: BlackDuckFixPrData
   reports?: Reports
