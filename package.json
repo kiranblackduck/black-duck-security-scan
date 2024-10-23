@@ -18,15 +18,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blackduck-inc/blackduck-security-action.git"
+    "url": "git+https://github.com/blackduck-inc/black-duck-security-scan.git"
   },
   "keywords": [],
   "author": "Black Duck Software, Inc.",
   "license": "Apache 2.0",
   "bugs": {
-    "url": "https://github.com/blackduck-inc/blackduck-security-action/issues"
+    "url": "https://github.com/blackduck-inc/black-duck-security-scan/issues"
   },
-  "homepage": "https://github.com/blackduck-inc/blackduck-security-action#readme",
+  "homepage": "https://github.com/blackduck-inc/black-duck-security-scan#readme",
   "devDependencies": {
     "@types/dom-parser": "^0.1.1",
     "@types/jest": "^29.1.0",
