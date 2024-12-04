@@ -10,7 +10,7 @@ To use Black Duck Security Action, please follow the steps below:
   
 2. Install and configure Black Duck Security Action for the Black Duck product you are using. <br/>
 [Polaris](https://documentation.blackduck.com/bundle/bridge/page/documentation/c_github-polaris.html) <br/>
-[Black Duck](https://documentation.blackduck.com/bundle/bridge/page/documentation/c_github-blackduck.html)  <br/>
+[Black Duck SCA](https://documentation.blackduck.com/bundle/bridge/page/documentation/c_github-blackduck.html)  <br/>
 [Coverity](https://documentation.blackduck.com/bundle/bridge/page/documentation/c_github-coverity.html) <br/>
 [SRM](https://documentation.blackduck.com/bundle/bridge/page/documentation/c_github-srm.html) <br/>
 

@@ -99,7 +99,7 @@ export class Bridge {
         cwd: workingDirectory
       }
       try {
-        return await exec(this.bridgeExecutablePath.concat(' ', bridgeCommand), [], exectOp)
+        return await exec(this.bridgeExecutablePath.concat(' ', bridgeCommand).concat(' --out december.json'), [], exectOp)
       } catch (errorObject) {
         throw errorObject
       }
