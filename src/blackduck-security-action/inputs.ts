@@ -85,3 +85,5 @@ export const BLACKDUCKSCA_POLICY_BADGES_MAX_COUNT = getInput(constants.BLACKDUCK
 export const GITHUB_TOKEN = getInput(constants.GITHUB_TOKEN_KEY)?.trim() || ''
 export const INCLUDE_DIAGNOSTICS = getInput(constants.INCLUDE_DIAGNOSTICS_KEY)?.trim() || ''
 export const DIAGNOSTICS_RETENTION_DAYS = getInput(constants.DIAGNOSTICS_RETENTION_DAYS_KEY)?.trim() || ''
+export const POLARIS_POLICY_BADGES_CREATE = getInput(constants.POLARIS_POLICY_BADGES_CREATE_KEY)?.trim() || ''
+export const POLARIS_POLICY_BADGES_MAX_COUNT = getInput(constants.POLARIS_POLICY_BADGES_MAX_COUNT_KEY)?.trim() || ''

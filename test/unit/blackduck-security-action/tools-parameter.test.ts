@@ -1097,6 +1097,70 @@ describe('test polaris values passed correctly to bridge for workflow simplifica
     expect(jsonData.data.polaris.reports.sarif.severities).toContain('HIGH')
     expect(jsonData.data.polaris.reports.sarif.groupSCAIssues).toBe(false)
   })
+
+  it('Test getFormattedCommandForPolaris - badges', () => {
+    Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
+    Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
+    Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
+    Object.defineProperty(inputs, 'POLARIS_PROJECT_NAME', {value: 'POLARIS_PROJECT_NAME'})
+    Object.defineProperty(inputs, 'POLARIS_ASSESSMENT_TYPES', {value: 'SCA, SAST'})
+    // Object.defineProperty(inputs, 'BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES', {value: 'BLOCKER, CRITICAL, MAJOR'}) // TODO need to check if we need this resource for polaris badges or not
+    Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_CREATE', {value: true})
+    Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_MAX_COUNT', {value: 5})
+    process.env['GITHUB_SERVER_URL'] = 'https://custom.com'
+    const stp: BridgeToolsParameter = new BridgeToolsParameter(tempPath)
+    const resp = stp.getFormattedCommandForPolaris('blackduck-security-action')
+
+    expect(resp).not.toBeNull()
+    expect(resp).toContain('--stage polaris')
+
+    const jsonString1 = fs.readFileSync(tempPath.concat(blackduck_input_file), 'utf-8')
+    const jsonString = fs.readFileSync(tempPath.concat(polaris_input_file), 'utf-8')
+    const jsonData = JSON.parse(jsonString)
+    expect(jsonData.data.polaris.policy.badges.create).toBe(true)
+    expect(jsonData.data.polaris.policy.badges.maxCount).toBe(5)
+  })
+  it('Test getFormattedCommandForPolaris - badges if false', () => {
+    Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
+    Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
+    Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
+    Object.defineProperty(inputs, 'POLARIS_PROJECT_NAME', {value: 'POLARIS_PROJECT_NAME'})
+    Object.defineProperty(inputs, 'POLARIS_ASSESSMENT_TYPES', {value: 'SCA, SAST'})
+    // Object.defineProperty(inputs, 'BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES', {value: 'BLOCKER, CRITICAL, MAJOR'}) // TODO need to check if we need this resource for polaris badges or not
+    Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_CREATE', {value: false})
+    Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_MAX_COUNT', {value: 5})
+    process.env['GITHUB_SERVER_URL'] = 'https://custom.com'
+    const stp: BridgeToolsParameter = new BridgeToolsParameter(tempPath)
+    const resp = stp.getFormattedCommandForPolaris('blackduck-security-action')
+
+    expect(resp).not.toBeNull()
+    expect(resp).toContain('--stage polaris')
+
+    const jsonString1 = fs.readFileSync(tempPath.concat(blackduck_input_file), 'utf-8')
+    const jsonString = fs.readFileSync(tempPath.concat(polaris_input_file), 'utf-8')
+    const jsonData = JSON.parse(jsonString)
+    expect(jsonData.data.polaris.policy.badges.create).toBe(false)
+  })
+  it('Test getFormattedCommandForPolaris - badges failure (empty github token)', () => {
+    Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
+    Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
+    Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
+    Object.defineProperty(inputs, 'POLARIS_PROJECT_NAME', {value: 'POLARIS_PROJECT_NAME'})
+    Object.defineProperty(inputs, 'POLARIS_ASSESSMENT_TYPES', {value: 'SCA, SAST'})
+    // Object.defineProperty(inputs, 'BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES', {value: 'BLOCKER, CRITICAL, MAJOR'}) // TODO need to check if we need this resource for polaris badges or not
+    Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_CREATE', {value: true})
+    Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_MAX_COUNT', {value: 5})
+
+    process.env['GITHUB_SERVER_URL'] = 'https://custom.com'
+    const stp: BridgeToolsParameter = new BridgeToolsParameter(tempPath)
+    try {
+      stp.getFormattedCommandForBlackduck()
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(Error)
+      expect(error.message).toContain('Missing required github token for fix pull request/pull request comments/Github Badges')
+    }
+    Object.defineProperty(inputs, 'GITHUB_TOKEN', {value: 'token'})
+  })
 })
 
 describe('test coverity values passed correctly to bridge for workflow simplification', () => {

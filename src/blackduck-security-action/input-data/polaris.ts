@@ -22,6 +22,16 @@ export interface PolarisData extends AsyncMode {
   prComment?: PrComment
   test?: Test
   reports?: Reports
+  policy?: Policy
+}
+
+export interface Policy {
+  badges?: Badges
+}
+
+export interface Badges {
+  create?: boolean
+  maxCount?: number
 }
 
 export interface ProjectData {
