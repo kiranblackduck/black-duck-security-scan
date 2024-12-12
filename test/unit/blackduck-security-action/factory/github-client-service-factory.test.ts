@@ -7,12 +7,21 @@ import Mocked = jest.Mocked
 import {GithubClientServiceCloud} from '../../../../src/blackduck-security-action/service/impl/cloud/github-client-service-cloud'
 import {GithubClientServiceV1} from '../../../../src/blackduck-security-action/service/impl/enterprise/v1/github-client-service-v1'
 
+//@ts-ignore
+import sinon from 'sinon'
+import {getInput} from '@actions/core'
+export default {getInput}
+
 describe('fetchVersion()', () => {
+  let getInputStub
   beforeEach(() => {
-    Object.defineProperty(inputs, 'GITHUB_TOKEN', {value: 'test-token'})
+    // Object.defineProperty(inputs, 'GITHUB_TOKEN', {value: 'test-token'})
+    // @ts-ignore
+    getInputStub = sinon.stub(getInput)
   })
 
   afterEach(() => {
+    sinon.restore()
     jest.restoreAllMocks()
   })
 
