@@ -1104,7 +1104,6 @@ describe('test polaris values passed correctly to bridge for workflow simplifica
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
     Object.defineProperty(inputs, 'POLARIS_PROJECT_NAME', {value: 'POLARIS_PROJECT_NAME'})
     Object.defineProperty(inputs, 'POLARIS_ASSESSMENT_TYPES', {value: 'SCA, SAST'})
-    // Object.defineProperty(inputs, 'BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES', {value: 'BLOCKER, CRITICAL, MAJOR'}) // TODO need to check if we need this resource for polaris badges or not
     Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_CREATE', {value: true})
     Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_MAX_COUNT', {value: 5})
     process.env['GITHUB_SERVER_URL'] = 'https://custom.com'
@@ -1114,7 +1113,6 @@ describe('test polaris values passed correctly to bridge for workflow simplifica
     expect(resp).not.toBeNull()
     expect(resp).toContain('--stage polaris')
 
-    const jsonString1 = fs.readFileSync(tempPath.concat(blackduck_input_file), 'utf-8')
     const jsonString = fs.readFileSync(tempPath.concat(polaris_input_file), 'utf-8')
     const jsonData = JSON.parse(jsonString)
     expect(jsonData.data.polaris.policy.badges.create).toBe(true)
@@ -1135,7 +1133,6 @@ describe('test polaris values passed correctly to bridge for workflow simplifica
     expect(resp).not.toBeNull()
     expect(resp).toContain('--stage polaris')
 
-    const jsonString1 = fs.readFileSync(tempPath.concat(blackduck_input_file), 'utf-8')
     const jsonString = fs.readFileSync(tempPath.concat(polaris_input_file), 'utf-8')
     const jsonData = JSON.parse(jsonString)
     expect(jsonData.data.polaris.policy.badges.create).toBe(false)
