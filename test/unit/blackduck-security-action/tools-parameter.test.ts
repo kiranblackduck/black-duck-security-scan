@@ -1126,7 +1126,6 @@ describe('test polaris values passed correctly to bridge for workflow simplifica
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
     Object.defineProperty(inputs, 'POLARIS_PROJECT_NAME', {value: 'POLARIS_PROJECT_NAME'})
     Object.defineProperty(inputs, 'POLARIS_ASSESSMENT_TYPES', {value: 'SCA, SAST'})
-    // Object.defineProperty(inputs, 'BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES', {value: 'BLOCKER, CRITICAL, MAJOR'}) // TODO need to check if we need this resource for polaris badges or not
     Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_CREATE', {value: false})
     Object.defineProperty(inputs, 'POLARIS_POLICY_BADGES_MAX_COUNT', {value: 5})
     process.env['GITHUB_SERVER_URL'] = 'https://custom.com'
