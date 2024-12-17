@@ -289,3 +289,5 @@ export const SARIF_FILE_NO_FOUND_FOR_UPLOAD_ERROR = 'No SARIF file found to uplo
 export const MAC_PLATFORM_NAME = 'darwin'
 export const LINUX_PLATFORM_NAME = 'linux'
 export const WINDOWS_PLATFORM_NAME = 'win32'
+export const POLARIS_POLICY_BADGES_CREATE_KEY = 'polaris_policy_badges_create'
+export const POLARIS_POLICY_BADGES_MAX_COUNT_KEY = 'polaris_policy_badges_maxCount'

@@ -118,6 +118,31 @@ export class BridgeToolsParameter {
       }
     }
 
+    if (inputs.POLARIS_POLICY_BADGES_CREATE !== '' && parseToBoolean(inputs.POLARIS_POLICY_BADGES_CREATE)) {
+      polData.data.polaris.policy = {
+        badges: {
+          create: true,
+          ...(Number.isInteger(parseInt(inputs.POLARIS_POLICY_BADGES_MAX_COUNT)) && {
+            maxCount: parseInt(inputs.POLARIS_POLICY_BADGES_MAX_COUNT)
+          })
+        }
+      }
+      // Additional null check has been added to support avoid duplicate call to getGithubRepoInfo() when fix pr is enabled
+      if (polData.data.github == null) {
+        polData.data.github = this.getGithubRepoInfo()
+      }
+    } else if (inputs.POLARIS_POLICY_BADGES_CREATE !== '') {
+      polData.data.polaris.policy = {
+        badges: {
+          create: false
+        }
+      }
+      // Additional null check has been added to support avoid duplicate call to getGithubRepoInfo() when fix pr is enabled
+      if (polData.data.github == null) {
+        polData.data.github = this.getGithubRepoInfo()
+      }
+    }
+
     const isPrEvent = isPullRequestEvent()
     if (parseToBoolean(inputs.POLARIS_PRCOMMENT_ENABLED)) {
       if (isPrEvent) {
