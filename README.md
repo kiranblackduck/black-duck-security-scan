@@ -1,5 +1,7 @@
 # Black Duck Security Scan
 
+**NOTE:** If you are currently using the old Synopsys Action, please follow these <a href="https://community.blackduck.com/s/article/integrations-black-duck-migration-instructions">instructions</a> to migrate from Synopsys Action to this new Black Duck Security Scan Action. 
+
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/blackduck-inc/black-duck-security-scan?color=blue&label=Latest%20Version&sort=semver)
 
 Black Duck Security Action allows you to integrate Static Analysis Security Testing (SAST) and Software Composition Analysis (SCA) into your CI/CD pipelines. Black Duck Security Action leverages Bridge-CLI, a foundational piece of technology that has built-in knowledge of how to run all major black duck security testing solutions, plus common workflows for platforms like GitHub.
