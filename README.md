@@ -1,4 +1,4 @@
-# Black Duck Security Action
+# Black Duck Security Scan
 
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/blackduck-inc/black-duck-security-scan?color=blue&label=Latest%20Version&sort=semver)
 
