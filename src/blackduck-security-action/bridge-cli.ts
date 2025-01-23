@@ -233,7 +233,7 @@ export class Bridge {
       if (inputs.INCLUDE_DIAGNOSTICS) {
         formattedCommand = formattedCommand.concat(BridgeToolsParameter.SPACE).concat(BridgeToolsParameter.DIAGNOSTICS_OPTION)
       }
-
+      formattedCommand = formattedCommand.concat(BridgeToolsParameter.SPACE).concat('--output').concat(BridgeToolsParameter.SPACE).concat('outputCoverity.json')
       debug('Formatted command is - '.concat(formattedCommand))
       return formattedCommand
     } catch (e) {
