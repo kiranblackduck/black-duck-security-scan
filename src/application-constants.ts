@@ -291,3 +291,12 @@ export const LINUX_PLATFORM_NAME = 'linux'
 export const WINDOWS_PLATFORM_NAME = 'win32'
 export const POLARIS_POLICY_BADGES_CREATE_KEY = 'polaris_policy_badges_create'
 export const POLARIS_POLICY_BADGES_MAX_COUNT_KEY = 'polaris_policy_badges_maxCount'
+
+export const RETURN_STATUS_KEY = 'return_status'
+export const MARK_BUILD_STATUS_KEY = 'mark_build_status'
+export enum BUILD_STATUS {
+  SUCCESS = 'success',
+  FAILURE = 'failure'
+}
+export const MARK_BUILD_STATUS_DEFAULT = BUILD_STATUS.FAILURE
+export const TASK_RETURN_STATUS = 'status'

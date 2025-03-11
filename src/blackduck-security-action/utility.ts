@@ -73,3 +73,12 @@ export function isGitHubCloud(): boolean {
   const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
   return githubServerUrl === constants.GITHUB_CLOUD_URL
 }
+
+export function checkJobResult(buildStatus?: string): string | undefined {
+  if (buildStatus && Object.values(constants.BUILD_STATUS).includes(buildStatus as constants.BUILD_STATUS)) {
+    return buildStatus
+  } else if (buildStatus) {
+    debug(`Unsupported value for ${constants.MARK_BUILD_STATUS_KEY}: ${buildStatus}`)
+  }
+  return undefined
+}
