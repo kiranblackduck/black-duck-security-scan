@@ -87,3 +87,6 @@ export const INCLUDE_DIAGNOSTICS = getInput(constants.INCLUDE_DIAGNOSTICS_KEY)?.
 export const DIAGNOSTICS_RETENTION_DAYS = getInput(constants.DIAGNOSTICS_RETENTION_DAYS_KEY)?.trim() || ''
 export const POLARIS_POLICY_BADGES_CREATE = getInput(constants.POLARIS_POLICY_BADGES_CREATE_KEY)?.trim() || ''
 export const POLARIS_POLICY_BADGES_MAX_COUNT = getInput(constants.POLARIS_POLICY_BADGES_MAX_COUNT_KEY)?.trim() || ''
+
+export const RETURN_STATUS = getInput(constants.RETURN_STATUS_KEY)?.trim() || true
+export const MARK_BUILD_STATUS = getInput(constants.MARK_BUILD_STATUS_KEY)?.trim() || constants.MARK_BUILD_STATUS_DEFAULT

@@ -1,5 +1,5 @@
-import {debug, info, setFailed} from '@actions/core'
-import {cleanupTempDir, createTempDir, isPullRequestEvent, parseToBoolean} from './blackduck-security-action/utility'
+import {debug, info, setFailed, setOutput, getInput} from '@actions/core'
+import {checkJobResult, cleanupTempDir, createTempDir, isPullRequestEvent, parseToBoolean} from './blackduck-security-action/utility'
 import {Bridge} from './blackduck-security-action/bridge-cli'
 import {getGitHubWorkspaceDir as getGitHubWorkspaceDirV2} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as constants from './application-constants'
@@ -28,16 +28,19 @@ export async function run() {
     }
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
-    if (exitCode === 0) {
-      isBridgeExecuted = true
-      info('Black Duck Security Action workflow execution completed')
-    }
+    isBridgeExecuted = exitCode === 0 || (exitCode === 8 && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS)
+    info(exitCode === 8 && isBridgeExecuted ? `Marking the build ${inputs.MARK_BUILD_STATUS} as configured in the task.` : 'Black Duck Security Action workflow execution completed successfully.')
     return exitCode
   } catch (error) {
     exitCode = getBridgeExitCodeAsNumericValue(error as Error)
     isBridgeExecuted = getBridgeExitCode(error as Error)
     throw error
   } finally {
+    // The statement set the exit code in the 'status' variable which can be used in the YAML file
+    if (parseToBoolean(inputs.RETURN_STATUS)) {
+      debug(`Setting output variable ${constants.TASK_RETURN_STATUS} with exit code ${exitCode}`)
+      setOutput(constants.TASK_RETURN_STATUS, exitCode)
+    }
     const uploadSarifReportBasedOnExitCode = exitCode === 0 || exitCode === 8
     debug(`Bridge CLI execution completed: ${isBridgeExecuted}`)
     if (isBridgeExecuted) {
