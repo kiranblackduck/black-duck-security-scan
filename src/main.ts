@@ -1,4 +1,4 @@
-import {debug, info, setFailed, setOutput, getInput} from '@actions/core'
+import {debug, info, setFailed, setOutput} from '@actions/core'
 import {checkJobResult, cleanupTempDir, createTempDir, isPullRequestEvent, parseToBoolean} from './blackduck-security-action/utility'
 import {Bridge} from './blackduck-security-action/bridge-cli'
 import {getGitHubWorkspaceDir as getGitHubWorkspaceDirV2} from 'actions-artifact-v2/lib/internal/shared/config'
@@ -7,6 +7,7 @@ import * as inputs from './blackduck-security-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-security-action/artifacts'
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
+import {EXIT_CODE_ERROR} from './application-constants'
 
 export async function run() {
   info('Black Duck Security Action started...')
@@ -28,13 +29,18 @@ export async function run() {
     }
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
-    isBridgeExecuted = exitCode === 0 || (exitCode === 8 && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS)
-    info(exitCode === 8 && isBridgeExecuted ? `Marking the build ${inputs.MARK_BUILD_STATUS} as configured in the task.` : 'Black Duck Security Action workflow execution completed successfully.')
+    if (exitCode === 0) {
+      info('Black Duck Security Action workflow execution completed successfully.')
+      isBridgeExecuted = true
+    }
     return exitCode
   } catch (error) {
-    exitCode = getBridgeExitCodeAsNumericValue(error as Error)
-    isBridgeExecuted = getBridgeExitCode(error as Error)
-    throw error
+    const err = error as Error
+    exitCode = getBridgeExitCodeAsNumericValue(err)
+    if (exitCode === constants.EXIT_CODE_ERROR && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS) {
+      info(`Workflow failed! ${logBridgeExitCodes(err.message)}.\nMarking the build ${inputs.MARK_BUILD_STATUS} as configured in the task.`)
+      isBridgeExecuted = true
+    } else throw error
   } finally {
     // The statement set the exit code in the 'status' variable which can be used in the YAML file
     if (parseToBoolean(inputs.RETURN_STATUS)) {
