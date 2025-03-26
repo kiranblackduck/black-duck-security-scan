@@ -6,6 +6,7 @@ import {checkIfPathExists, getDefaultSarifReportPath, sleep} from '../../utility
 import {debug, info} from '@actions/core'
 import * as constants from '../../../application-constants'
 import {GithubClientServiceInterface} from '../github-client-service-interface'
+import {SarifData} from '../../input-data/sarif-data'
 
 export class GithubClientServiceBase implements GithubClientServiceInterface {
   gitHubCodeScanningUrl: string
@@ -25,7 +26,7 @@ export class GithubClientServiceBase implements GithubClientServiceInterface {
     this.repoName = this.githubRepo !== '' ? this.githubRepo.substring(this.githubRepo.indexOf('/') + 1, this.githubRepo.length).trim() : ''
     this.repoOwner = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_REPOSITORY_OWNER] || ''
     this.githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
-    this.githubApiURL = this.githubServerUrl === constants.GITHUB_CLOUD_URL ? constants.GITHUB_CLOUD_API_URL : this.githubServerUrl
+    this.githubApiURL = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_API_URL] || ''
     this.commit_sha = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SHA] || ''
     this.githubRef = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_REF] || ''
   }
@@ -45,12 +46,7 @@ export class GithubClientServiceBase implements GithubClientServiceInterface {
         const sarifContent = fs.readFileSync(sarifFilePath, 'utf8')
         const compressedSarif = zlib.gzipSync(sarifContent)
         const base64Sarif = compressedSarif.toString('base64')
-        const data = {
-          commit_sha: this.commit_sha,
-          ref: this.githubRef,
-          sarif: base64Sarif,
-          validate: true
-        }
+        const data = this.createSarifData(base64Sarif)
         do {
           const httpClient = new HttpClient('GithubClientServiceBase')
           const httpResponse = await httpClient.post(endpoint, JSON.stringify(data), {
@@ -89,6 +85,18 @@ export class GithubClientServiceBase implements GithubClientServiceInterface {
     } else {
       throw new Error(constants.SARIF_FILE_NO_FOUND_FOR_UPLOAD_ERROR)
     }
+  }
+
+  private createSarifData(base64Sarif: string): SarifData {
+    const data: SarifData = {
+      commit_sha: this.commit_sha,
+      ref: this.githubRef,
+      sarif: base64Sarif
+    }
+    if (this.githubApiURL === constants.GITHUB_CLOUD_API_URL) {
+      data.validate = true
+    }
+    return data
   }
 
   private async retrySleepHelper(message: string, retryCountLocal: number, retryDelay: number): Promise<number> {
