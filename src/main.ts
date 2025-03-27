@@ -34,15 +34,21 @@ export async function run() {
       isBridgeExecuted = true
     }
     return exitCode
+    /*} catch (error) {
+      const err = error as Error
+      exitCode = getBridgeExitCodeAsNumericValue(err)
+      if (exitCode === constants.EXIT_CODE_ERROR && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS) {
+        info(`Workflow failed! ${logBridgeExitCodes(err.message)}.\nMarking the build ${inputs.MARK_BUILD_STATUS} as configured in the task.`)
+        isBridgeExecuted = true
+      } else {
+        isBridgeExecuted = getBridgeExitCode(err)
+        throw error
+      }*/
   } catch (error) {
     const err = error as Error
     exitCode = getBridgeExitCodeAsNumericValue(err)
-    /*if (exitCode === constants.EXIT_CODE_ERROR && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS) {
-      info(`Workflow failed! ${logBridgeExitCodes(err.message)}.\nMarking the build ${inputs.MARK_BUILD_STATUS} as configured in the task.`)
-      isBridgeExecuted = true
-    } else */
-    isBridgeExecuted = getBridgeExitCode(err)
-    throw error
+    isBridgeExecuted = exitCode === constants.EXIT_CODE_ERROR && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS ? (info(`Workflow failed! ${logBridgeExitCodes(err.message)}.\nMarking the build ${inputs.MARK_BUILD_STATUS}.`), true) : getBridgeExitCode(err)
+    if (!isBridgeExecuted) throw err
   } finally {
     // The statement set the exit code in the 'status' variable which can be used in the YAML file
     if (parseToBoolean(inputs.RETURN_STATUS)) {
