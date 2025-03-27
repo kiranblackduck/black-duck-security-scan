@@ -13,7 +13,7 @@ export async function run() {
   const tempDir = await createTempDir()
   let formattedCommand = ''
   let isBridgeExecuted = false
-  let exitCode
+  let exitCode: number | undefined
 
   try {
     const sb = new Bridge()
@@ -30,25 +30,17 @@ export async function run() {
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {
       info('Black Duck Security Action workflow execution completed successfully.')
-      isBridgeExecuted = true
     }
-    return exitCode
-  } catch (error) {
-    const err = error as Error
-    exitCode = getBridgeExitCodeAsNumericValue(err)
-    if (exitCode === constants.BRIDGE_BREAK_EXIT_CODE && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS) {
-      info(`Workflow failed! ${logBridgeExitCodes(err.message)}.\nMarking the build ${inputs.MARK_BUILD_STATUS} as configured in the task.`)
-      isBridgeExecuted = true
-    } else {
-      isBridgeExecuted = getBridgeExitCode(err)
-      throw error
-    }
-  } finally {
     // The statement set the exit code in the 'status' variable which can be used in the YAML file
     if (parseToBoolean(inputs.RETURN_STATUS)) {
       debug(`Setting output variable ${constants.TASK_RETURN_STATUS} with exit code ${exitCode}`)
       setOutput(constants.TASK_RETURN_STATUS, exitCode)
     }
+    return exitCode
+  } catch (error) {
+    throw error
+  } finally {
+    isBridgeExecuted = getBridgeStatus(exitCode)
     const uploadSarifReportBasedOnExitCode = exitCode === 0 || exitCode === 8
     debug(`Bridge CLI execution completed: ${isBridgeExecuted}`)
     if (isBridgeExecuted) {
@@ -66,13 +58,14 @@ export async function run() {
           await uploadSarifReportAsArtifact(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, constants.POLARIS_SARIF_ARTIFACT_NAME)
         }
         if (!isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
-          const gitHubClientService = await GitHubClientServiceFactory.getGitHubClientServiceInstance()
           // Upload Black Duck SARIF Report to code scanning tab
           if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
+            const gitHubClientService = await GitHubClientServiceFactory.getGitHubClientServiceInstance()
             await gitHubClientService.uploadSarifReport(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
           }
           // Upload Polaris SARIF Report to code scanning tab
           if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
+            const gitHubClientService = await GitHubClientServiceFactory.getGitHubClientServiceInstance()
             await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
           }
         }
@@ -105,10 +98,43 @@ export function getBridgeExitCode(error: Error): boolean {
   return false
 }
 
+export function getBridgeStatus(exitCode: number | undefined): boolean {
+  if (exitCode === undefined) {
+    return false
+  }
+  return !isNaN(exitCode)
+}
+
+export function markBuildStatusIfIssuesArePresent(status: number, taskResult: string, errorMessage: string): void {
+  const exitMessage = logBridgeExitCodes(errorMessage)
+
+  if (status === constants.BRIDGE_BREAK_EXIT_CODE) {
+    info(errorMessage)
+    if (taskResult === constants.BUILD_STATUS.SUCCESS) {
+      info(exitMessage)
+    }
+    info(`Marking the build ${taskResult} as configured in the task.`)
+  } else {
+    setFailed('Workflow failed! '.concat(logBridgeExitCodes(errorMessage)))
+  }
+}
+
 run().catch(error => {
   if (error.message !== undefined) {
-    setFailed('Workflow failed! '.concat(logBridgeExitCodes(error.message)))
-  } else {
-    setFailed('Workflow failed! '.concat(logBridgeExitCodes(error)))
+    const isReturnStatusEnabled = parseToBoolean(inputs.RETURN_STATUS)
+    const exitCode = getBridgeExitCodeAsNumericValue(error)
+
+    if (isReturnStatusEnabled) {
+      debug(`Setting output variable ${constants.TASK_RETURN_STATUS} with exit code ${exitCode}`)
+      setOutput(constants.TASK_RETURN_STATUS, exitCode)
+    }
+
+    const taskResult: string | undefined = checkJobResult(inputs.MARK_BUILD_STATUS)
+
+    if (taskResult !== undefined && taskResult !== constants.BUILD_STATUS.FAILURE) {
+      markBuildStatusIfIssuesArePresent(exitCode, taskResult, error.message)
+    } else {
+      setFailed('Workflow failed! '.concat(logBridgeExitCodes(error.message)))
+    }
   }
 })
