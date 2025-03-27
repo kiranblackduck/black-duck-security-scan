@@ -7,7 +7,6 @@ import * as inputs from './blackduck-security-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-security-action/artifacts'
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
-import {EXIT_CODE_ERROR} from './application-constants'
 
 export async function run() {
   info('Black Duck Security Action started...')
@@ -34,21 +33,16 @@ export async function run() {
       isBridgeExecuted = true
     }
     return exitCode
-    /*} catch (error) {
-      const err = error as Error
-      exitCode = getBridgeExitCodeAsNumericValue(err)
-      if (exitCode === constants.EXIT_CODE_ERROR && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS) {
-        info(`Workflow failed! ${logBridgeExitCodes(err.message)}.\nMarking the build ${inputs.MARK_BUILD_STATUS} as configured in the task.`)
-        isBridgeExecuted = true
-      } else {
-        isBridgeExecuted = getBridgeExitCode(err)
-        throw error
-      }*/
   } catch (error) {
     const err = error as Error
     exitCode = getBridgeExitCodeAsNumericValue(err)
-    isBridgeExecuted = exitCode === constants.EXIT_CODE_ERROR && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS ? (info(`Workflow failed! ${logBridgeExitCodes(err.message)}.\nMarking the build ${inputs.MARK_BUILD_STATUS}.`), true) : getBridgeExitCode(err)
-    if (!isBridgeExecuted) throw err
+    if (exitCode === constants.BRIDGE_BREAK_EXIT_CODE && checkJobResult(inputs.MARK_BUILD_STATUS) === constants.BUILD_STATUS.SUCCESS) {
+      info(`Workflow failed! ${logBridgeExitCodes(err.message)}.\nMarking the build ${inputs.MARK_BUILD_STATUS} as configured in the task.`)
+      isBridgeExecuted = true
+    } else {
+      isBridgeExecuted = getBridgeExitCode(err)
+      throw error
+    }
   } finally {
     // The statement set the exit code in the 'status' variable which can be used in the YAML file
     if (parseToBoolean(inputs.RETURN_STATUS)) {
@@ -112,7 +106,7 @@ export function getBridgeExitCode(error: Error): boolean {
 }
 
 run().catch(error => {
-  if (error.message != undefined) {
+  if (error.message !== undefined) {
     setFailed('Workflow failed! '.concat(logBridgeExitCodes(error.message)))
   } else {
     setFailed('Workflow failed! '.concat(logBridgeExitCodes(error)))
