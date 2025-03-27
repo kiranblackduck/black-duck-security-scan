@@ -1,4 +1,4 @@
-import {getBridgeExitCode, logBridgeExitCodes, run} from '../../src/main'
+import {getBridgeExitCode, logBridgeExitCodes, markBuildStatusIfIssuesArePresent, run} from '../../src/main'
 import * as inputs from '../../src/blackduck-security-action/inputs'
 import {Bridge} from '../../src/blackduck-security-action/bridge-cli'
 import {DownloadFileResponse} from '../../src/blackduck-security-action/download-utility'
@@ -87,9 +87,7 @@ describe('Black Duck Security Action: Handling isBridgeExecuted and Exit Code In
     try {
       await run()
     } catch (error: any) {
-      expect(error.message).toContain('Exit Code: 8')
-      expect(core.info).toHaveBeenCalledWith('Marking the build success as configured in the task.')
-      expect(core.setOutput).toHaveBeenCalledWith('status', 8)
+      expect(error.message).toContain('Bridge CLI execution failed with exit code 8')
       expect(core.debug).toHaveBeenCalledWith('Bridge CLI execution completed: true')
     }
   })
@@ -125,9 +123,42 @@ describe('Black Duck Security Action: Handling isBridgeExecuted and Exit Code In
     try {
       await run()
     } catch (error: any) {
-      expect(error.message).toContain('Exit Code: 8')
-      expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith('blackduck-sca-sarif-generator', '/', 'blackduck-sca-sarif-artifact')
+      expect(error.message).toContain('Bridge CLI execution failed with exit code 8')
+      expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith('Blackduck SCA SARIF Generator', '/', 'blackduck_sarif_report')
     }
+  })
+
+  test('markBuildStatusIfIssuesArePresent sets build status correctly', () => {
+    const status = 8
+    const errorMessage = 'Error: The process failed with exit code 2'
+
+    const debugSpy = jest.spyOn(core, 'debug')
+    const infoSpy = jest.spyOn(core, 'info')
+    const setFailedSpy = jest.spyOn(core, 'setFailed')
+
+    markBuildStatusIfIssuesArePresent(status, 'success', errorMessage)
+
+    expect(debugSpy).toHaveBeenCalledWith(errorMessage)
+    expect(infoSpy).toHaveBeenCalledWith('Exit Code: 2 Error from adapter end')
+    expect(infoSpy).toHaveBeenCalledWith('Marking the build success as configured in the task.')
+    expect(setFailedSpy).not.toHaveBeenCalled()
+
+    debugSpy.mockRestore()
+    infoSpy.mockRestore()
+    setFailedSpy.mockRestore()
+  })
+
+  test('markBuildStatusIfIssuesArePresent sets workflow as failed', () => {
+    const status = 2
+    const errorMessage = 'Error: The process failed with exit code 2'
+
+    const setFailedSpy = jest.spyOn(core, 'setFailed')
+
+    markBuildStatusIfIssuesArePresent(status, 'failure', errorMessage)
+
+    expect(setFailedSpy).toHaveBeenCalledWith('Workflow failed! Exit Code: 2 Error from adapter end')
+
+    setFailedSpy.mockRestore()
   })
 })
 
