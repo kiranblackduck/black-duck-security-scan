@@ -30,6 +30,7 @@ export async function run() {
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {
       info('Black Duck Security Action workflow execution completed successfully.')
+      isBridgeExecuted = true
     }
     // The statement set the exit code in the 'status' variable which can be used in the YAML file
     if (parseToBoolean(inputs.RETURN_STATUS)) {
@@ -38,9 +39,10 @@ export async function run() {
     }
     return exitCode
   } catch (error) {
+    exitCode = getBridgeExitCodeAsNumericValue(error as Error)
+    isBridgeExecuted = getBridgeExitCode(error as Error)
     throw error
   } finally {
-    isBridgeExecuted = getBridgeStatus(exitCode)
     const uploadSarifReportBasedOnExitCode = exitCode === 0 || exitCode === 8
     debug(`Bridge CLI execution completed: ${isBridgeExecuted}`)
     if (isBridgeExecuted) {
@@ -98,13 +100,6 @@ export function getBridgeExitCode(error: Error): boolean {
   return false
 }
 
-export function getBridgeStatus(exitCode: number | undefined): boolean {
-  if (exitCode === undefined) {
-    return false
-  }
-  return !isNaN(exitCode)
-}
-
 export function markBuildStatusIfIssuesArePresent(status: number, taskResult: string, errorMessage: string): void {
   const exitMessage = logBridgeExitCodes(errorMessage)
 
@@ -131,7 +126,7 @@ run().catch(error => {
 
     const taskResult: string | undefined = checkJobResult(inputs.MARK_BUILD_STATUS)
 
-    if (taskResult !== undefined && taskResult !== constants.BUILD_STATUS.FAILURE) {
+    if (taskResult && taskResult !== constants.BUILD_STATUS.FAILURE) {
       markBuildStatusIfIssuesArePresent(exitCode, taskResult, error.message)
     } else {
       setFailed('Workflow failed! '.concat(logBridgeExitCodes(error.message)))
