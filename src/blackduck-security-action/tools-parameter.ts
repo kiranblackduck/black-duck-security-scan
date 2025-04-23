@@ -143,6 +143,19 @@ export class BridgeToolsParameter {
       }
     }
 
+    const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
+    const githubHostUrl = githubServerUrl === constants.GITHUB_CLOUD_URL ? '' : githubServerUrl
+
+    if (githubHostUrl === null || githubHostUrl === '') {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      polData.data.bridge?.invoked.from = 'integration-github-cloud'
+    } else {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      polData.data.bridge?.invoked.from = 'integration-github-cloud'
+    }
+
     const isPrEvent = isPullRequestEvent()
     if (parseToBoolean(inputs.POLARIS_PRCOMMENT_ENABLED)) {
       if (isPrEvent) {
