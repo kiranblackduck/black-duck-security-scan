@@ -146,6 +146,8 @@ export class BridgeToolsParameter {
     const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
     const githubHostUrl = githubServerUrl === constants.GITHUB_CLOUD_URL ? '' : githubServerUrl
 
+    info('Github host URl-'.concat(githubHostUrl))
+
     if (githubHostUrl === null || githubHostUrl === '') {
       if (polData.data.bridge?.invoked) {
         polData.data.bridge.invoked.from = 'Integrations-github-cloud'
