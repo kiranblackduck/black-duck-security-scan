@@ -149,10 +149,12 @@ export class BridgeToolsParameter {
     if (githubHostUrl === null || githubHostUrl === '') {
       if (polData.data.bridge?.invoked) {
         polData.data.bridge.invoked.from = 'Integrations-github-cloud'
+        info(polData.data.bridge.invoked.from)
       }
     } else {
       if (polData.data.bridge?.invoked) {
         polData.data.bridge.invoked.from = 'Integrations-github-ee'
+        info(polData.data.bridge.invoked.from)
       }
     }
 
