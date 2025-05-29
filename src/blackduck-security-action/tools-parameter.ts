@@ -267,7 +267,6 @@ export class BridgeToolsParameter {
 
     debug('Generated state json file at - '.concat(stateFilePath))
 
-    //command = BridgeToolsParameter.STAGE_OPTION.concat(BridgeToolsParameter.SPACE).concat(BridgeToolsParameter.POLARIS_STAGE).concat(BridgeToolsParameter.SPACE).concat(BridgeToolsParameter.INPUT_OPTION).concat(BridgeToolsParameter.SPACE).concat(stateFilePath).concat(BridgeToolsParameter.SPACE)
     command = BridgeToolsParameter.STAGE_OPTION.concat(BridgeToolsParameter.SPACE).concat(BridgeToolsParameter.POLARIS_STAGE).concat(BridgeToolsParameter.SPACE).concat(BridgeToolsParameter.INPUT_OPTION).concat(BridgeToolsParameter.SPACE).concat(stateFilePath).concat(BridgeToolsParameter.SPACE).concat(BridgeToolsParameter.OUTPUT_OPTION).concat(BridgeToolsParameter.SPACE).concat(outPutFilePath).concat(BridgeToolsParameter.SPACE)
     return command
   }

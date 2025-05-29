@@ -40,6 +40,7 @@ export async function run() {
     }
     // Extract bridge sarif file path from output file
     bridgeSarifFilePath = await sb.getBridgeSarifFilePath(formattedCommand)
+    info(`Sarif File Path new File Path: ${bridgeSarifFilePath}`)
     return exitCode
   } catch (error) {
     exitCode = getBridgeExitCodeAsNumericValue(error as Error)
