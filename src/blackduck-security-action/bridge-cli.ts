@@ -295,6 +295,14 @@ export class Bridge {
     return versions.includes(version.trim())
   }
 
+  private selectPlatform(version: string, isARM: boolean, isValidVersionForARM: boolean, armPlatform: string, defaultPlatform: string, minVersion: string): string {
+    if (isARM && !isValidVersionForARM) {
+      info(`Detected Bridge CLI version (${version}) below the minimum ARM support requirement (${minVersion}). Defaulting to ${defaultPlatform} platform.`)
+      return defaultPlatform
+    }
+    return isARM && isValidVersionForARM ? armPlatform : defaultPlatform
+  }
+
   getVersionUrl(version: string): string {
     const osName = process.platform
 
@@ -303,10 +311,12 @@ export class Bridge {
     const isARM = !os.cpus()[0].model.includes('Intel')
     if (osName === MAC_PLATFORM_NAME) {
       const isValidVersionForARM = semver.gte(version, constants.MIN_SUPPORTED_BRIDGE_CLI_MAC_ARM_VERSION)
-      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', isARM && isValidVersionForARM ? this.MAC_ARM_PLATFORM : this.MAC_PLATFORM)
+      const platform = this.selectPlatform(version, isARM, isValidVersionForARM, this.MAC_ARM_PLATFORM, this.MAC_PLATFORM, constants.MIN_SUPPORTED_BRIDGE_CLI_MAC_ARM_VERSION)
+      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', platform)
     } else if (osName === LINUX_PLATFORM_NAME) {
       const isValidVersionForARM = semver.gte(version, constants.MIN_SUPPORTED_BRIDGE_CLI_LINUX_ARM_VERSION)
-      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', isARM && isValidVersionForARM ? this.LINUX_ARM_PLATFORM : this.LINUX_PLATFORM)
+      const platform = this.selectPlatform(version, isARM, isValidVersionForARM, this.LINUX_ARM_PLATFORM, this.LINUX_PLATFORM, constants.MIN_SUPPORTED_BRIDGE_CLI_LINUX_ARM_VERSION)
+      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', platform)
     } else if (osName === WINDOWS_PLATFORM_NAME) {
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', this.WINDOWS_PLATFORM)
     }
