@@ -263,7 +263,7 @@ export class BridgeToolsParameter {
     const inputJson = JSON.stringify(polData)
     const stateFilePath = path.join(this.tempDir, BridgeToolsParameter.POLARIS_STATE_FILE_NAME)
     fs.writeFileSync(stateFilePath, inputJson)
-    const outPutFilePath = path.join('/Users/renukac/tmp', BridgeToolsParameter.POLARIS_OUTPUT_FILE_NAME)
+    const outPutFilePath = path.join(this.tempDir, BridgeToolsParameter.POLARIS_OUTPUT_FILE_NAME)
 
     debug('Generated state json file at - '.concat(stateFilePath))
 
