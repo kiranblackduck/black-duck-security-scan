@@ -46,7 +46,7 @@ export async function run() {
     const uploadSarifReportBasedOnExitCode = exitCode === 0 || exitCode === 8
     debug(`Bridge CLI execution completed: ${isBridgeExecuted}`)
     if (isBridgeExecuted) {
-      if (inputs.INCLUDE_DIAGNOSTICS) {
+      if (parseToBoolean(inputs.INCLUDE_DIAGNOSTICS)) {
         await uploadDiagnostics()
       }
       if (!isPullRequestEvent() && uploadSarifReportBasedOnExitCode) {

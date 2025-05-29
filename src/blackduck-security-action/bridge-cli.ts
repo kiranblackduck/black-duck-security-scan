@@ -4,7 +4,7 @@ import {debug, error, info, warning} from '@actions/core'
 import {GITHUB_ENVIRONMENT_VARIABLES, NON_RETRY_HTTP_CODES, RETRY_COUNT, RETRY_DELAY_IN_MILLISECONDS, BRIDGE_CLI_DEFAULT_PATH_LINUX, BRIDGE_CLI_DEFAULT_PATH_MAC, BRIDGE_CLI_DEFAULT_PATH_WINDOWS, MAC_PLATFORM_NAME, LINUX_PLATFORM_NAME, WINDOWS_PLATFORM_NAME} from '../application-constants'
 import {tryGetExecutablePath} from '@actions/io/lib/io-util'
 import path from 'path'
-import {checkIfPathExists, cleanupTempDir, sleep} from './utility'
+import {checkIfPathExists, cleanupTempDir, parseToBoolean, sleep} from './utility'
 import * as inputs from './inputs'
 import {DownloadFileResponse, extractZipped, getRemoteFile} from './download-utility'
 import fs, {readFileSync} from 'fs'
@@ -231,7 +231,7 @@ export class Bridge {
         error(new Error(validationErrors.join(',')))
       }
 
-      if (inputs.INCLUDE_DIAGNOSTICS) {
+      if (parseToBoolean(inputs.INCLUDE_DIAGNOSTICS)) {
         formattedCommand = formattedCommand.concat(BridgeToolsParameter.SPACE).concat(BridgeToolsParameter.DIAGNOSTICS_OPTION)
       }
 
