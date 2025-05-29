@@ -797,15 +797,31 @@ export class BridgeToolsParameter {
       const jsonData = JSON.parse(data)
       if (filePath === 'polaris_output.json') {
         const sarifFilePath = jsonData?.polaris?.reports?.sarif?.file?.output
-        destFilePath = path.join(this.tempDir, '.blackduc/ontegration/sarif')
+        destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
         info('Copying SARIF file to '.concat(destFilePath))
         fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Sarif file path extracted from getSarifFilePath: '.concat(sarifFilePath))
         return sarifFilePath
       } else if (filePath === 'bd_output.json') {
         const sarifFilePath = jsonData?.blackducksca?.reports?.sarif?.file?.output
-        destFilePath = path.join(this.tempDir, '.blackduc/ontegration/sarif')
+        destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
         info('Copying SARIF file to '.concat(destFilePath))
         fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Sarif file path extracted from getSarifFilePath: '.concat(sarifFilePath))
+        return sarifFilePath
+      } else if (filePath === 'coverity_output.json') {
+        const sarifFilePath = jsonData?.blackducksca?.reports?.sarif?.file?.output
+        destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
+        info('Copying SARIF file to '.concat(destFilePath))
+        fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Sarif file path extracted from getSarifFilePath: '.concat(sarifFilePath))
+        return sarifFilePath
+      } else if (filePath === 'srm_output.json') {
+        const sarifFilePath = jsonData?.blackducksca?.reports?.sarif?.file?.output
+        destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
+        info('Copying SARIF file to '.concat(destFilePath))
+        fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Sarif file path extracted from getSarifFilePath: '.concat(sarifFilePath))
         return sarifFilePath
       }
     } catch (error) {
