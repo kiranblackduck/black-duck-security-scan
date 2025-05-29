@@ -790,21 +790,25 @@ export class BridgeToolsParameter {
     return blackduckDetectData
   }
   async getSarifFilePath(formattedCommandString: string): Promise<string> {
-    let destFilePath
     try {
       const filePath = this.extractOutputFile(formattedCommandString)
-      const data = fs.readFileSync(filePath, 'utf-8')
-      const jsonData = JSON.parse(data)
-      const sarifFilePath = jsonData?.[filePath.split('_')[0]]?.reports?.sarif?.file?.output
-      destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
+      if (!fs.existsSync(filePath)) {
+        return `Error: Output file does not exist at path: ${filePath}`
+      }
+      const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+      const key = filePath.split('_')[0]
+      const sarifFilePath = jsonData?.[key]?.reports?.sarif?.file?.output
+      if (!sarifFilePath) {
+        return 'Error: SARIF file path not found in JSON output.'
+      }
+      const destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
       info(`Copying SARIF file to ${destFilePath}`)
       await fs.promises.copyFile(sarifFilePath, destFilePath)
-      info(`Sarif file path extracted from getSarifFilePath: ${sarifFilePath}`)
+      info(`Sarif file path extracted from output: ${sarifFilePath}`)
       return sarifFilePath
     } catch (error) {
       return `Error reading or parsing JSON file: ${(error as Error).message}`
     }
-    return ''
   }
   extractOutputFile(command: string): string {
     const match = command.match(/--out\s+(\S+)/)
