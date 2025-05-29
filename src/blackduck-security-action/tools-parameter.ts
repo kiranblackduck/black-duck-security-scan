@@ -789,26 +789,45 @@ export class BridgeToolsParameter {
     }
     return blackduckDetectData
   }
-  async getSarifFilePath(formattedCommandString: string): Promise<string> {
+  getSarifFilePath(formattedCommandString: string): string {
+    let destFilePath
     try {
       const filePath = this.extractOutputFile(formattedCommandString)
-      if (!fs.existsSync(filePath)) {
-        return `Error: Output file does not exist at path: ${filePath}`
+      const data = fs.readFileSync(filePath, 'utf-8')
+      const jsonData = JSON.parse(data)
+      if (filePath === 'polaris_output.json') {
+        const sarifFilePath = jsonData?.polaris?.reports?.sarif?.file?.output
+        destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
+        info('Copying SARIF file to '.concat(destFilePath))
+        fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Sarif file path extracted from getSarifFilePath: '.concat(sarifFilePath))
+        return sarifFilePath
+      } else if (filePath === 'bd_output.json') {
+        const sarifFilePath = jsonData?.blackducksca?.reports?.sarif?.file?.output
+        destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
+        info('Copying SARIF file to '.concat(destFilePath))
+        fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Sarif file path extracted from getSarifFilePath: '.concat(sarifFilePath))
+        return sarifFilePath
+      } else if (filePath === 'coverity_output.json') {
+        const sarifFilePath = jsonData?.blackducksca?.reports?.sarif?.file?.output
+        destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
+        info('Copying SARIF file to '.concat(destFilePath))
+        fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Sarif file path extracted from getSarifFilePath: '.concat(sarifFilePath))
+        return sarifFilePath
+      } else if (filePath === 'srm_output.json') {
+        const sarifFilePath = jsonData?.blackducksca?.reports?.sarif?.file?.output
+        destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
+        info('Copying SARIF file to '.concat(destFilePath))
+        fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Sarif file path extracted from getSarifFilePath: '.concat(sarifFilePath))
+        return sarifFilePath
       }
-      const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-      const key = filePath.split('_')[0]
-      const sarifFilePath = jsonData?.[key]?.reports?.sarif?.file?.output
-      if (!sarifFilePath) {
-        return 'Error: SARIF file path not found in JSON output.'
-      }
-      const destFilePath = path.join(this.tempDir, '.blackduck/integration/sarif')
-      info(`Copying SARIF file to ${destFilePath}`)
-      await fs.promises.copyFile(sarifFilePath, destFilePath)
-      info(`Sarif file path extracted from output: ${sarifFilePath}`)
-      return sarifFilePath
     } catch (error) {
       return `Error reading or parsing JSON file: ${(error as Error).message}`
     }
+    return ''
   }
   extractOutputFile(command: string): string {
     const match = command.match(/--out\s+(\S+)/)
