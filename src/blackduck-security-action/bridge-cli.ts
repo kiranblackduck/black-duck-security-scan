@@ -295,6 +295,7 @@ export class Bridge {
     return versions.includes(version.trim())
   }
 
+  // Helper function to select the platform based on the version and architecture and log fallback
   private selectPlatform(version: string, isARM: boolean, isValidVersionForARM: boolean, armPlatform: string, defaultPlatform: string, minVersion: string): string {
     if (isARM && !isValidVersionForARM) {
       info(`Detected Bridge CLI version (${version}) below the minimum ARM support requirement (${minVersion}). Defaulting to ${defaultPlatform} platform.`)
