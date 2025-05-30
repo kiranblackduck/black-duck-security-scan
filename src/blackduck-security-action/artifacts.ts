@@ -3,11 +3,11 @@ import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/con
 import * as fs from 'fs'
 import * as inputs from './inputs'
 import {getDefaultSarifReportPath, isGitHubCloud} from './utility'
-import {warning, info} from '@actions/core'
+import {warning} from '@actions/core'
 import path from 'path'
 import * as artifact from 'actions-artifact-v1'
 import {DefaultArtifactClient} from 'actions-artifact-v2'
-import * as constants from '../application-constants'
+//import * as constants from '../application-constants'
 
 export async function uploadDiagnostics(): Promise<UploadArtifactResponse | void> {
   let artifactClient
@@ -66,8 +66,6 @@ export function getFiles(dir: string, allFiles: string[]): string[] {
 export async function uploadSarifReportAsArtifact(defaultSarifReportDirectory: string, userSarifFilePath: string, artifactName: string): Promise<UploadArtifactResponse> {
   let artifactClient
   let options: artifact.UploadOptions = {}
-  let sarifFilePath = ''
-  let rootDir = ''
   if (isGitHubCloud()) {
     artifactClient = new DefaultArtifactClient()
   } else {
@@ -76,10 +74,8 @@ export async function uploadSarifReportAsArtifact(defaultSarifReportDirectory: s
       continueOnError: true
     } as artifact.UploadOptions
   }
-  //const sarifFilePath = userSarifFilePath ? userSarifFilePath : getDefaultSarifReportPath(defaultSarifReportDirectory, true)
-  //const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : getDefaultSarifReportPath(defaultSarifReportDirectory, false)
-  sarifFilePath = userSarifFilePath || (defaultSarifReportDirectory === constants.POLARIS_SARIF_GENERATOR_DIRECTORY || defaultSarifReportDirectory === constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY ? getDefaultSarifReportPath(defaultSarifReportDirectory, true) : defaultSarifReportDirectory)
-  info(`Preparing to upload SARIF report from path: ${sarifFilePath}`)
-  rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : defaultSarifReportDirectory === constants.POLARIS_SARIF_GENERATOR_DIRECTORY || defaultSarifReportDirectory === constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY ? getDefaultSarifReportPath(defaultSarifReportDirectory, false) : defaultSarifReportDirectory
+  const sarifFilePath = userSarifFilePath ? userSarifFilePath : getDefaultSarifReportPath(defaultSarifReportDirectory, true)
+  const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : getDefaultSarifReportPath(defaultSarifReportDirectory, false)
+
   return await artifactClient.uploadArtifact(artifactName, [sarifFilePath], rootDir, options)
 }
