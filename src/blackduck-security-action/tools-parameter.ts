@@ -793,13 +793,14 @@ export class BridgeToolsParameter {
       const data = fs.readFileSync(filePath, 'utf-8')
       const jsonData = JSON.parse(data)
       if (filePath === 'polaris_output.json') {
-        const sarifFilePath = jsonData?.polaris?.reports?.sarif?.file?.output
+        const sarifFilePath = jsonData?.data?.polaris?.reports?.sarif?.file?.output
         destFilePath = '.blackduck/integration/PolarisSarifFile'
         info('Copying SARIF file to destination path'.concat(destFilePath))
         fs.promises.copyFile(sarifFilePath, destFilePath)
+        info('Copied File path to destination'.concat(sarifFilePath))
         return sarifFilePath
       } else if (filePath === 'bd_output.json') {
-        const sarifFilePath = jsonData?.blackducksca?.reports?.sarif?.file?.output
+        const sarifFilePath = jsonData?.data?.blackducksca?.reports?.sarif?.file?.output
         destFilePath = '.blackduck/integration/BlackduckSarifFile'
         info('Copying SARIF file to '.concat(destFilePath))
         fs.promises.copyFile(sarifFilePath, destFilePath)
