@@ -74,7 +74,7 @@ export async function run() {
           }
           // Upload Polaris SARIF Report to code scanning tab
           if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
-            await gitHubClientService.uploadSarifReport(bridgeSarifFilePath, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
+            await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
           }
         }
       }

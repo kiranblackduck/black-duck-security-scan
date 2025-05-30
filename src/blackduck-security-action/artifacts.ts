@@ -2,7 +2,7 @@ import {UploadArtifactResponse, UploadArtifactOptions} from 'actions-artifact-v2
 import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as fs from 'fs'
 import * as inputs from './inputs'
-import {isGitHubCloud} from './utility'
+import {getDefaultSarifReportPath, isGitHubCloud} from './utility'
 import {warning, info} from '@actions/core'
 import path from 'path'
 import * as artifact from 'actions-artifact-v1'
@@ -76,8 +76,8 @@ export async function uploadSarifReportAsArtifact(defaultSarifReportDirectory: s
   }
   info(`Default Directory: ${defaultSarifReportDirectory}`)
   info(`User File Path: ${defaultSarifReportDirectory}`)
-  const sarifFilePath = userSarifFilePath ? userSarifFilePath : defaultSarifReportDirectory
-  const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : defaultSarifReportDirectory
+  const sarifFilePath = userSarifFilePath ? userSarifFilePath : getDefaultSarifReportPath(defaultSarifReportDirectory, true)
+  const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : getDefaultSarifReportPath(defaultSarifReportDirectory, false)
   info(`Root Directory for SARIF file: ${rootDir}`)
   return await artifactClient.uploadArtifact(artifactName, [sarifFilePath], rootDir, options)
 }
