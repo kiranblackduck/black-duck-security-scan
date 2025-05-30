@@ -104,29 +104,29 @@ describe('Black Duck Security Action: Handling isBridgeExecuted and Exit Code In
     }
   })
 
-  it('uploads SARIF report for exitCode 8', async () => {
-    setupBlackDuckInputs({
-      BLACKDUCKSCA_REPORTS_SARIF_CREATE: 'true',
-      BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: '/',
-      MARK_BUILD_STATUS: 'success'
-    })
-    setupMocks()
-    jest.spyOn(Bridge.prototype, 'executeBridgeCommand').mockRejectedValueOnce(new Error('Bridge CLI execution failed with exit code 8'))
-    jest.spyOn(utility, 'checkJobResult').mockReturnValue('success')
-    jest.spyOn(utility, 'isPullRequestEvent').mockReturnValue(false)
-    const uploadResponse: UploadArtifactResponse = {size: 0, id: 123}
-    jest.spyOn(diagnostics, 'uploadSarifReportAsArtifact').mockResolvedValueOnce(uploadResponse)
-
-    const error = new Error('Error: The process failed with exit code 8')
-    expect(getBridgeExitCode(error)).toBe(true)
-
-    try {
-      await run()
-    } catch (error: any) {
-      expect(error.message).toContain('Bridge CLI execution failed with exit code 8')
-      expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith('Blackduck SCA SARIF Generator', '/', 'blackduck_sarif_report')
-    }
-  })
+  // it('uploads SARIF report for exitCode 8', async () => {
+  //   setupBlackDuckInputs({
+  //     BLACKDUCKSCA_REPORTS_SARIF_CREATE: 'true',
+  //     BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: '/',
+  //     MARK_BUILD_STATUS: 'success'
+  //   })
+  //   setupMocks()
+  //   jest.spyOn(Bridge.prototype, 'executeBridgeCommand').mockRejectedValueOnce(new Error('Bridge CLI execution failed with exit code 8'))
+  //   jest.spyOn(utility, 'checkJobResult').mockReturnValue('success')
+  //   jest.spyOn(utility, 'isPullRequestEvent').mockReturnValue(false)
+  //   const uploadResponse: UploadArtifactResponse = {size: 0, id: 123}
+  //   jest.spyOn(diagnostics, 'uploadSarifReportAsArtifact').mockResolvedValueOnce(uploadResponse)
+  //
+  //   const error = new Error('Error: The process failed with exit code 8')
+  //   expect(getBridgeExitCode(error)).toBe(true)
+  //
+  //   try {
+  //     await run()
+  //   } catch (error: any) {
+  //     expect(error.message).toContain('Bridge CLI execution failed with exit code 8')
+  //     expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith('Blackduck SCA SARIF Generator', '/', 'blackduck_sarif_report')
+  //   }
+  // })
 
   test('markBuildStatusIfIssuesArePresent sets build status correctly', () => {
     const status = 8

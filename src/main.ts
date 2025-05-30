@@ -40,7 +40,7 @@ export async function run() {
     }
     // Extract bridge sarif file path from output file
     bridgeSarifFilePath = await sb.getBridgeSarifFilePath(formattedCommand)
-    info(`Sarif File new File path from bridge input: ${bridgeSarifFilePath}`)
+    info(`Sarif File new File path from bridge output file: ${bridgeSarifFilePath}`)
     return exitCode
   } catch (error) {
     exitCode = getBridgeExitCodeAsNumericValue(error as Error)
@@ -57,8 +57,7 @@ export async function run() {
         // Upload Black Duck sarif file as GitHub artifact
         if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
           //await uploadSarifReportAsArtifact(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME)
-          const sarifDirectory = isNullOrEmptyValue(bridgeSarifFilePath) ? constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY : bridgeSarifFilePath
-          await uploadSarifReportAsArtifact(sarifDirectory, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME)
+          await uploadSarifReportAsArtifact(bridgeSarifFilePath, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME)
         }
 
         // Upload Polaris sarif file as GitHub artifact
@@ -70,11 +69,11 @@ export async function run() {
           const gitHubClientService = await GitHubClientServiceFactory.getGitHubClientServiceInstance()
           // Upload Black Duck SARIF Report to code scanning tab
           if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
-            await gitHubClientService.uploadSarifReport(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
+            await gitHubClientService.uploadSarifReport(bridgeSarifFilePath, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
           }
           // Upload Polaris SARIF Report to code scanning tab
           if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
-            await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
+            await gitHubClientService.uploadSarifReport(bridgeSarifFilePath, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
           }
         }
       }
