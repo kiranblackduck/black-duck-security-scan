@@ -799,11 +799,11 @@ export class BridgeToolsParameter {
       const destFilePath = fileName === 'polaris_output.json' ? '.blackduck/integration/PolarisSarifFile' : fileName === 'bd_output.json' ? '.blackduck/integration/BlackduckSarifFile' : ''
       info('Destination File Path: '.concat(destFilePath))
 
-      if (sarifFilePath && destFilePath) {
-        await fs.promises.copyFile(sarifFilePath, destFilePath)
-        info('Destination File Path contain bridge default path: '.concat(destFilePath))
-        return sarifFilePath
-      }
+      // if (sarifFilePath && destFilePath) {
+      //   await fs.promises.copyFile(sarifFilePath, destFilePath)
+      //   info('Destination File Path contain bridge default path: '.concat(destFilePath))
+      // }
+      return sarifFilePath
     } catch (error) {
       return `Error reading or parsing JSON file: ${(error as Error).message}`
     }
