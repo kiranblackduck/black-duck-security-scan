@@ -60,10 +60,7 @@ export async function sleep(duration: number): Promise<void> {
 
 export function getDefaultSarifReportPath(sarifReportDirectory: string, appendFilePath: boolean): string {
   const pwd = getGitHubWorkspaceDir()
-  if (sarifReportDirectory === null || sarifReportDirectory === '') {
-    return !appendFilePath ? path.join(pwd, constants.BRIDGE_LOCAL_DIRECTORY, sarifReportDirectory) : path.join(pwd, constants.BRIDGE_LOCAL_DIRECTORY, sarifReportDirectory, constants.SARIF_DEFAULT_FILE_NAME)
-  }
-  return sarifReportDirectory
+  return !appendFilePath ? path.join(pwd, constants.BRIDGE_LOCAL_DIRECTORY, sarifReportDirectory) : path.join(pwd, constants.BRIDGE_LOCAL_DIRECTORY, sarifReportDirectory, constants.SARIF_DEFAULT_FILE_NAME)
 }
 
 export function isPullRequestEvent(): boolean {
