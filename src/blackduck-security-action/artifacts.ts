@@ -77,7 +77,7 @@ export async function uploadSarifReportAsArtifact(defaultSarifReportDirectory: s
   info(`Default Directory: ${defaultSarifReportDirectory}`)
   info(`User File Path: ${userSarifFilePath}`)
   const sarifFilePath = userSarifFilePath ? userSarifFilePath : defaultSarifReportDirectory
-  const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : defaultSarifReportDirectory
+  const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : path.dirname(defaultSarifReportDirectory)
   info(`Root Directory for SARIF file: ${rootDir}`)
   return await artifactClient.uploadArtifact(artifactName, [sarifFilePath], rootDir, options)
 }
