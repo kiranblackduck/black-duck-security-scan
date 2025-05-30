@@ -25,6 +25,7 @@ export class Bridge {
   bridgeUrlLatestPattern: string
   WINDOWS_PLATFORM = 'win64'
   LINUX_PLATFORM = 'linux64'
+  LINUX_ARM_PLATFORM = 'linux_arm'
   MAC_PLATFORM = 'macosx'
   MAC_ARM_PLATFORM = 'macos_arm'
 
@@ -118,7 +119,7 @@ export class Bridge {
         if (versionInfo != null) {
           bridgeVersion = versionInfo[1]
           if (!bridgeVersion) {
-            const regex = /\w*(bridge-cli-bundle-(win64|linux64|macosx|macos_arm).zip)/
+            const regex = /\w*(bridge-cli-bundle-(win64|linux64|linux_arm|macosx|macos_arm).zip)/
             bridgeVersion = await this.getBridgeVersionFromLatestURL(bridgeUrl.replace(regex, 'versions.txt'))
           }
         }
@@ -294,6 +295,15 @@ export class Bridge {
     return versions.includes(version.trim())
   }
 
+  // Helper function to select the platform based on the version and architecture and log fallback
+  private selectPlatform(version: string, isARM: boolean, isValidVersionForARM: boolean, armPlatform: string, defaultPlatform: string, minVersion: string): string {
+    if (isARM && !isValidVersionForARM) {
+      info(`Detected Bridge CLI version (${version}) below the minimum ARM support requirement (${minVersion}). Defaulting to ${defaultPlatform} platform.`)
+      return defaultPlatform
+    }
+    return isARM && isValidVersionForARM ? armPlatform : defaultPlatform
+  }
+
   getVersionUrl(version: string): string {
     const osName = process.platform
 
@@ -302,9 +312,13 @@ export class Bridge {
     if (osName === MAC_PLATFORM_NAME) {
       const isARM = !os.cpus()[0].model.includes('Intel')
       const isValidVersionForARM = semver.gte(version, constants.MIN_SUPPORTED_BRIDGE_CLI_MAC_ARM_VERSION)
-      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', isARM && isValidVersionForARM ? this.MAC_ARM_PLATFORM : this.MAC_PLATFORM)
+      const platform = this.selectPlatform(version, isARM, isValidVersionForARM, this.MAC_ARM_PLATFORM, this.MAC_PLATFORM, constants.MIN_SUPPORTED_BRIDGE_CLI_MAC_ARM_VERSION)
+      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', platform)
     } else if (osName === LINUX_PLATFORM_NAME) {
-      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', this.LINUX_PLATFORM)
+      const isARM = /^(arm.*|aarch.*)$/.test(process.arch)
+      const isValidVersionForARM = semver.gte(version, constants.MIN_SUPPORTED_BRIDGE_CLI_LINUX_ARM_VERSION)
+      const platform = this.selectPlatform(version, isARM, isValidVersionForARM, this.LINUX_ARM_PLATFORM, this.LINUX_PLATFORM, constants.MIN_SUPPORTED_BRIDGE_CLI_LINUX_ARM_VERSION)
+      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', platform)
     } else if (osName === WINDOWS_PLATFORM_NAME) {
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', this.WINDOWS_PLATFORM)
     }
@@ -319,7 +333,8 @@ export class Bridge {
       const isARM = !os.cpus()[0].model.includes('Intel')
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', isARM ? this.MAC_ARM_PLATFORM : this.MAC_PLATFORM)
     } else if (osName === LINUX_PLATFORM_NAME) {
-      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', this.LINUX_PLATFORM)
+      const isARM = /^(arm.*|aarch.*)$/.test(process.arch)
+      bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', isARM ? this.LINUX_ARM_PLATFORM : this.LINUX_PLATFORM)
     } else if (osName === WINDOWS_PLATFORM_NAME) {
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', this.WINDOWS_PLATFORM)
     }
@@ -333,10 +348,12 @@ export class Bridge {
       const isARM = !os.cpus()[0].model.includes('Intel')
       osPlatform = isARM ? this.MAC_ARM_PLATFORM : this.MAC_PLATFORM
     } else if (osName === LINUX_PLATFORM_NAME) {
-      osPlatform = this.LINUX_PLATFORM
+      const isARM = /^(arm.*|aarch.*)$/.test(process.arch)
+      osPlatform = isARM ? this.LINUX_ARM_PLATFORM : this.LINUX_PLATFORM
     } else if (osName === WINDOWS_PLATFORM_NAME) {
       osPlatform = this.WINDOWS_PLATFORM
     }
+
     return osPlatform
   }
 
