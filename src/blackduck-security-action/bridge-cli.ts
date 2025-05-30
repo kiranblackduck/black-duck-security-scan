@@ -441,7 +441,7 @@ export class Bridge {
   async getBridgeSarifFilePath(formattedCommand: string): Promise<string> {
     const bridgeSarifPath = new BridgeToolsParameter(formattedCommand)
     const pathName = bridgeSarifPath.getSarifFilePath(formattedCommand)
-    info('Sarif file path extracted from output: '.concat(pathName))
+    info('Sarif file path extracted from output: '.concat(await pathName))
     return pathName
   }
 }

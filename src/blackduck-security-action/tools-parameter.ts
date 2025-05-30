@@ -785,25 +785,18 @@ export class BridgeToolsParameter {
     }
     return blackduckDetectData
   }
-  getSarifFilePath(formattedCommandString: string): string {
-    let destFilePath
+  async getSarifFilePath(formattedCommandString: string): Promise<string> {
     try {
       const filePath = this.extractOutputFile(formattedCommandString)
-      info('Extracted File Path'.concat(filePath))
-      const data = fs.readFileSync(filePath, 'utf-8')
-      const jsonData = JSON.parse(data)
-      if (filePath === 'polaris_output.json') {
-        const sarifFilePath = jsonData?.data?.polaris?.reports?.sarif?.file?.output
-        destFilePath = '.blackduck/integration/PolarisSarifFile'
-        info('Copying SARIF file to destination path'.concat(destFilePath))
-        fs.promises.copyFile(sarifFilePath, destFilePath)
-        info('Copied File path to destination'.concat(sarifFilePath))
-        return sarifFilePath
-      } else if (filePath === 'bd_output.json') {
-        const sarifFilePath = jsonData?.data?.blackducksca?.reports?.sarif?.file?.output
-        destFilePath = '.blackduck/integration/BlackduckSarifFile'
-        info('Copying SARIF file to '.concat(destFilePath))
-        fs.promises.copyFile(sarifFilePath, destFilePath)
+      const fileName = path.basename(filePath)
+      const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+
+      const sarifFilePath = fileName === 'polaris_output.json' ? jsonData?.data?.polaris?.reports?.sarif?.file?.output : fileName === 'bd_output.json' ? jsonData?.data?.blackducksca?.reports?.sarif?.file?.output : undefined
+
+      const destFilePath = fileName === 'polaris_output.json' ? '.blackduck/integration/PolarisSarifFile' : fileName === 'bd_output.json' ? '.blackduck/integration/BlackduckSarifFile' : undefined
+
+      if (sarifFilePath && destFilePath) {
+        await fs.promises.copyFile(sarifFilePath, destFilePath)
         return sarifFilePath
       }
     } catch (error) {
