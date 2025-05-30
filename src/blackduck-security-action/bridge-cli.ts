@@ -309,12 +309,13 @@ export class Bridge {
 
     let bridgeDownloadUrl = this.bridgeUrlPattern.replace('$version', version)
     bridgeDownloadUrl = bridgeDownloadUrl.replace('$version', version)
-    const isARM = !os.cpus()[0].model.includes('Intel')
     if (osName === MAC_PLATFORM_NAME) {
+      const isARM = !os.cpus()[0].model.includes('Intel')
       const isValidVersionForARM = semver.gte(version, constants.MIN_SUPPORTED_BRIDGE_CLI_MAC_ARM_VERSION)
       const platform = this.selectPlatform(version, isARM, isValidVersionForARM, this.MAC_ARM_PLATFORM, this.MAC_PLATFORM, constants.MIN_SUPPORTED_BRIDGE_CLI_MAC_ARM_VERSION)
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', platform)
     } else if (osName === LINUX_PLATFORM_NAME) {
+      const isARM = /^(arm.*|aarch.*)$/.test(process.arch)
       const isValidVersionForARM = semver.gte(version, constants.MIN_SUPPORTED_BRIDGE_CLI_LINUX_ARM_VERSION)
       const platform = this.selectPlatform(version, isARM, isValidVersionForARM, this.LINUX_ARM_PLATFORM, this.LINUX_PLATFORM, constants.MIN_SUPPORTED_BRIDGE_CLI_LINUX_ARM_VERSION)
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', platform)
@@ -328,10 +329,11 @@ export class Bridge {
   getLatestVersionUrl(): string {
     const osName = process.platform
     let bridgeDownloadUrl = this.bridgeUrlLatestPattern
-    const isARM = !os.cpus()[0].model.includes('Intel')
     if (osName === MAC_PLATFORM_NAME) {
+      const isARM = !os.cpus()[0].model.includes('Intel')
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', isARM ? this.MAC_ARM_PLATFORM : this.MAC_PLATFORM)
     } else if (osName === LINUX_PLATFORM_NAME) {
+      const isARM = /^(arm.*|aarch.*)$/.test(process.arch)
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', isARM ? this.LINUX_ARM_PLATFORM : this.LINUX_PLATFORM)
     } else if (osName === WINDOWS_PLATFORM_NAME) {
       bridgeDownloadUrl = bridgeDownloadUrl.replace('$platform', this.WINDOWS_PLATFORM)
@@ -342,14 +344,16 @@ export class Bridge {
   getOSPlatform(): string {
     const osName = process.platform
     let osPlatform = ''
-    const isARM = !os.cpus()[0].model.includes('Intel')
     if (osName === MAC_PLATFORM_NAME) {
+      const isARM = !os.cpus()[0].model.includes('Intel')
       osPlatform = isARM ? this.MAC_ARM_PLATFORM : this.MAC_PLATFORM
     } else if (osName === LINUX_PLATFORM_NAME) {
+      const isARM = /^(arm.*|aarch.*)$/.test(process.arch)
       osPlatform = isARM ? this.LINUX_ARM_PLATFORM : this.LINUX_PLATFORM
     } else if (osName === WINDOWS_PLATFORM_NAME) {
       osPlatform = this.WINDOWS_PLATFORM
     }
+
     return osPlatform
   }
 
