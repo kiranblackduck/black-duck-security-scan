@@ -801,8 +801,7 @@ export class BridgeToolsParameter {
         'coverity_output.json': '.blackduck/integration/CoveritySarifFile',
         'srm_output.json': '.blackduck/integration/SRMSarifFile'
       }
-
-      const sarifFilePath = jsonData?.[filePath.split('_')[0]]?.reports?.sarif?.file?.output
+      const sarifFilePath = jsonData.data?.[filePath.split('_')[0]]?.reports?.sarif?.file?.output
       if (sarifFilePath && sarifFilePaths[filePath]) {
         destFilePath = path.join(this.tempDir, sarifFilePaths[filePath])
         info(`Copying SARIF file to ${destFilePath}`)
