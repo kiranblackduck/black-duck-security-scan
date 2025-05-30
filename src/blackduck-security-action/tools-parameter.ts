@@ -34,6 +34,7 @@ export class BridgeToolsParameter {
   private static BD_OUTPUT_FILE_NAME = 'bd_output.json'
   private static COVERITY_OUTPUT_FILE_NAME = 'coverity_output.json'
   private static SRM_OUTPUT_FILE_NAME = 'srm_output.json'
+  private static INTEGRATION_DEFAULT_DIRECTORY = '.blackduck/integration'
 
   constructor(tempDir: string) {
     this.tempDir = tempDir
@@ -803,7 +804,7 @@ export class BridgeToolsParameter {
       }
       const sarifFilePath = jsonData.data?.[filePath.split('_')[0]]?.reports?.sarif?.file?.output
       if (sarifFilePath && sarifFilePaths[filePath]) {
-        destFilePath = path.join(this.tempDir, sarifFilePaths[filePath])
+        destFilePath = path.join(sarifFilePaths[filePath])
         info(`Copying SARIF file to ${destFilePath}`)
         await fs.promises.copyFile(sarifFilePath, destFilePath)
         info(`Sarif file path extracted from getSarifFilePath: ${sarifFilePath}`)
