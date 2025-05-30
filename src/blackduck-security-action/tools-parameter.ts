@@ -788,16 +788,11 @@ export class BridgeToolsParameter {
   async getSarifFilePath(formattedCommandString: string): Promise<string> {
     try {
       const filePath = this.extractOutputFile(formattedCommandString)
-      info('File Path name: '.concat(filePath))
       const fileName = path.basename(filePath)
-      info('File name: '.concat(fileName))
       const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-      info('JSON data: '.concat(JSON.stringify(jsonData, null, 2)))
 
       const sarifFilePath = fileName === 'polaris_output.json' ? jsonData?.data?.polaris?.reports?.sarif?.file?.output : fileName === 'bd_output.json' ? jsonData?.data?.blackducksca?.reports?.sarif?.file?.output : ''
-      info('Sarif File Path: '.concat(sarifFilePath))
-      const destFilePath = fileName === 'polaris_output.json' ? '.blackduck/integration/PolarisSarifFile' : fileName === 'bd_output.json' ? '.blackduck/integration/BlackduckSarifFile' : ''
-      info('Destination File Path: '.concat(destFilePath))
+      //const destFilePath = fileName === 'polaris_output.json' ? '.blackduck/integration/PolarisSarifFile' : fileName === 'bd_output.json' ? '.blackduck/integration/BlackduckSarifFile' : ''
 
       // if (sarifFilePath && destFilePath) {
       //   await fs.promises.copyFile(sarifFilePath, destFilePath)
