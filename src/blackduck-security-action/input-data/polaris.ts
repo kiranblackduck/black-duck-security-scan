@@ -54,6 +54,5 @@ export interface Branch {
 }
 
 export interface Test {
-  sca?: {type: string}
-  sast?: {type: string[]}
+  sca: {type: string}
 }
