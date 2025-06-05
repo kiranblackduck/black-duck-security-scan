@@ -6,6 +6,7 @@ import {rmRF} from '@actions/io'
 import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as constants from '../application-constants'
 import {debug} from '@actions/core'
+import {Timestamp} from 'actions-artifact-v2/lib/generated'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -72,6 +73,10 @@ export function isPullRequestEvent(): boolean {
 export function isGitHubCloud(): boolean {
   const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
   return githubServerUrl === constants.GITHUB_CLOUD_URL
+}
+
+export function getRealSystemTime(): string {
+  return Timestamp.now().seconds.toString()
 }
 
 export function checkJobResult(buildStatus?: string): string | undefined {

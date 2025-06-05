@@ -7,6 +7,7 @@ import {warning} from '@actions/core'
 import path from 'path'
 import * as artifact from 'actions-artifact-v1'
 import {DefaultArtifactClient} from 'actions-artifact-v2'
+import * as util from './utility'
 
 export async function uploadDiagnostics(): Promise<UploadArtifactResponse | void> {
   let artifactClient
@@ -33,7 +34,7 @@ export async function uploadDiagnostics(): Promise<UploadArtifactResponse | void
     }
   }
   if (files.length > 0) {
-    return await artifactClient.uploadArtifact('bridge_diagnostics', files, pwd, options)
+    return await artifactClient.uploadArtifact('bridge_diagnostics_'.concat(String(util.getRealSystemTime())), files, pwd, options)
   }
 }
 
