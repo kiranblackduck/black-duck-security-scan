@@ -34,7 +34,7 @@ export async function uploadDiagnostics(): Promise<UploadArtifactResponse | void
     }
   }
   if (files.length > 0) {
-    return await artifactClient.uploadArtifact('bridge_diagnostics_'.concat(String(util.getRealSystemTime())), files, pwd, options)
+    return await artifactClient.uploadArtifact('bridge_diagnostics_'.concat(util.getRealSystemTime()), files, pwd, options)
   }
 }
 

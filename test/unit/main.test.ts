@@ -28,6 +28,7 @@ beforeEach(() => {
   const uploadResponse: UploadArtifactResponse = {size: 0, id: 123}
   jest.spyOn(diagnostics, 'uploadDiagnostics').mockResolvedValueOnce(uploadResponse)
   jest.spyOn(fs, 'renameSync').mockReturnValue()
+  jest.spyOn(utility, 'getRealSystemTime').mockReturnValue('1749123407519') // Mock with a fixed timestamp
 })
 
 afterEach(() => {
@@ -124,7 +125,7 @@ describe('Black Duck Security Action: Handling isBridgeExecuted and Exit Code In
       await run()
     } catch (error: any) {
       expect(error.message).toContain('Bridge CLI execution failed with exit code 8')
-      expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith('Blackduck SCA SARIF Generator', '/', 'blackduck_sarif_report')
+      expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith('Blackduck SCA SARIF Generator', '/', 'blackduck_sarif_report_1749123407519')
     }
   })
 
