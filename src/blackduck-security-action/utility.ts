@@ -76,7 +76,7 @@ export function isGitHubCloud(): boolean {
 }
 
 export function getRealSystemTime(): string {
-  return Timestamp.now().seconds.toString()
+  return String(Timestamp.now())
 }
 
 export function checkJobResult(buildStatus?: string): string | undefined {
