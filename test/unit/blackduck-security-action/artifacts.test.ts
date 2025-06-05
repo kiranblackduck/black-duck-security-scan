@@ -23,7 +23,7 @@ beforeEach(() => {
 })
 
 beforeEach(() => {
-  jest.spyOn(utility, 'getRealSystemTime').mockReturnValue('1234567890') // Mock with a fixed timestamp
+  jest.spyOn(utility, 'getRealSystemTime').mockReturnValue('2023-10-01T12:34:56.789Z') // Mock with a fixed timestamp
 })
 
 afterEach(() => {
@@ -46,7 +46,7 @@ describe('uploadDiagnostics - success', () => {
     await uploadDiagnostics()
 
     expect(mockUploadArtifact).toHaveBeenCalledTimes(1)
-    expect(mockUploadArtifact).toHaveBeenCalledWith('bridge_diagnostics_1234567890', ['./.bridge/bridge.log'], './.bridge', {})
+    expect(mockUploadArtifact).toHaveBeenCalledWith('bridge_diagnostics_2023-10-01T12:34:56.789Z', ['./.bridge/bridge.log'], './.bridge', {})
   })
 })
 

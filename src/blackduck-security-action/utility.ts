@@ -6,7 +6,6 @@ import {rmRF} from '@actions/io'
 import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as constants from '../application-constants'
 import {debug} from '@actions/core'
-import {Timestamp} from 'actions-artifact-v2/lib/generated'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -76,7 +75,7 @@ export function isGitHubCloud(): boolean {
 }
 
 export function getRealSystemTime(): string {
-  return String(Timestamp.now())
+  return new Date().toISOString()
 }
 
 export function checkJobResult(buildStatus?: string): string | undefined {
