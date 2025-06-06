@@ -74,6 +74,10 @@ export function isGitHubCloud(): boolean {
   return githubServerUrl === constants.GITHUB_CLOUD_URL
 }
 
+export function getRealSystemTime(): string {
+  return String(new Date().getTime())
+}
+
 export function checkJobResult(buildStatus?: string): string | undefined {
   if (buildStatus && Object.values(constants.BUILD_STATUS).includes(buildStatus as constants.BUILD_STATUS)) {
     return buildStatus

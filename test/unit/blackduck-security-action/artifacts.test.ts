@@ -20,6 +20,11 @@ beforeEach(() => {
   Object.defineProperty(process, 'platform', {
     value: 'linux'
   })
+  jest.spyOn(utility, 'getRealSystemTime').mockReturnValue('1749123407519') // Mock with a fixed timestamp
+})
+
+afterEach(() => {
+  jest.restoreAllMocks() // Restore original implementation after each test
 })
 
 describe('uploadDiagnostics - success', () => {
@@ -33,13 +38,12 @@ describe('uploadDiagnostics - success', () => {
     jest.spyOn(artifact, 'DefaultArtifactClient').mockReturnValue(mockArtifactClient as artifact.ArtifactClient)
     jest.spyOn(fs, 'existsSync').mockReturnValue(true)
     jest.spyOn(fs, 'readdirSync').mockReturnValue(['bridge.log'])
-
     jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValue('.')
 
     await uploadDiagnostics()
 
     expect(mockUploadArtifact).toHaveBeenCalledTimes(1)
-    expect(mockUploadArtifact).toHaveBeenCalledWith('bridge_diagnostics', ['./.bridge/bridge.log'], './.bridge', {})
+    expect(mockUploadArtifact).toHaveBeenCalledWith('bridge_diagnostics_1749123407519', ['./.bridge/bridge.log'], './.bridge', {})
   })
 })
 

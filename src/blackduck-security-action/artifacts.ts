@@ -2,7 +2,7 @@ import {UploadArtifactResponse, UploadArtifactOptions} from 'actions-artifact-v2
 import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as fs from 'fs'
 import * as inputs from './inputs'
-import {getDefaultSarifReportPath, isGitHubCloud} from './utility'
+import {getDefaultSarifReportPath, isGitHubCloud, getRealSystemTime} from './utility'
 import {warning} from '@actions/core'
 import path from 'path'
 import * as artifact from 'actions-artifact-v1'
@@ -33,7 +33,7 @@ export async function uploadDiagnostics(): Promise<UploadArtifactResponse | void
     }
   }
   if (files.length > 0) {
-    return await artifactClient.uploadArtifact('bridge_diagnostics', files, pwd, options)
+    return await artifactClient.uploadArtifact('bridge_diagnostics_'.concat(getRealSystemTime()), files, pwd, options)
   }
 }
 
