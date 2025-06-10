@@ -16,6 +16,7 @@ import DomParser from 'dom-parser'
 import os from 'os'
 import semver from 'semver'
 import {rmRF} from '@actions/io'
+import util from 'util'
 
 export class Bridge {
   bridgeExecutablePath: string
@@ -384,6 +385,7 @@ export class Bridge {
       let retryDelay = RETRY_DELAY_IN_MILLISECONDS
       let httpResponse
       do {
+        info(util.inspect(httpClient, {showHidden: false, depth: null, colors: true}))
         httpResponse = await httpClient.get(latestVersionsUrl, {
           Accept: 'text/html'
         })
