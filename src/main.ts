@@ -23,7 +23,6 @@ export async function run() {
     // To enable SSL certificate verification
     if (inputs.NETWORK_SSL_CERT_FILE) {
       process.env.NODE_EXTRA_CA_CERTS = inputs.NETWORK_SSL_CERT_FILE
-      info(process.env.NODE_EXTRA_CA_CERTS)
     }
     // Download bridge
     if (!inputs.ENABLE_NETWORK_AIR_GAP) {

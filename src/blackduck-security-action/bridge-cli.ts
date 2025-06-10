@@ -16,7 +16,6 @@ import DomParser from 'dom-parser'
 import os from 'os'
 import semver from 'semver'
 import {rmRF} from '@actions/io'
-import util from 'util'
 
 export class Bridge {
   bridgeExecutablePath: string
@@ -385,13 +384,6 @@ export class Bridge {
       let retryDelay = RETRY_DELAY_IN_MILLISECONDS
       let httpResponse
       do {
-        // If SSL info is required, inspect the options passed during creation
-        const sslOptions = {
-          ca: inputs.NETWORK_SSL_CERT_FILE, // Example SSL configuration
-          rejectUnauthorized: true
-        }
-        info('SSL Options:'.concat(sslOptions.ca, String(sslOptions.rejectUnauthorized)))
-        info(util.inspect(httpClient, {showHidden: false, depth: null, colors: true}))
         httpResponse = await httpClient.get(latestVersionsUrl, {
           Accept: 'text/html'
         })
