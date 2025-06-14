@@ -183,8 +183,6 @@ export class BridgeToolsParameter {
         /** Set Polaris SARIF inputs in case of non PR context */
         const sarifReportFilterSeverities: string[] = []
         const sarifReportFilterAssessmentIssuesType: string[] = []
-        //let polarisSarifFilePath = ''
-        //info('Sarif report path location: '.concat(polarisSarifFilePath))
         if (inputs.POLARIS_REPORTS_SARIF_SEVERITIES) {
           const filterSeverities = inputs.POLARIS_REPORTS_SARIF_SEVERITIES.split(',')
           for (const sarifSeverity of filterSeverities) {
@@ -202,10 +200,6 @@ export class BridgeToolsParameter {
             }
           }
         }
-        // if (!inputs.POLARIS_REPORTS_SARIF_FILE_PATH) {
-        //   inputs.POLARIS_REPORTS_SARIF_FILE_PATH = constants.INTEGRATION_POLARIS_DEFAULT_SARIF_FILE_PATH.trim()
-        // }
-        isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATION_POLARIS_DEFAULT_SARIF_FILE_PATH.trim() : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
         polData.data.polaris.reports = {
           sarif: {
             create: true,
