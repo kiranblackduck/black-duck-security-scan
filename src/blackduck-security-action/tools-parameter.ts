@@ -444,6 +444,7 @@ export class BridgeToolsParameter {
       if (parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
         /** Set Black Duck SARIF inputs in case of non PR context */
         const sarifReportFilterSeverities: string[] = []
+        let blackduckscaSarifFilePath: string = inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
         if (inputs.BLACKDUCKSCA_REPORTS_SARIF_SEVERITIES) {
           const filterSeverities = inputs.BLACKDUCKSCA_REPORTS_SARIF_SEVERITIES.split(',')
           for (const sarifSeverity of filterSeverities) {
@@ -451,6 +452,9 @@ export class BridgeToolsParameter {
               sarifReportFilterSeverities.push(sarifSeverity.trim())
             }
           }
+        }
+        if (!blackduckscaSarifFilePath) {
+          blackduckscaSarifFilePath = constants.INTEGRATION_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
         }
         blackduckData.data.blackducksca.reports = {
           sarif: {
@@ -460,7 +464,7 @@ export class BridgeToolsParameter {
             }),
             ...(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH && {
               file: {
-                path: inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
+                path: blackduckscaSarifFilePath
               }
             }),
             groupSCAIssues: isBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES) ? JSON.parse(inputs.BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES) : true
