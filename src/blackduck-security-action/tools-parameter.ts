@@ -177,7 +177,6 @@ export class BridgeToolsParameter {
         info(constants.POLARIS_PR_COMMENT_LOG_INFO_FOR_NON_PR_SCANS)
       }
     }
-
     if (!isPrEvent) {
       if (parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
         /** Set Polaris SARIF inputs in case of non PR context */
