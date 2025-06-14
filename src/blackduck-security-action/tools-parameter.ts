@@ -205,6 +205,7 @@ export class BridgeToolsParameter {
         // if (!inputs.POLARIS_REPORTS_SARIF_FILE_PATH) {
         //   inputs.POLARIS_REPORTS_SARIF_FILE_PATH = constants.INTEGRATION_POLARIS_DEFAULT_SARIF_FILE_PATH.trim()
         // }
+        isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATION_POLARIS_DEFAULT_SARIF_FILE_PATH.trim()
         polData.data.polaris.reports = {
           sarif: {
             create: true,
@@ -213,7 +214,7 @@ export class BridgeToolsParameter {
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_FILE_PATH && {
               file: {
-                path: isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATION_POLARIS_DEFAULT_SARIF_FILE_PATH.trim()
+                path: inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
               }
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_ISSUE_TYPES && {
