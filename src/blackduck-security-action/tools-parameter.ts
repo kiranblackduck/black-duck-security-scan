@@ -203,7 +203,7 @@ export class BridgeToolsParameter {
           }
         }
         if (!polarisSarifFilePath) {
-          polarisSarifFilePath = constants.INTEGRATION_POLARIS_DEFAULT_SARIF_FILE_PATH
+          polarisSarifFilePath = constants.INTEGRATION_POLARIS_DEFAULT_SARIF_FILE_PATH.trim()
         }
         polData.data.polaris.reports = {
           sarif: {
