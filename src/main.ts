@@ -8,7 +8,6 @@ import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-securi
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
 import * as util from './blackduck-security-action/utility'
-import {INTEGRATION_BLACKDUCK_SARIF_GENERATOR_DIRECTORY} from './application-constants'
 
 export async function run() {
   info('Black Duck Security Action started...')
