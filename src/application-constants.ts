@@ -305,5 +305,5 @@ export enum BUILD_STATUS {
 export const MARK_BUILD_STATUS_DEFAULT = BUILD_STATUS.FAILURE
 export const TASK_RETURN_STATUS = 'status'
 export const BRIDGE_BREAK_EXIT_CODE = 8
-export const INTEGRATION_POLARIS_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/polaris/sarif/report.sarif.json'
-export const INTEGRATION_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/blackducksca/sarif/report.sarif.json'
+export const INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/polaris/sarif/report.sarif.json'
+export const INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/blackducksca/sarif/report.sarif.json'
