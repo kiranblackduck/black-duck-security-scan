@@ -1,0 +1,100 @@
+name: SyncTags
+
+on:
+  release:
+    types:
+      - published
+
+env:
+  ENABLE_MAJOR_TAG: true
+  ENABLE_LATEST_TAG: true
+  LOG_PREFIX: "[SyncTags][$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+
+concurrency:
+  group: sync-tags-${{ github.event.release.tag_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  syncTags:
+    name: Sync Major and Latest Tags
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Version Tag
+        id: versionTag
+        run: |
+          VERSION_TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$VERSION_TAG" ]; then
+            echo "${{ env.LOG_PREFIX }} ::error::Failed to extract version tag from release event"
+            exit 1
+          fi
+          echo "versionTag=$VERSION_TAG" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Sync Tags
+        run: |
+          set -euo pipefail
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+          VERSION_TAG="${{ steps.versionTag.outputs.versionTag }}"
+          if [[ "$VERSION_TAG" =~ ^v([0-9]+)\.[0-9]+\.[0-9]+$ ]]; then
+            MAJOR_TAG="v${BASH_REMATCH[1]}"
+          else
+            echo "${{ env.LOG_PREFIX }} ::error::Invalid tag format: $VERSION_TAG"
+            exit 1
+          fi
+
+          git fetch --tags
+          VERSION_SHA=$(git rev-list -n 1 "$VERSION_TAG")
+
+          # Handle major tag
+          if [[ "${{ env.ENABLE_MAJOR_TAG }}" == "true" ]]; then
+            if git tag | grep -q "^$MAJOR_TAG$"; then
+              MAJOR_SHA=$(git rev-list -n 1 "$MAJOR_TAG")
+              if [[ "$MAJOR_SHA" != "$VERSION_SHA" ]]; then
+                echo "${{ env.LOG_PREFIX }} Updating $MAJOR_TAG to $VERSION_TAG ($VERSION_SHA)"
+                git tag --force "$MAJOR_TAG" "$VERSION_SHA"
+                git push origin "$MAJOR_TAG" --force
+              else
+                echo "${{ env.LOG_PREFIX }} $MAJOR_TAG already points to $VERSION_TAG ($VERSION_SHA), skipping."
+              fi
+            else
+              echo "${{ env.LOG_PREFIX }} Creating $MAJOR_TAG -> $VERSION_TAG ($VERSION_SHA)"
+              git tag "$MAJOR_TAG" "$VERSION_SHA"
+              git push origin "$MAJOR_TAG"
+            fi
+          fi
+
+          # Handle latest tag
+          if [[ "${{ env.ENABLE_LATEST_TAG }}" == "true" ]]; then
+            if git tag | grep -q "^latest$"; then
+              LATEST_SHA=$(git rev-list -n 1 latest)
+              if [[ "$LATEST_SHA" != "$VERSION_SHA" ]]; then
+                echo "${{ env.LOG_PREFIX }} Updating latest to $VERSION_TAG ($VERSION_SHA)"
+                git tag --force latest "$VERSION_SHA"
+                git push origin latest --force
+              else
+                echo "${{ env.LOG_PREFIX }} latest already points to $VERSION_TAG ($VERSION_SHA), skipping."
+              fi
+            else
+              echo "${{ env.LOG_PREFIX }} Creating latest -> $VERSION_TAG ($VERSION_SHA)"
+              git tag latest "$VERSION_SHA"
+              git push origin latest
+            fi
+          fi
+        shell: bash
+
+      - name: Clean Workspace
+        if: always()
+        run: rm -rf $GITHUB_WORKSPACE
