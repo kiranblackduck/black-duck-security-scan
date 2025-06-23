@@ -145,11 +145,10 @@ export class BridgeToolsParameter {
     }
     // Custom Header
     const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
-    const githubHostUrl = githubServerUrl === constants.GITHUB_CLOUD_URL ? '' : githubServerUrl
-    info('Github Server URl-'.concat(githubServerUrl))
-    info('Github host URl-'.concat(githubHostUrl))
 
-    if (githubHostUrl === null || githubHostUrl === '') {
+    info('Github Server URl-'.concat(githubServerUrl))
+
+    if (githubServerUrl === constants.GITHUB_CLOUD_URL) {
       if (polData.data.bridge?.invoked) {
         polData.data.bridge.invoked.from = 'Integrations-github-cloud'
         info('Custom Header Information-'.concat(polData.data.bridge.invoked.from))
