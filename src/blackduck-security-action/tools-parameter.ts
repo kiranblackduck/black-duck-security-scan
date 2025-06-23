@@ -74,6 +74,11 @@ export class BridgeToolsParameter {
               mode: inputs.POLARIS_ASSESSMENT_MODE
             })
           }
+        },
+        bridge: {
+          invoked: {
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? 'Integrations-github-cloud' : 'Integrations-github-ee'
+          }
         }
       }
     }
@@ -141,22 +146,6 @@ export class BridgeToolsParameter {
       // Additional null check has been added to support avoid duplicate call to getGithubRepoInfo() when fix pr is enabled
       if (polData.data.github == null) {
         polData.data.github = this.getGithubRepoInfo()
-      }
-    }
-    // Custom Header
-    const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
-
-    info('Github Server URl-'.concat(githubServerUrl))
-
-    if (githubServerUrl === constants.GITHUB_CLOUD_URL) {
-      if (polData.data.bridge?.invoked) {
-        polData.data.bridge.invoked.from = 'Integrations-github-cloud'
-        info('Custom Header Information-'.concat(polData.data.bridge.invoked.from))
-      }
-    } else {
-      if (polData.data.bridge?.invoked) {
-        polData.data.bridge.invoked.from = 'Integrations-github-ee'
-        info('Custom Header Information-'.concat(polData.data.bridge.invoked.from))
       }
     }
     const isPrEvent = isPullRequestEvent()
