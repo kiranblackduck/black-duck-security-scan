@@ -210,9 +210,9 @@ export class BridgeToolsParameter {
             ...(inputs.POLARIS_REPORTS_SARIF_SEVERITIES && {
               severities: sarifReportFilterSeverities
             }),
-            ...(inputs.POLARIS_REPORTS_SARIF_FILE_PATH && {
+            ...(sarifFilePath && {
               file: {
-                path: sarifFilePath
+                path: sarifFilePath.trim()
               }
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_ISSUE_TYPES && {
