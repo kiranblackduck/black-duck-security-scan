@@ -33,7 +33,7 @@ export class BridgeToolsParameter {
     this.tempDir = tempDir
   }
 
-  getFormattedCommandForPolaris(githubRepoName: string): string {
+  getFormattedCommandForPolaris(githubRepoName: string, bridgeVersion: string): string {
     let command = ''
     const assessmentTypeArray: string[] = []
     if (inputs.POLARIS_ASSESSMENT_TYPES) {
@@ -82,7 +82,6 @@ export class BridgeToolsParameter {
         }
       }
     }
-
     if (inputs.POLARIS_BRANCH_NAME) {
       polData.data.polaris.branch = {name: inputs.POLARIS_BRANCH_NAME}
     }
@@ -211,7 +210,7 @@ export class BridgeToolsParameter {
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_FILE_PATH && {
               file: {
-                path: inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
+                path: bridgeVersion >= '3.5.0' && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
               }
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_ISSUE_TYPES && {
@@ -350,7 +349,7 @@ export class BridgeToolsParameter {
     return command
   }
 
-  getFormattedCommandForBlackduck(): string {
+  getFormattedCommandForBlackduck(bridgeVersion: string): string {
     const failureSeverities: string[] = []
 
     if (inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES != null && inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES.length > 0) {
@@ -468,7 +467,7 @@ export class BridgeToolsParameter {
             }),
             ...(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH && {
               file: {
-                path: inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
+                path: bridgeVersion >= '3.5.0' && isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
               }
             }),
             groupSCAIssues: isBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES) ? JSON.parse(inputs.BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES) : true

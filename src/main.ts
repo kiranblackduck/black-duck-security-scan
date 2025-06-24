@@ -19,8 +19,10 @@ export async function run() {
 
   try {
     const sb = new Bridge()
+    // Get Bridge Version
+    bridgeVersion = await sb.getBridgeVersion()
     // Prepare bridge command
-    formattedCommand = await sb.prepareCommand(tempDir)
+    formattedCommand = await sb.prepareCommand(tempDir, bridgeVersion)
     // Download bridge
     if (!inputs.ENABLE_NETWORK_AIR_GAP) {
       await sb.downloadBridge(tempDir)
@@ -28,8 +30,6 @@ export async function run() {
       info('Network air gap is enabled, skipping bridge CLI download.')
       await sb.validateBridgePath()
     }
-    // Get Bridge Version
-    bridgeVersion = await sb.getBridgeVersion()
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {

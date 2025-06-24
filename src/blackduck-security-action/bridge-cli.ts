@@ -180,7 +180,7 @@ export class Bridge {
     }
   }
 
-  async prepareCommand(tempDir: string): Promise<string> {
+  async prepareCommand(tempDir: string, bridgeVersion: string): Promise<string> {
     try {
       let formattedCommand = ''
       const invalidParams: string[] = validateScanTypes()
@@ -195,7 +195,7 @@ export class Bridge {
       const polarisErrors: string[] = validatePolarisInputs()
       if (polarisErrors.length === 0 && inputs.POLARIS_SERVER_URL) {
         const polarisCommandFormatter = new BridgeToolsParameter(tempDir)
-        formattedCommand = formattedCommand.concat(polarisCommandFormatter.getFormattedCommandForPolaris(githubRepoName))
+        formattedCommand = formattedCommand.concat(polarisCommandFormatter.getFormattedCommandForPolaris(githubRepoName, bridgeVersion))
       }
 
       // validating and preparing command for coverity
@@ -209,7 +209,7 @@ export class Bridge {
       const blackduckErrors: string[] = validateBlackDuckInputs()
       if (blackduckErrors.length === 0 && inputs.BLACKDUCKSCA_URL) {
         const blackDuckCommandFormatter = new BridgeToolsParameter(tempDir)
-        formattedCommand = formattedCommand.concat(blackDuckCommandFormatter.getFormattedCommandForBlackduck())
+        formattedCommand = formattedCommand.concat(blackDuckCommandFormatter.getFormattedCommandForBlackduck(bridgeVersion))
       }
 
       // validating and preparing command for SRM
