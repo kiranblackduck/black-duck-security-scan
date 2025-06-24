@@ -60,7 +60,7 @@ export class BridgeToolsParameter {
     }
     debug(`Polaris application name: ${applicationName}`)
     debug(`Polaris project name: ${projectName}`)
-
+    info('Bridge version in Tools parameter: '.concat(bridgeVersion))
     const polData: InputData<Polaris> = {
       data: {
         polaris: {
@@ -210,7 +210,7 @@ export class BridgeToolsParameter {
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_FILE_PATH && {
               file: {
-                path: bridgeVersion >= '3.5.0' && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
+                path: bridgeVersion < '3.5.0' && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
               }
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_ISSUE_TYPES && {
