@@ -15,6 +15,7 @@ export async function run() {
   let formattedCommand = ''
   let isBridgeExecuted = false
   let exitCode
+  let bridgeVersion = ''
 
   try {
     const sb = new Bridge()
@@ -27,6 +28,8 @@ export async function run() {
       info('Network air gap is enabled, skipping bridge CLI download.')
       await sb.validateBridgePath()
     }
+    // Get Bridge Version
+    bridgeVersion = await sb.getBridgeVersion()
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {
@@ -51,6 +54,19 @@ export async function run() {
         await uploadDiagnostics()
       }
       if (!isPullRequestEvent() && uploadSarifReportBasedOnExitCode) {
+        if (bridgeVersion < '3.5.0') {
+          info('Entered into bridge Deprecated sarif file upload logic.')
+          // Upload Black Duck sarif file as GitHub artifact (Deprecated Logic)
+          if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
+            await uploadSarifReportAsArtifact(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
+          }
+
+          // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
+          if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
+            await uploadSarifReportAsArtifact(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, constants.POLARIS_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
+          }
+        }
+        info('Entered into bridge New sarif file upload logic.')
         // Upload Black Duck sarif file as GitHub artifact
         if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
           await uploadSarifReportAsArtifact(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
@@ -62,6 +78,15 @@ export async function run() {
         }
         if (!isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
           const gitHubClientService = await GitHubClientServiceFactory.getGitHubClientServiceInstance()
+          if (bridgeVersion < '3.5.0') {
+            if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
+              await gitHubClientService.uploadSarifReport(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
+            }
+            // Upload Polaris SARIF Report to code scanning tab
+            if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
+              await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
+            }
+          }
           // Upload Black Duck SARIF Report to code scanning tab
           if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
             await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)

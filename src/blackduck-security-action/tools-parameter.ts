@@ -77,7 +77,7 @@ export class BridgeToolsParameter {
         },
         bridge: {
           invoked: {
-            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? 'Integrations-github-cloud' : 'Integrations-github-ee'
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
           }
         }
       }
@@ -283,6 +283,11 @@ export class BridgeToolsParameter {
             project: {name: coverityProjectName},
             stream: {name: coverityStreamName}
           }
+        },
+        bridge: {
+          invoked: {
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+          }
         }
       }
     }
@@ -334,19 +339,6 @@ export class BridgeToolsParameter {
     }
 
     covData.data.coverity = Object.assign({}, this.setCoverityDetectArgs(), covData.data.coverity)
-    // Custom Header
-    const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
-    const githubHostUrl = githubServerUrl === constants.GITHUB_CLOUD_URL ? '' : githubServerUrl
-
-    if (githubHostUrl === null || githubHostUrl === '') {
-      if (covData.data.bridge?.invoked) {
-        covData.data.bridge.invoked.from = 'Integrations-github-cloud'
-      }
-    } else {
-      if (covData.data.bridge?.invoked) {
-        covData.data.bridge.invoked.from = 'Integrations-github-ee'
-      }
-    }
     const inputJson = JSON.stringify(covData)
 
     const stateFilePath = path.join(this.tempDir, BridgeToolsParameter.COVERITY_STATE_FILE_NAME)
@@ -383,7 +375,12 @@ export class BridgeToolsParameter {
           url: inputs.BLACKDUCKSCA_URL,
           token: inputs.BLACKDUCKSCA_TOKEN
         },
-        detect: {}
+        detect: {},
+        bridge: {
+          invoked: {
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+          }
+        }
       }
     }
 
@@ -519,19 +516,6 @@ export class BridgeToolsParameter {
     }
 
     blackduckData.data.detect = Object.assign({}, this.setDetectArgs(), blackduckData.data.detect)
-    // Custom Header
-    const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
-    const githubHostUrl = githubServerUrl === constants.GITHUB_CLOUD_URL ? '' : githubServerUrl
-
-    if (githubHostUrl === null || githubHostUrl === '') {
-      if (blackduckData.data.bridge?.invoked) {
-        blackduckData.data.bridge.invoked.from = 'Integrations-github-cloud'
-      }
-    } else {
-      if (blackduckData.data.bridge?.invoked) {
-        blackduckData.data.bridge.invoked.from = 'Integrations-github-ee'
-      }
-    }
     const inputJson = JSON.stringify(blackduckData)
 
     const stateFilePath = path.join(this.tempDir, BridgeToolsParameter.BD_STATE_FILE_NAME)
@@ -556,6 +540,11 @@ export class BridgeToolsParameter {
           url: inputs.SRM_URL,
           apikey: inputs.SRM_API_KEY,
           assessment: {types: assessmentTypes}
+        },
+        bridge: {
+          invoked: {
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+          }
         }
       }
     }
@@ -615,19 +604,6 @@ export class BridgeToolsParameter {
 
     if (Object.keys(detectArgs).length > 0) {
       srmData.data.detect = {...srmData.data.detect, ...detectArgs}
-    }
-    // Custom Header
-    const githubServerUrl = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] || ''
-    const githubHostUrl = githubServerUrl === constants.GITHUB_CLOUD_URL ? '' : githubServerUrl
-
-    if (githubHostUrl === null || githubHostUrl === '') {
-      if (srmData.data.bridge?.invoked) {
-        srmData.data.bridge.invoked.from = 'Integrations-github-cloud'
-      }
-    } else {
-      if (srmData.data.bridge?.invoked) {
-        srmData.data.bridge.invoked.from = 'Integrations-github-ee'
-      }
     }
     const inputJson = JSON.stringify(srmData)
 

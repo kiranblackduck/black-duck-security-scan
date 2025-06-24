@@ -454,4 +454,40 @@ export class Bridge {
     retryDelay = retryDelay * 2
     return retryDelay
   }
+
+  async getBridgeVersion(): Promise<string> {
+    let bridgeVersion = ''
+
+    try {
+      // Case 1: Extract version from URL
+      if (inputs.BRIDGE_CLI_DOWNLOAD_URL) {
+        const versionInfo = inputs.BRIDGE_CLI_DOWNLOAD_URL.match('.*bridge-cli-bundle-([0-9.]*).*')
+        if (versionInfo != null) {
+          bridgeVersion = versionInfo[1]
+          if (!bridgeVersion) {
+            const regex = /\w*(bridge-cli-bundle-(win64|linux64|linux_arm|macosx|macos_arm).zip)/
+            bridgeVersion = await this.getBridgeVersionFromLatestURL(inputs.BRIDGE_CLI_DOWNLOAD_URL.replace(regex, 'versions.txt'))
+          }
+        }
+      }
+      // Case 2: Use provided specific version
+      else if (inputs.BRIDGE_CLI_DOWNLOAD_VERSION) {
+        if (await this.validateBridgeVersion(inputs.BRIDGE_CLI_DOWNLOAD_VERSION)) {
+          bridgeVersion = inputs.BRIDGE_CLI_DOWNLOAD_VERSION
+        } else {
+          throw new Error(constants.BRIDGE_VERSION_NOT_FOUND_ERROR)
+        }
+      }
+      // Case 3: Get latest version from artifactory
+      else {
+        info('Checking for latest version of Bridge to download and configure')
+        bridgeVersion = await this.getBridgeVersionFromLatestURL(this.bridgeArtifactoryURL.concat('latest/versions.txt'))
+      }
+
+      info(`Bridge CLI version is - ${bridgeVersion}`)
+      return bridgeVersion
+    } catch (errorObject) {
+      throw errorObject
+    }
+  }
 }
