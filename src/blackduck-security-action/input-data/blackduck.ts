@@ -1,5 +1,6 @@
 import {Reports} from './reports'
 import {Common, Network} from './common'
+import {Bridge} from './bridge'
 
 export enum BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES {
   ALL = 'ALL',
@@ -21,6 +22,7 @@ export interface BlackDuckSCA extends Network {
   }
   github?: GithubData
   network?: Network
+  bridge: Bridge
 }
 
 export interface BlackDuckSCAData extends Common {

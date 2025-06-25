@@ -34,7 +34,7 @@ export class BridgeToolsParameter {
     this.tempDir = tempDir
   }
 
-  getFormattedCommandForPolaris(githubRepoName: string): string {
+  getFormattedCommandForPolaris(githubRepoName: string, bridgeVersion: string): string {
     let command = ''
     const assessmentTypeArray: string[] = []
     if (inputs.POLARIS_ASSESSMENT_TYPES) {
@@ -75,6 +75,11 @@ export class BridgeToolsParameter {
             ...(inputs.POLARIS_ASSESSMENT_MODE && {
               mode: inputs.POLARIS_ASSESSMENT_MODE
             })
+          }
+        },
+        bridge: {
+          invoked: {
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
           }
         }
       }
@@ -201,6 +206,8 @@ export class BridgeToolsParameter {
             }
           }
         }
+        const sarifFilePath = bridgeVersion < '3.5.0' && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
+        info('SarifFilepath: '.concat(sarifFilePath))
         polData.data.polaris.reports = {
           sarif: {
             create: true,
@@ -209,7 +216,7 @@ export class BridgeToolsParameter {
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_FILE_PATH && {
               file: {
-                path: inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
+                path: sarifFilePath
               }
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_ISSUE_TYPES && {
@@ -282,6 +289,11 @@ export class BridgeToolsParameter {
             project: {name: coverityProjectName},
             stream: {name: coverityStreamName}
           }
+        },
+        bridge: {
+          invoked: {
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+          }
         }
       }
     }
@@ -343,7 +355,7 @@ export class BridgeToolsParameter {
     return command
   }
 
-  getFormattedCommandForBlackduck(): string {
+  getFormattedCommandForBlackduck(bridgeVersion: string): string {
     const failureSeverities: string[] = []
 
     if (inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES != null && inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES.length > 0) {
@@ -368,7 +380,12 @@ export class BridgeToolsParameter {
           url: inputs.BLACKDUCKSCA_URL,
           token: inputs.BLACKDUCKSCA_TOKEN
         },
-        detect: {}
+        detect: {},
+        bridge: {
+          invoked: {
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+          }
+        }
       }
     }
 
@@ -448,6 +465,8 @@ export class BridgeToolsParameter {
             }
           }
         }
+        const sarifFilePath = bridgeVersion < '3.5.0' && isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
+        info('SarifFilepath: '.concat(sarifFilePath))
         blackduckData.data.blackducksca.reports = {
           sarif: {
             create: true,
@@ -527,6 +546,11 @@ export class BridgeToolsParameter {
           url: inputs.SRM_URL,
           apikey: inputs.SRM_API_KEY,
           assessment: {types: assessmentTypes}
+        },
+        bridge: {
+          invoked: {
+            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+          }
         }
       }
     }
