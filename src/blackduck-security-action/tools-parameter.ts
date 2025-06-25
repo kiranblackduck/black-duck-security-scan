@@ -214,9 +214,9 @@ export class BridgeToolsParameter {
             ...(inputs.POLARIS_REPORTS_SARIF_SEVERITIES && {
               severities: sarifReportFilterSeverities
             }),
-            ...(inputs.POLARIS_REPORTS_SARIF_FILE_PATH && {
+            ...(sarifFilePath && {
               file: {
-                path: sarifFilePath
+                path: sarifFilePath.trim()
               }
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_ISSUE_TYPES && {
@@ -473,9 +473,9 @@ export class BridgeToolsParameter {
             ...(inputs.BLACKDUCKSCA_REPORTS_SARIF_SEVERITIES && {
               severities: sarifReportFilterSeverities
             }),
-            ...(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH && {
+            ...(sarifFilePath && {
               file: {
-                path: inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
+                path: sarifFilePath.trim()
               }
             }),
             groupSCAIssues: isBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES) ? JSON.parse(inputs.BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES) : true
