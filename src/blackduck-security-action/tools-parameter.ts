@@ -100,7 +100,7 @@ export class BridgeToolsParameter {
           type: polarisTestSastTypeList
         }
       }
-   }
+    }
 
     if (isBoolean(inputs.POLARIS_WAITFORSCAN)) {
       polData.data.polaris.waitForScan = parseToBoolean(inputs.POLARIS_WAITFORSCAN)
