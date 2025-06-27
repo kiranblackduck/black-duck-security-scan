@@ -3,6 +3,7 @@ import {CoverityDetect} from './coverity'
 import {GithubData} from './github'
 import {Reports} from './reports'
 import {Common, Network} from './common'
+import {Bridge} from './bridge'
 
 export interface Polaris {
   polaris: PolarisData
@@ -11,6 +12,7 @@ export interface Polaris {
   coverity?: CoverityDetect
   detect?: Omit<BlackDuckDetect, 'install' | 'scan'>
   network: Network
+  bridge: Bridge
 }
 
 export interface PolarisData extends Common {
