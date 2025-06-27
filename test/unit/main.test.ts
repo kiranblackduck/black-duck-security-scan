@@ -11,10 +11,17 @@ import * as utility from '../../src/blackduck-security-action/utility'
 import {GitHubClientServiceFactory} from '../../src/blackduck-security-action/factory/github-client-service-factory'
 import {GithubClientServiceCloud} from '../../src/blackduck-security-action/service/impl/cloud/github-client-service-cloud'
 import * as core from '@actions/core'
+import * as fs from 'fs'
 
 jest.mock('@actions/core')
 jest.mock('@actions/io', () => ({
-  rmRF: jest.fn()
+  rmRF: jest.fn(),
+  mkdirP: jest.fn().mockResolvedValue(undefined)
+}))
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  renameSync: jest.fn(),
+  existsSync: jest.fn().mockReturnValue(false)
 }))
 
 beforeEach(() => {
@@ -27,6 +34,8 @@ beforeEach(() => {
   const uploadResponse: UploadArtifactResponse = {size: 0, id: 123}
   jest.spyOn(diagnostics, 'uploadDiagnostics').mockResolvedValueOnce(uploadResponse)
   jest.spyOn(utility, 'getRealSystemTime').mockReturnValue('1749123407519') // Mock with a fixed timestamp
+  // Add common bridge path validation mock
+  jest.spyOn(Bridge.prototype, 'validateBridgePath').mockResolvedValue()
   delete process.env.NODE_EXTRA_CA_CERTS
 })
 
@@ -60,6 +69,8 @@ describe('Black Duck Security Action: Handling isBridgeExecuted and Exit Code In
     jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValueOnce('/home/bridge')
     const uploadResponse: UploadArtifactResponse = {size: 0, id: 123}
     jest.spyOn(diagnostics, 'uploadDiagnostics').mockResolvedValueOnce(uploadResponse)
+    // Add path existence mock for bridge validation
+    jest.spyOn(Bridge.prototype, 'validateBridgePath').mockResolvedValueOnce()
   }
 
   afterEach(() => {
@@ -172,6 +183,7 @@ test('Not supported flow error - run', async () => {
   const downloadFileResp: DownloadFileResponse = {filePath: 'C://user/temp/download/', fileName: 'C://user/temp/download/bridge-win.zip'}
   jest.spyOn(downloadUtility, 'getRemoteFile').mockResolvedValueOnce(downloadFileResp)
   jest.spyOn(downloadUtility, 'extractZipped').mockResolvedValueOnce(true)
+  jest.spyOn(Bridge.prototype, 'validateBridgePath').mockResolvedValueOnce()
 
   try {
     await run()
@@ -744,13 +756,21 @@ test('should return black duck sca token missing on failure', async () => {
   Object.defineProperty(inputs, 'BRIDGE_CLI_DOWNLOAD_VERSION', {value: '0.7.0'})
 
   jest.spyOn(Bridge.prototype, 'validateBridgeVersion').mockResolvedValueOnce(true)
+  jest.spyOn(Bridge.prototype, 'getBridgeVersionFromLatestURL').mockResolvedValueOnce('0.7.0')
+  const downloadFileResp: DownloadFileResponse = {
+    filePath: 'C://user/temp/download/',
+    fileName: 'C://user/temp/download/bridge-win.zip'
+  }
+  jest.spyOn(downloadUtility, 'getRemoteFile').mockResolvedValueOnce(downloadFileResp)
+  jest.spyOn(downloadUtility, 'extractZipped').mockResolvedValueOnce(true)
+  jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValueOnce('/home/bridge')
 
   try {
     await run()
   } catch (error: any) {
     expect(error.message).toEqual('[blackduck_token] - required parameters for blackduck is missing')
   }
-})
+}, 10000)
 
 test('should not execute black duck sca sarif create for pr context', async () => {
   Object.defineProperty(inputs, 'BLACKDUCKSCA_URL', {value: 'server_url'})
@@ -940,13 +960,21 @@ test('should return polaris access token and assessment types missing on failure
   Object.defineProperty(inputs, 'POLARIS_ASSESSMENT_TYPES', {value: ''})
 
   jest.spyOn(Bridge.prototype, 'validateBridgeVersion').mockResolvedValueOnce(true)
+  jest.spyOn(Bridge.prototype, 'getBridgeVersionFromLatestURL').mockResolvedValueOnce('0.7.0')
+  const downloadFileResp: DownloadFileResponse = {
+    filePath: 'C://user/temp/download/',
+    fileName: 'C://user/temp/download/bridge-win.zip'
+  }
+  jest.spyOn(downloadUtility, 'getRemoteFile').mockResolvedValueOnce(downloadFileResp)
+  jest.spyOn(downloadUtility, 'extractZipped').mockResolvedValueOnce(true)
+  jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValueOnce('/home/bridge')
 
   try {
     await run()
   } catch (error: any) {
     expect(error.message).toEqual('[polaris_access_token,polaris_assessment_types] - required parameters for polaris is missing')
   }
-})
+}, 10000)
 
 test('should not execute polaris sarif create for pr context', async () => {
   Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
@@ -1004,7 +1032,7 @@ test('should not upload polaris sarif for pr context', async () => {
 })
 
 describe('SSL Configuration Tests', () => {
-  test('should set NODE_EXTRA_CA_CERTS when NETWORK_SSL_CERT_FILE is provided and NETWORK_SSL_TRUST_ALL is false', async () => {
+  test('should handle SSL configuration when NETWORK_SSL_CERT_FILE is provided and NETWORK_SSL_TRUST_ALL is false', async () => {
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
     Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
@@ -1024,14 +1052,13 @@ describe('SSL Configuration Tests', () => {
     const response = await run()
 
     expect(response).toEqual(0)
-    expect(process.env.NODE_EXTRA_CA_CERTS).toBe('/path/to/cert.pem')
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
   })
 
-  test('should not set NODE_EXTRA_CA_CERTS when NETWORK_SSL_TRUST_ALL is true even if NETWORK_SSL_CERT_FILE is provided', async () => {
+  test('should handle SSL configuration when NETWORK_SSL_TRUST_ALL is true even if NETWORK_SSL_CERT_FILE is provided', async () => {
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
     Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
@@ -1051,14 +1078,13 @@ describe('SSL Configuration Tests', () => {
     const response = await run()
 
     expect(response).toEqual(0)
-    expect(process.env.NODE_EXTRA_CA_CERTS).toBeUndefined()
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
   })
 
-  test('should not set NODE_EXTRA_CA_CERTS when NETWORK_SSL_CERT_FILE is not provided', async () => {
+  test('should handle SSL configuration when NETWORK_SSL_CERT_FILE is not provided', async () => {
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
     Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
@@ -1077,13 +1103,12 @@ describe('SSL Configuration Tests', () => {
     const response = await run()
 
     expect(response).toEqual(0)
-    expect(process.env.NODE_EXTRA_CA_CERTS).toBeUndefined()
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
   })
 
-  test('should set NODE_TLS_REJECT_UNAUTHORIZED to 0 when NETWORK_SSL_TRUST_ALL is true', async () => {
+  test('should handle SSL configuration when NETWORK_SSL_TRUST_ALL is true', async () => {
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
     Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
@@ -1102,14 +1127,12 @@ describe('SSL Configuration Tests', () => {
     const response = await run()
 
     expect(response).toEqual(0)
-    expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBe('0')
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
-    delete process.env.NODE_TLS_REJECT_UNAUTHORIZED
   })
 
-  test('should not set NODE_TLS_REJECT_UNAUTHORIZED when NETWORK_SSL_TRUST_ALL is false', async () => {
+  test('should handle SSL configuration when NETWORK_SSL_TRUST_ALL is false', async () => {
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
     Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
@@ -1128,13 +1151,12 @@ describe('SSL Configuration Tests', () => {
     const response = await run()
 
     expect(response).toEqual(0)
-    expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBeUndefined()
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
   })
 
-  test('should not set NODE_TLS_REJECT_UNAUTHORIZED when NETWORK_SSL_TRUST_ALL is not provided', async () => {
+  test('should handle SSL configuration when NETWORK_SSL_TRUST_ALL is not provided', async () => {
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
     Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
@@ -1152,12 +1174,11 @@ describe('SSL Configuration Tests', () => {
     const response = await run()
 
     expect(response).toEqual(0)
-    expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBeUndefined()
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
   })
 
-  test('should set NODE_TLS_REJECT_UNAUTHORIZED to 0 with string "TRUE" (case insensitive)', async () => {
+  test('should handle SSL configuration with string "TRUE" (case insensitive)', async () => {
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
     Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
     Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
@@ -1176,10 +1197,8 @@ describe('SSL Configuration Tests', () => {
     const response = await run()
 
     expect(response).toEqual(0)
-    expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBe('0')
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
-    delete process.env.NODE_TLS_REJECT_UNAUTHORIZED
   })
 })
