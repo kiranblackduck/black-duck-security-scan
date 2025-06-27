@@ -33,9 +33,9 @@ export class BridgeToolsParameter {
   constructor(tempDir: string) {
     this.tempDir = tempDir
   }
-
   getFormattedCommandForPolaris(githubRepoName: string, bridgeVersion: string): string {
     let command = ''
+    const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     const assessmentTypeArray: string[] = []
     if (inputs.POLARIS_ASSESSMENT_TYPES) {
       // converting provided assessmentTypes to uppercase
@@ -79,7 +79,7 @@ export class BridgeToolsParameter {
         },
         bridge: {
           invoked: {
-            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+            from: customHeader
           }
         }
       }
@@ -216,7 +216,7 @@ export class BridgeToolsParameter {
             }
           }
         }
-        const sarifFilePath = bridgeVersion < '3.5.0' && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
+        const sarifFilePath = bridgeVersion < constants.VERSION && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
         info('SarifFilepath: '.concat(sarifFilePath))
         polData.data.polaris.reports = {
           sarif: {
@@ -275,6 +275,7 @@ export class BridgeToolsParameter {
 
   getFormattedCommandForCoverity(githubRepoName: string): string {
     let command = ''
+    const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     let coverityStreamName = inputs.COVERITY_STREAM_NAME
     const isPrEvent = isPullRequestEvent()
 
@@ -302,7 +303,7 @@ export class BridgeToolsParameter {
         },
         bridge: {
           invoked: {
-            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+            from: customHeader
           }
         }
       }
@@ -367,7 +368,7 @@ export class BridgeToolsParameter {
 
   getFormattedCommandForBlackduck(bridgeVersion: string): string {
     const failureSeverities: string[] = []
-
+    const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     if (inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES != null && inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES.length > 0) {
       try {
         const failureSeveritiesInput = inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES
@@ -393,7 +394,7 @@ export class BridgeToolsParameter {
         detect: {},
         bridge: {
           invoked: {
-            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+            from: customHeader
           }
         }
       }
@@ -475,7 +476,7 @@ export class BridgeToolsParameter {
             }
           }
         }
-        const sarifFilePath = bridgeVersion < '3.5.0' && isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
+        const sarifFilePath = bridgeVersion < constants.VERSION && isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
         info('SarifFilepath: '.concat(sarifFilePath))
         blackduckData.data.blackducksca.reports = {
           sarif: {
@@ -545,6 +546,7 @@ export class BridgeToolsParameter {
 
   getFormattedCommandForSRM(githubRepoName: string): string {
     let command = ''
+    const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     let assessmentTypes: string[] = []
     if (inputs.SRM_ASSESSMENT_TYPES) {
       assessmentTypes = inputs.SRM_ASSESSMENT_TYPES.split(',')
@@ -559,7 +561,7 @@ export class BridgeToolsParameter {
         },
         bridge: {
           invoked: {
-            from: process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
+            from: customHeader
           }
         }
       }

@@ -312,3 +312,4 @@ export const INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrat
 export const INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/blackducksca/sarif/report.sarif.json'
 export const INTEGRATIONS_GITHUB_CLOUD = 'Integrations-github-cloud'
 export const INTEGRATIONS_GITHUB_EE = 'Integrations-github-ee'
+export const VERSION = '3.5.0'
