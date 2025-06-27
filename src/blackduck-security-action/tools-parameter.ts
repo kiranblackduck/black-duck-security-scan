@@ -34,7 +34,7 @@ export class BridgeToolsParameter {
     this.tempDir = tempDir
   }
 
-  getFormattedCommandForPolaris(githubRepoName: string,bridgeVersion: string): string {
+  getFormattedCommandForPolaris(githubRepoName: string, bridgeVersion: string): string {
     let command = ''
     const assessmentTypeArray: string[] = []
     if (inputs.POLARIS_ASSESSMENT_TYPES) {
