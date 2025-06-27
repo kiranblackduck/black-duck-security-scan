@@ -1,11 +1,13 @@
 import {GithubData} from './github'
 import {Common, Network} from './common'
+import {Bridge} from './bridge'
 
 export interface Coverity {
   coverity: CoverityConnect
   project?: ProjectData
   github?: GithubData
   network?: Network
+  bridge: Bridge
 }
 
 export interface ProjectData {

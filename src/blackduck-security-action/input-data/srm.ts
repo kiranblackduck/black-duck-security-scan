@@ -1,12 +1,14 @@
 import {BlackDuckDetect} from './blackduck'
 import {CoverityDetect} from './coverity'
 import {Common} from './common'
+import {Bridge} from './bridge'
 
 export interface SRM {
   srm: SRMData
   project?: ProjectData
   coverity?: CoverityData
   detect?: DetectData
+  bridge: Bridge
 }
 
 export interface SRMData extends Common {
