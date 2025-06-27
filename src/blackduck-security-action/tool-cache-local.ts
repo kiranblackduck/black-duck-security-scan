@@ -38,13 +38,7 @@ const userAgent = 'actions/tool-cache'
  */
 export async function downloadTool(bridgeDownloadUrl: string, dest?: string, auth?: string, headers?: OutgoingHttpHeaders): Promise<string> {
   dest = dest || path.join(os.tmpdir(), uuidv4())
-  await io.mkdirP(path.dirname(dest as string)).catch(() => {
-    // Fallback to native fs.mkdirSync if @actions/io.mkdirP is not available
-    const dirPath = path.dirname(dest as string)
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, {recursive: true})
-    }
-  })
+  await io.mkdirP(path.dirname(dest))
   core.debug(`Downloading ${bridgeDownloadUrl}`)
   core.debug(`Destination ${dest}`)
 
