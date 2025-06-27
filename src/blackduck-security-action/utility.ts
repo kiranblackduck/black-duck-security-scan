@@ -127,9 +127,19 @@ export function createSSLConfiguredHttpClient(userAgent = 'BlackDuckSecurityActi
   } else if (inputs.NETWORK_SSL_CERT_FILE) {
     debug(`Using custom CA certificate for HttpClient: ${inputs.NETWORK_SSL_CERT_FILE}`)
     try {
+      // Read and validate the certificate file exists and is readable
       fs.readFileSync(inputs.NETWORK_SSL_CERT_FILE, 'utf8')
-      warning('typed-rest-client does not support custom CA certificates, disabling SSL verification')
-      _httpClientCache = new HttpClient(userAgent, [], {ignoreSslError: true})
+      debug('Successfully validated custom CA certificate file')
+
+      // Configure HttpClient with custom CA certificate
+      _httpClientCache = new HttpClient(userAgent, [], {
+        allowRetries: true,
+        maxRetries: 3,
+        cert: {
+          caFile: inputs.NETWORK_SSL_CERT_FILE
+        }
+      })
+      debug('HttpClient configured with custom CA certificate')
     } catch (err) {
       warning(`Failed to read custom CA certificate file, using default HttpClient: ${err}`)
       _httpClientCache = new HttpClient(userAgent)
