@@ -54,26 +54,18 @@ export async function run() {
     if (productInputFileName === 'polaris_input.json') {
       if (bridgeVersion < constants.VERSION) {
         const deprecatedSarifFilePath = isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${POLARIS_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
-
-        info(`SarifFilepath::::: ${deprecatedSarifFilePath}`)
         updatePolarisSarifPath(productInputFilPath, deprecatedSarifFilePath)
       } else {
         const polarisSarifFilePath = isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
-
-        info(`SarifFilepath::::: ${polarisSarifFilePath}`)
         updateBlackDuckSarifPath(productInputFilPath, polarisSarifFilePath)
       }
     }
     if (productInputFileName === 'bd_input.json') {
       if (bridgeVersion < constants.VERSION) {
         const deprecatedSarifFilePath = isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${BLACKDUCK_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
-
-        info(`SarifFilepath::::: ${deprecatedSarifFilePath}`)
         updatePolarisSarifPath(productInputFilPath, deprecatedSarifFilePath)
       } else {
         const blackDuckSarifFilePath = isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
-
-        info(`SarifFilepath::::: ${blackDuckSarifFilePath}`)
         updateBlackDuckSarifPath(productInputFilPath, blackDuckSarifFilePath)
       }
     }
@@ -102,6 +94,7 @@ export async function run() {
       }
       if (!isPullRequestEvent() && uploadSarifReportBasedOnExitCode) {
         if (bridgeVersion < constants.VERSION) {
+          // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
           if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
