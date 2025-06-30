@@ -484,7 +484,7 @@ export class Bridge {
         info('Checking for latest version of Bridge to download and configure')
         bridgeVersion = await this.getBridgeVersionFromLatestURL(this.bridgeArtifactoryURL.concat('latest/versions.txt'))
       }
-
+      // Case 4: When version fetch from default directory
       info(`Bridge CLI version is - ${bridgeVersion}`)
       return bridgeVersion
     } catch (errorObject) {
