@@ -39,6 +39,7 @@ export async function run() {
     // Get Bridge version from bridge Path
     info(`Formated command to execute::::::::: ${formattedCommand}`)
     info(`Get Github Workspace directory:::::::::: ${getGitHubWorkspaceDirV2()}`)
+    info(`Get Github Bridge path:::::::::: ${sb.bridgePath}`)
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {
