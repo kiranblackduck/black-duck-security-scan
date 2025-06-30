@@ -8,8 +8,11 @@ import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-securi
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
 import * as util from './blackduck-security-action/utility'
-import {readFileSync} from 'fs'
+import {readFileSync, writeFileSync} from 'fs'
 import {join} from 'path'
+import {InputData} from './blackduck-security-action/input-data/input-data'
+import {Polaris} from './blackduck-security-action/input-data/polaris'
+import {BlackDuckSCA} from './blackduck-security-action/input-data/blackduck'
 
 export async function run() {
   info('Black Duck Security Action started...')
@@ -18,13 +21,12 @@ export async function run() {
   let isBridgeExecuted = false
   let exitCode
   let bridgeVersion = ''
+  let productInputFileName = ''
 
   try {
     const sb = new Bridge()
-    // Get Bridge Version
-    bridgeVersion = await sb.getBridgeVersion()
     // Prepare bridge command
-    formattedCommand = await sb.prepareCommand(tempDir, bridgeVersion)
+    formattedCommand = await sb.prepareCommand(tempDir)
     // To enable SSL certificate verification
     if (parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)) {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
@@ -40,10 +42,23 @@ export async function run() {
     }
     // Get Bridge version from bridge Path
     info(`Formated command to execute::::::::: ${formattedCommand}`)
-    info(`Get Github Workspace directory:::::::::: ${getGitHubWorkspaceDirV2()}`)
-    info(`Get Github Bridge path:::::::::: ${sb.bridgePath}`)
     bridgeVersion = getBridgeVersion(sb.bridgePath)
     info(`Get Github Bridge Version:::::::::: ${bridgeVersion}`)
+
+    //Extract input.json file and update sarif default file path based on bridge version
+    productInputFileName = extractInputJsonFilename(formattedCommand)
+    info(`Get Product file name:::::::::: ${productInputFileName}`)
+
+    // Based on bridge version and productInputFileName get the sarif file path
+    if (productInputFileName === 'polaris_input.json') {
+      const sarifFilePath = bridgeVersion < constants.VERSION && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
+      info('SarifFilepath: '.concat(sarifFilePath))
+      updatePolarisSarifPath(productInputFileName, sarifFilePath)
+    } else {
+      const sarifFilePath = bridgeVersion < constants.VERSION && isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
+      info('SarifFilepath: '.concat(sarifFilePath))
+      updateBlackDuckSarifPath(productInputFileName, sarifFilePath)
+    }
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {
@@ -156,10 +171,10 @@ export function markBuildStatusIfIssuesArePresent(status: number, taskResult: st
     setFailed('Workflow failed! '.concat(logBridgeExitCodes(exitMessage)))
   }
 }
-
+// Extract version number from bridge path
 function getBridgeVersion(bridgePath: string): string {
   try {
-    const versionFilePath = join(bridgePath, 'version.txt')
+    const versionFilePath = join(bridgePath, 'versions.txt')
     const content = readFileSync(versionFilePath, 'utf-8')
     const match = content.match(/bridge-cli-bundle:\s*([0-9.]+)/)
     if (match && match[1]) {
@@ -169,6 +184,60 @@ function getBridgeVersion(bridgePath: string): string {
   } catch (error) {
     return ''
   }
+}
+// Update SARIF file path in the input JSON
+function updatePolarisSarifPath(inputJsonPath: string, newSarifPath: string): void {
+  try {
+    // Read and parse the JSON file
+    const jsonContent = readFileSync(inputJsonPath, 'utf-8')
+    const config = JSON.parse(jsonContent) as InputData<Polaris>
+
+    // Check if SARIF report creation is enabled and path exists
+    if (config.data?.polaris?.reports?.sarif?.create && config.data?.polaris?.reports?.sarif?.file) {
+      config.data.polaris.reports.sarif.file.path = newSarifPath
+
+      // Write back the updated JSON with proper formatting
+      writeFileSync(inputJsonPath, JSON.stringify(config, null, 2))
+      info(`Successfully updated Polaris SARIF file path:::: ${config.data.polaris.reports.sarif.file.path}`)
+    } else {
+      info('SARIF report creation is not enabled or file path property not found')
+    }
+  } catch (error) {
+    info('Error updating SARIF file path.')
+  }
+}
+// Update SARIF file path in the input JSON
+function updateBlackDuckSarifPath(productFileName: string, sarifPath: string): void {
+  try {
+    // Read and parse the JSON file
+    const jsonContent = readFileSync(productFileName, 'utf-8')
+    const config = JSON.parse(jsonContent) as InputData<BlackDuckSCA>
+
+    // Check if SARIF report creation is enabled and path exists
+    if (config.data?.blackducksca?.reports?.sarif?.create && config.data?.blackducksca?.reports?.sarif?.file) {
+      config.data.blackducksca.reports.sarif.file.path = sarifPath
+
+      // Write back the updated JSON with proper formatting
+      writeFileSync(productFileName, JSON.stringify(config, null, 2))
+      info('Successfully updated Polaris SARIF file path:::: '.concat(config.data.blackducksca.reports.sarif.file.path))
+    } else {
+      info('SARIF report creation is not enabled or file path property not found')
+    }
+  } catch (error) {
+    info('Error updating SARIF file path.')
+  }
+}
+
+// Extract File name from the formatted command
+function extractInputJsonFilename(command: string): string {
+  const match = command.match(/--input\s+([^\s]+)/)
+  if (match && match[1]) {
+    // Extract just the filename from the full path
+    const fullPath = match[1]
+    const filename = fullPath.split('/').pop()
+    return filename || ''
+  }
+  return ''
 }
 
 run().catch(error => {
