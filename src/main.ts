@@ -22,6 +22,7 @@ export async function run() {
   let exitCode
   let bridgeVersion = ''
   let productInputFileName = ''
+  let productInputFilPath = ''
 
   try {
     const sb = new Bridge()
@@ -46,18 +47,20 @@ export async function run() {
     info(`Get Github Bridge Version:::::::::: ${bridgeVersion}`)
 
     //Extract input.json file and update sarif default file path based on bridge version
-    productInputFileName = extractInputJsonFilename(formattedCommand)
+    productInputFilPath = extractInputJsonFilename(formattedCommand)
     info(`Get Product file name:::::::::: ${productInputFileName}`)
+
+    productInputFileName = productInputFilPath.split('/').pop() || ''
 
     // Based on bridge version and productInputFileName get the sarif file path
     if (productInputFileName === 'polaris_input.json') {
       const sarifFilePath = bridgeVersion < constants.VERSION && !isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
       info('SarifFilepath::::: '.concat(sarifFilePath))
-      updatePolarisSarifPath(productInputFileName, sarifFilePath)
+      updatePolarisSarifPath(productInputFilPath, sarifFilePath)
     } else {
       const sarifFilePath = bridgeVersion < constants.VERSION && !isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH : constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
       info('SarifFilepath::::: '.concat(sarifFilePath))
-      updateBlackDuckSarifPath(productInputFileName, sarifFilePath)
+      updateBlackDuckSarifPath(productInputFilPath, sarifFilePath)
     }
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
@@ -186,10 +189,10 @@ function getBridgeVersion(bridgePath: string): string {
   }
 }
 // Update SARIF file path in the input JSON
-function updatePolarisSarifPath(inputJsonPath: string, newSarifPath: string): void {
+function updatePolarisSarifPath(productInputFilPath: string, newSarifPath: string): void {
   try {
     // Read and parse the JSON file
-    const jsonContent = readFileSync(inputJsonPath, 'utf-8')
+    const jsonContent = readFileSync(productInputFilPath, 'utf-8')
     const config = JSON.parse(jsonContent) as InputData<Polaris>
 
     // Check if SARIF report creation is enabled and path exists
@@ -197,7 +200,7 @@ function updatePolarisSarifPath(inputJsonPath: string, newSarifPath: string): vo
       config.data.polaris.reports.sarif.file.path = newSarifPath
 
       // Write back the updated JSON with proper formatting
-      writeFileSync(inputJsonPath, JSON.stringify(config, null, 2))
+      writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
       info(`Successfully updated Polaris SARIF file path:::: ${config.data.polaris.reports.sarif.file.path}`)
     } else {
       info('SARIF report creation is not enabled or file path property not found')
@@ -207,10 +210,10 @@ function updatePolarisSarifPath(inputJsonPath: string, newSarifPath: string): vo
   }
 }
 // Update SARIF file path in the input JSON
-function updateBlackDuckSarifPath(productFileName: string, sarifPath: string): void {
+function updateBlackDuckSarifPath(productInputFilPath: string, sarifPath: string): void {
   try {
     // Read and parse the JSON file
-    const jsonContent = readFileSync(productFileName, 'utf-8')
+    const jsonContent = readFileSync(productInputFilPath, 'utf-8')
     const config = JSON.parse(jsonContent) as InputData<BlackDuckSCA>
 
     // Check if SARIF report creation is enabled and path exists
@@ -218,7 +221,7 @@ function updateBlackDuckSarifPath(productFileName: string, sarifPath: string): v
       config.data.blackducksca.reports.sarif.file.path = sarifPath
 
       // Write back the updated JSON with proper formatting
-      writeFileSync(productFileName, JSON.stringify(config, null, 2))
+      writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
       info('Successfully updated Polaris SARIF file path:::: '.concat(config.data.blackducksca.reports.sarif.file.path))
     } else {
       info('SARIF report creation is not enabled or file path property not found')
@@ -234,8 +237,7 @@ function extractInputJsonFilename(command: string): string {
   if (match && match[1]) {
     // Extract just the filename from the full path
     const fullPath = match[1]
-    const filename = fullPath.split('/').pop()
-    return filename || ''
+    return fullPath || ''
   }
   return ''
 }
