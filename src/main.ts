@@ -189,7 +189,7 @@ function getBridgeVersion(bridgePath: string): string {
   }
 }
 // Update SARIF file path in the input JSON
-function updatePolarisSarifPath(productInputFilPath: string, newSarifPath: string): void {
+function updatePolarisSarifPath(productInputFilPath: string, sarifPath: string): void {
   try {
     // Read and parse the JSON file
     const jsonContent = readFileSync(productInputFilPath, 'utf-8')
@@ -197,13 +197,23 @@ function updatePolarisSarifPath(productInputFilPath: string, newSarifPath: strin
 
     // Check if SARIF report creation is enabled and path exists
     if (config.data?.polaris?.reports?.sarif?.file) {
-      config.data.polaris.reports.sarif.file.path = newSarifPath
+      config.data.polaris.reports.sarif.file.path = sarifPath
 
       // Write back the updated JSON with proper formatting
       writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
       info(`Successfully updated Polaris SARIF file path:::: ${config.data.polaris.reports.sarif.file.path}`)
     } else {
-      info('SARIF report creation is not enabled or file path property not found')
+      // Ensure data structure exists
+      config.data = config.data || {}
+      config.data.polaris = config.data.polaris || {}
+      config.data.polaris.reports = config.data.polaris.reports || {}
+      config.data.polaris.reports.sarif = config.data.polaris.reports.sarif || {}
+      config.data.polaris.reports.sarif.file = config.data.polaris.reports.sarif.file || {}
+
+      // Update path and write back
+      config.data.polaris.reports.sarif.file.path = sarifPath
+      writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
+      info(`Successfully updated Polaris SARIF file path:::: ${sarifPath}`)
     }
   } catch (error) {
     info('Error updating SARIF file path.')
@@ -224,6 +234,17 @@ function updateBlackDuckSarifPath(productInputFilPath: string, sarifPath: string
       writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
       info('Successfully updated Polaris SARIF file path:::: '.concat(config.data.blackducksca.reports.sarif.file.path))
     } else {
+      // Ensure data structure exists
+      config.data = config.data || {}
+      config.data.blackducksca = config.data.blackducksca || {}
+      config.data.blackducksca.reports = config.data.blackducksca.reports || {}
+      config.data.blackducksca.reports.sarif = config.data.blackducksca.reports.sarif || {}
+      config.data.blackducksca.reports.sarif.file = config.data.blackducksca.reports.sarif.file || {}
+
+      // Update path and write back
+      config.data.blackducksca.reports.sarif.file.path = sarifPath
+      writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
+      info(`Successfully updated Polaris SARIF file path:::: ${sarifPath}`)
       info('SARIF report creation is not enabled or file path property not found')
     }
   } catch (error) {
