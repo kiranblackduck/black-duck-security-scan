@@ -81,7 +81,7 @@ export async function uploadSarifReportAsArtifact(defaultSarifReportDirectory: s
     return await artifactClient.uploadArtifact(artifactName, [sarifFilePath], rootDir, options)
   } else {
     sarifFilePath = userSarifFilePath ? userSarifFilePath : getIntegrationDefaultSarifReportPath(defaultSarifReportDirectory, true)
-    const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : getDefaultSarifReportPath(defaultSarifReportDirectory, false)
+    const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : getIntegrationDefaultSarifReportPath(defaultSarifReportDirectory, false)
     return await artifactClient.uploadArtifact(artifactName, [sarifFilePath], rootDir, options)
   }
 }

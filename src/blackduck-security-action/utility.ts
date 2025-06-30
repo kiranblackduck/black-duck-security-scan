@@ -6,6 +6,10 @@ import {rmRF} from '@actions/io'
 import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as constants from '../application-constants'
 import {debug, info} from '@actions/core'
+import {readFileSync, writeFileSync} from 'fs'
+import {InputData} from './input-data/input-data'
+import {BlackDuckSCA} from './input-data/blackduck'
+import {Polaris} from './input-data/polaris'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -65,7 +69,9 @@ export function getDefaultSarifReportPath(sarifReportDirectory: string, appendFi
 export function getIntegrationDefaultSarifReportPath(sarifReportDirectory: string, appendFilePath: boolean): string {
   const pwd = getGitHubWorkspaceDir()
   info(`Using Integration SARIF Report Directory: ${sarifReportDirectory}`)
-  return !appendFilePath ? path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory) : path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory, constants.SARIF_DEFAULT_FILE_NAME)
+  const uploadPath = !appendFilePath ? path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory) : path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory, constants.SARIF_DEFAULT_FILE_NAME)
+  info(`Upload default path: ${uploadPath}`)
+  return uploadPath
 }
 
 export function isPullRequestEvent(): boolean {
@@ -90,4 +96,78 @@ export function checkJobResult(buildStatus?: string): string | undefined {
     debug(`Unsupported value for ${constants.MARK_BUILD_STATUS_KEY}: ${buildStatus}`)
   }
   return undefined
+}
+
+// Update SARIF file path in the input JSON
+export function updatePolarisSarifPath(productInputFilPath: string, sarifPath: string): void {
+  try {
+    // Read and parse the JSON file
+    const jsonContent = readFileSync(productInputFilPath, 'utf-8')
+    const config = JSON.parse(jsonContent) as InputData<Polaris>
+
+    // Check if SARIF report creation is enabled and path exists
+    if (config.data?.polaris?.reports?.sarif?.file) {
+      config.data.polaris.reports.sarif.file.path = sarifPath
+
+      // Write back the updated JSON with proper formatting
+      writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
+      info(`Successfully updated Polaris SARIF file path:::: ${config.data.polaris.reports.sarif.file.path}`)
+    } else {
+      // Ensure data structure exists
+      config.data = config.data || {}
+      config.data.polaris = config.data.polaris || {}
+      config.data.polaris.reports = config.data.polaris.reports || {}
+      config.data.polaris.reports.sarif = config.data.polaris.reports.sarif || {}
+      config.data.polaris.reports.sarif.file = config.data.polaris.reports.sarif.file || {}
+
+      // Update path and write back
+      config.data.polaris.reports.sarif.file.path = sarifPath
+      writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
+      info(`Successfully updated Polaris SARIF file path:::: ${sarifPath}`)
+    }
+  } catch (error) {
+    info('Error updating SARIF file path.')
+  }
+}
+// Update SARIF file path in the input JSON
+export function updateBlackDuckSarifPath(productInputFilPath: string, sarifPath: string): void {
+  try {
+    // Read and parse the JSON file
+    const jsonContent = readFileSync(productInputFilPath, 'utf-8')
+    const config = JSON.parse(jsonContent) as InputData<BlackDuckSCA>
+
+    // Check if SARIF report creation is enabled and path exists
+    if (config.data?.blackducksca?.reports?.sarif?.file) {
+      config.data.blackducksca.reports.sarif.file.path = sarifPath
+
+      // Write back the updated JSON with proper formatting
+      writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
+      info('Successfully updated Polaris SARIF file path:::: '.concat(config.data.blackducksca.reports.sarif.file.path))
+    } else {
+      // Ensure data structure exists
+      config.data = config.data || {}
+      config.data.blackducksca = config.data.blackducksca || {}
+      config.data.blackducksca.reports = config.data.blackducksca.reports || {}
+      config.data.blackducksca.reports.sarif = config.data.blackducksca.reports.sarif || {}
+      config.data.blackducksca.reports.sarif.file = config.data.blackducksca.reports.sarif.file || {}
+
+      // Update path and write back
+      config.data.blackducksca.reports.sarif.file.path = sarifPath
+      writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
+      info(`Successfully updated Polaris SARIF file path:::: ${sarifPath}`)
+    }
+  } catch (error) {
+    info('Error updating SARIF file path.')
+  }
+}
+
+// Extract File name from the formatted command
+export function extractInputJsonFilename(command: string): string {
+  const match = command.match(/--input\s+([^\s]+)/)
+  if (match && match[1]) {
+    // Extract just the filename from the full path
+    const fullPath = match[1]
+    return fullPath || ''
+  }
+  return ''
 }
