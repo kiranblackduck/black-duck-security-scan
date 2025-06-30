@@ -8,6 +8,8 @@ import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-securi
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
 import * as util from './blackduck-security-action/utility'
+import {readFileSync} from 'fs'
+import {join} from 'path'
 
 export async function run() {
   info('Black Duck Security Action started...')
@@ -40,6 +42,8 @@ export async function run() {
     info(`Formated command to execute::::::::: ${formattedCommand}`)
     info(`Get Github Workspace directory:::::::::: ${getGitHubWorkspaceDirV2()}`)
     info(`Get Github Bridge path:::::::::: ${sb.bridgePath}`)
+    bridgeVersion = getBridgeVersion(sb.bridgePath)
+    info(`Get Github Bridge Version:::::::::: ${bridgeVersion}`)
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {
@@ -150,6 +154,20 @@ export function markBuildStatusIfIssuesArePresent(status: number, taskResult: st
     info(`Marking the build ${taskResult} as configured in the task.`)
   } else {
     setFailed('Workflow failed! '.concat(logBridgeExitCodes(exitMessage)))
+  }
+}
+
+function getBridgeVersion(bridgePath: string): string {
+  try {
+    const versionFilePath = join(bridgePath, 'version.txt')
+    const content = readFileSync(versionFilePath, 'utf-8')
+    const match = content.match(/bridge-cli-bundle:\s*([0-9.]+)/)
+    if (match && match[1]) {
+      return match[1]
+    }
+    return ''
+  } catch (error) {
+    return ''
   }
 }
 
