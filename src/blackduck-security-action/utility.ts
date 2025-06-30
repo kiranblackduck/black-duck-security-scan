@@ -10,6 +10,8 @@ import {readFileSync, writeFileSync} from 'fs'
 import {InputData} from './input-data/input-data'
 import {BlackDuckSCA} from './input-data/blackduck'
 import {Polaris} from './input-data/polaris'
+import {isNullOrEmptyValue} from './validators'
+import * as inputs from './inputs'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -170,4 +172,16 @@ export function extractInputJsonFilename(command: string): string {
     return fullPath || ''
   }
   return ''
+}
+
+export function updateSarifFilePaths(productInputFileName: string, bridgeVersion: string, productInputFilPath: string): void {
+  if (productInputFileName === 'polaris_input.json') {
+    const sarifPath = bridgeVersion < constants.VERSION ? (isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${constants.POLARIS_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()) : isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
+    updatePolarisSarifPath(productInputFilPath, sarifPath)
+  }
+
+  if (productInputFileName === 'bd_input.json') {
+    const sarifPath = bridgeVersion < constants.VERSION ? (isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()) : isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
+    updateBlackDuckSarifPath(productInputFilPath, sarifPath)
+  }
 }

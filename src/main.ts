@@ -5,13 +5,11 @@ import {getGitHubWorkspaceDir as getGitHubWorkspaceDirV2} from 'actions-artifact
 import * as constants from './application-constants'
 import * as inputs from './blackduck-security-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-security-action/artifacts'
-import {isNullOrEmptyValue} from './blackduck-security-action/validators'
-import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
 import * as util from './blackduck-security-action/utility'
 import {readFileSync} from 'fs'
 import {join} from 'path'
-
-import {BLACKDUCK_SARIF_GENERATOR_DIRECTORY, POLARIS_SARIF_GENERATOR_DIRECTORY} from './application-constants'
+import {isNullOrEmptyValue} from './blackduck-security-action/validators'
+import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
 
 export async function run() {
   info('Black Duck Security Action started...')
@@ -45,28 +43,10 @@ export async function run() {
 
     //Extract input.json file and update sarif default file path based on bridge version
     productInputFilPath = util.extractInputJsonFilename(formattedCommand)
-
+    // Extract product input file name from the path
     productInputFileName = productInputFilPath.split('/').pop() || ''
-
     // Based on bridge version and productInputFileName get the sarif file path
-    if (productInputFileName === 'polaris_input.json') {
-      if (bridgeVersion < constants.VERSION) {
-        const deprecatedSarifFilePath = isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${POLARIS_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
-        util.updatePolarisSarifPath(productInputFilPath, deprecatedSarifFilePath)
-      } else {
-        const polarisSarifFilePath = isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
-        util.updatePolarisSarifPath(productInputFilPath, polarisSarifFilePath)
-      }
-    }
-    if (productInputFileName === 'bd_input.json') {
-      if (bridgeVersion < constants.VERSION) {
-        const deprecatedSarifFilePath = isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${BLACKDUCK_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
-        util.updateBlackDuckSarifPath(productInputFilPath, deprecatedSarifFilePath)
-      } else {
-        const blackDuckSarifFilePath = isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
-        util.updateBlackDuckSarifPath(productInputFilPath, blackDuckSarifFilePath)
-      }
-    }
+    util.updateSarifFilePaths(productInputFileName, bridgeVersion, productInputFilPath)
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {

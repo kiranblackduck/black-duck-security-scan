@@ -3,10 +3,11 @@ import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/con
 import * as fs from 'fs'
 import * as inputs from './inputs'
 import {getDefaultSarifReportPath, isGitHubCloud, getRealSystemTime, getIntegrationDefaultSarifReportPath} from './utility'
-import {info, warning} from '@actions/core'
+import {warning} from '@actions/core'
 import path from 'path'
 import * as artifact from 'actions-artifact-v1'
 import {DefaultArtifactClient} from 'actions-artifact-v2'
+import * as constants from '../application-constants'
 
 export async function uploadDiagnostics(): Promise<UploadArtifactResponse | void> {
   let artifactClient
@@ -74,8 +75,7 @@ export async function uploadSarifReportAsArtifact(defaultSarifReportDirectory: s
       continueOnError: true
     } as artifact.UploadOptions
   }
-  info(`SARIF Report Directory::::: ${defaultSarifReportDirectory}`)
-  if (defaultSarifReportDirectory === 'Blackduck SCA SARIF Generator' || defaultSarifReportDirectory === 'Polaris SARIF Generator') {
+  if (defaultSarifReportDirectory === constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY || defaultSarifReportDirectory === constants.POLARIS_SARIF_GENERATOR_DIRECTORY) {
     sarifFilePath = userSarifFilePath ? userSarifFilePath : getDefaultSarifReportPath(defaultSarifReportDirectory, true)
     const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : getDefaultSarifReportPath(defaultSarifReportDirectory, false)
     return await artifactClient.uploadArtifact(artifactName, [sarifFilePath], rootDir, options)
