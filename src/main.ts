@@ -51,12 +51,12 @@ export async function run() {
 
     // Based on bridge version and productInputFileName get the sarif file path
     if (productInputFileName === 'polaris_input.json') {
-      const sarifFilePath = bridgeVersion < constants.VERSION && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
-      info('SarifFilepath: '.concat(sarifFilePath))
+      const sarifFilePath = bridgeVersion < constants.VERSION && !isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
+      info('SarifFilepath::::: '.concat(sarifFilePath))
       updatePolarisSarifPath(productInputFileName, sarifFilePath)
     } else {
-      const sarifFilePath = bridgeVersion < constants.VERSION && isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
-      info('SarifFilepath: '.concat(sarifFilePath))
+      const sarifFilePath = bridgeVersion < constants.VERSION && !isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH : constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
+      info('SarifFilepath::::: '.concat(sarifFilePath))
       updateBlackDuckSarifPath(productInputFileName, sarifFilePath)
     }
     // Execute bridge command
@@ -83,7 +83,7 @@ export async function run() {
         await uploadDiagnostics()
       }
       if (!isPullRequestEvent() && uploadSarifReportBasedOnExitCode) {
-        if (bridgeVersion < '3.5.0') {
+        if (bridgeVersion < constants.VERSION) {
           if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
@@ -93,7 +93,7 @@ export async function run() {
             await uploadSarifReportAsArtifact(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
         }
-        if (bridgeVersion < '3.5.0') {
+        if (bridgeVersion < constants.VERSION) {
           // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
           if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, constants.POLARIS_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
@@ -106,7 +106,7 @@ export async function run() {
         }
         if (!isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
           const gitHubClientService = await GitHubClientServiceFactory.getGitHubClientServiceInstance()
-          if (bridgeVersion < '3.5.0') {
+          if (bridgeVersion < constants.VERSION) {
             // Upload Black Duck SARIF Report to code scanning tab
             if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
@@ -117,7 +117,7 @@ export async function run() {
               await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
             }
           }
-          if (bridgeVersion < '3.5.0') {
+          if (bridgeVersion < constants.VERSION) {
             // Upload Polaris SARIF Report to code scanning tab
             if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
