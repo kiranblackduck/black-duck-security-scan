@@ -48,7 +48,7 @@ export async function run() {
 
     //Extract input.json file and update sarif default file path based on bridge version
     productInputFilPath = extractInputJsonFilename(formattedCommand)
-    info(`Get Product file name:::::::::: ${productInputFileName}`)
+    info(`Get Product file name:::::::::: ${productInputFilPath}`)
 
     productInputFileName = productInputFilPath.split('/').pop() || ''
 
@@ -196,7 +196,7 @@ function updatePolarisSarifPath(productInputFilPath: string, newSarifPath: strin
     const config = JSON.parse(jsonContent) as InputData<Polaris>
 
     // Check if SARIF report creation is enabled and path exists
-    if (config.data?.polaris?.reports?.sarif?.create && config.data?.polaris?.reports?.sarif?.file) {
+    if (config.data?.polaris?.reports?.sarif?.file) {
       config.data.polaris.reports.sarif.file.path = newSarifPath
 
       // Write back the updated JSON with proper formatting
@@ -217,7 +217,7 @@ function updateBlackDuckSarifPath(productInputFilPath: string, sarifPath: string
     const config = JSON.parse(jsonContent) as InputData<BlackDuckSCA>
 
     // Check if SARIF report creation is enabled and path exists
-    if (config.data?.blackducksca?.reports?.sarif?.create && config.data?.blackducksca?.reports?.sarif?.file) {
+    if (config.data?.blackducksca?.reports?.sarif?.file) {
       config.data.blackducksca.reports.sarif.file.path = sarifPath
 
       // Write back the updated JSON with proper formatting
