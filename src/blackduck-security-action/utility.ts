@@ -5,7 +5,7 @@ import {APPLICATION_NAME, GITHUB_ENVIRONMENT_VARIABLES} from '../application-con
 import {rmRF} from '@actions/io'
 import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as constants from '../application-constants'
-import {debug} from '@actions/core'
+import {debug, info} from '@actions/core'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -64,6 +64,7 @@ export function getDefaultSarifReportPath(sarifReportDirectory: string, appendFi
 }
 export function getIntegrationDefaultSarifReportPath(sarifReportDirectory: string, appendFilePath: boolean): string {
   const pwd = getGitHubWorkspaceDir()
+  info(`Using Integration SARIF Report Directory: ${sarifReportDirectory}`)
   return !appendFilePath ? path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory) : path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory, constants.SARIF_DEFAULT_FILE_NAME)
 }
 
