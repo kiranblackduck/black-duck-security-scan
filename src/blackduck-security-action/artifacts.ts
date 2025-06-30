@@ -2,8 +2,8 @@ import {UploadArtifactResponse, UploadArtifactOptions} from 'actions-artifact-v2
 import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as fs from 'fs'
 import * as inputs from './inputs'
-import {getDefaultSarifReportPath, isGitHubCloud, getRealSystemTime} from './utility'
-import {warning} from '@actions/core'
+import {getDefaultSarifReportPath, isGitHubCloud, getRealSystemTime, getIntegrationDefaultSarifReportPath} from './utility'
+import {info, warning} from '@actions/core'
 import path from 'path'
 import * as artifact from 'actions-artifact-v1'
 import {DefaultArtifactClient} from 'actions-artifact-v2'
@@ -65,6 +65,7 @@ export function getFiles(dir: string, allFiles: string[]): string[] {
 export async function uploadSarifReportAsArtifact(defaultSarifReportDirectory: string, userSarifFilePath: string, artifactName: string): Promise<UploadArtifactResponse> {
   let artifactClient
   let options: artifact.UploadOptions = {}
+  let sarifFilePath
   if (isGitHubCloud()) {
     artifactClient = new DefaultArtifactClient()
   } else {
@@ -73,7 +74,13 @@ export async function uploadSarifReportAsArtifact(defaultSarifReportDirectory: s
       continueOnError: true
     } as artifact.UploadOptions
   }
-  const sarifFilePath = userSarifFilePath ? userSarifFilePath : getDefaultSarifReportPath(defaultSarifReportDirectory, true)
+  info(`SARIF Report Directory::::: ${defaultSarifReportDirectory}`)
+  if (defaultSarifReportDirectory === 'Blackduck SCA SARIF Generator' || defaultSarifReportDirectory === 'Polaris SARIF Generator') {
+    sarifFilePath = userSarifFilePath ? userSarifFilePath : getDefaultSarifReportPath(defaultSarifReportDirectory, true)
+    const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : getDefaultSarifReportPath(defaultSarifReportDirectory, false)
+    return await artifactClient.uploadArtifact(artifactName, [sarifFilePath], rootDir, options)
+  }
+  sarifFilePath = userSarifFilePath ? userSarifFilePath : getIntegrationDefaultSarifReportPath(defaultSarifReportDirectory, true)
   const rootDir = userSarifFilePath ? path.dirname(userSarifFilePath) : getDefaultSarifReportPath(defaultSarifReportDirectory, false)
   return await artifactClient.uploadArtifact(artifactName, [sarifFilePath], rootDir, options)
 }

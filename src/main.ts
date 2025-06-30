@@ -57,13 +57,13 @@ export async function run() {
         updatePolarisSarifPath(productInputFilPath, deprecatedSarifFilePath)
       } else {
         const polarisSarifFilePath = isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
-        updateBlackDuckSarifPath(productInputFilPath, polarisSarifFilePath)
+        updatePolarisSarifPath(productInputFilPath, polarisSarifFilePath)
       }
     }
     if (productInputFileName === 'bd_input.json') {
       if (bridgeVersion < constants.VERSION) {
         const deprecatedSarifFilePath = isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${BLACKDUCK_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
-        updatePolarisSarifPath(productInputFilPath, deprecatedSarifFilePath)
+        updateBlackDuckSarifPath(productInputFilPath, deprecatedSarifFilePath)
       } else {
         const blackDuckSarifFilePath = isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
         updateBlackDuckSarifPath(productInputFilPath, blackDuckSarifFilePath)
@@ -98,19 +98,17 @@ export async function run() {
           if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
-        } else {
-          // Upload Black Duck sarif file as GitHub artifact
-          if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
-            await uploadSarifReportAsArtifact(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
-          }
-        }
-        if (bridgeVersion < constants.VERSION) {
           // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
           if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, constants.POLARIS_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
         } else {
-          // Upload Polaris sarif file as GitHub artifact
+          // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
+          if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
+            await uploadSarifReportAsArtifact(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
+          }
+
+          // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
           if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, constants.POLARIS_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
@@ -122,18 +120,17 @@ export async function run() {
             if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
             }
-          } else {
-            // Upload Black Duck SARIF Report to code scanning tab
-            if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
-              await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
-            }
-          }
-          if (bridgeVersion < constants.VERSION) {
+
             // Upload Polaris SARIF Report to code scanning tab
             if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
             }
           } else {
+            // Upload Black Duck SARIF Report to code scanning tab
+            if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
+              await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
+            }
+
             // Upload Polaris SARIF Report to code scanning tab
             if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
@@ -253,7 +250,6 @@ function updateBlackDuckSarifPath(productInputFilPath: string, sarifPath: string
       config.data.blackducksca.reports.sarif.file.path = sarifPath
       writeFileSync(productInputFilPath, JSON.stringify(config, null, 2))
       info(`Successfully updated Polaris SARIF file path:::: ${sarifPath}`)
-      info('SARIF report creation is not enabled or file path property not found')
     }
   } catch (error) {
     info('Error updating SARIF file path.')
