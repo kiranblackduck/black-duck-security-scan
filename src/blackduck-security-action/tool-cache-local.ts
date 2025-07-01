@@ -10,6 +10,7 @@ import * as stream from 'stream'
 import * as util from 'util'
 import * as https from 'https'
 import * as url from 'url'
+import * as tls from 'tls'
 
 import {OutgoingHttpHeaders} from 'http'
 import {v4 as uuidv4} from 'uuid'
@@ -171,9 +172,10 @@ async function downloadWithCustomCA(downloadUrl: string, dest: string, customCA:
       requestOptions.rejectUnauthorized = false
       core.debug('SSL certificate verification disabled for this request')
     } else if (customCA) {
-      // Use custom CA certificate
-      requestOptions.ca = customCA
-      core.debug('Using custom CA certificate for SSL verification')
+      // Get system CAs and append custom CA
+      const systemCAs = tls.rootCertificates || []
+      requestOptions.ca = [customCA, ...systemCAs]
+      core.debug(`Using custom CA certificate with ${systemCAs.length} system CAs for SSL verification`)
     }
 
     if (auth) {

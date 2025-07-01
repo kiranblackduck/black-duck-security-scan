@@ -8,6 +8,8 @@ import * as constants from '../application-constants'
 import {debug, warning} from '@actions/core'
 import {HttpClient} from 'typed-rest-client/HttpClient'
 import * as inputs from './inputs'
+import tls from 'tls'
+import https from 'https'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -131,15 +133,37 @@ export function createSSLConfiguredHttpClient(userAgent = 'BlackDuckSecurityActi
       fs.readFileSync(inputs.NETWORK_SSL_CERT_FILE, 'utf8')
       debug('Successfully validated custom CA certificate file')
 
-      // Configure HttpClient with custom CA certificate
+      // Get system CAs count for logging (same approach as tool-cache-local.ts)
+      const systemCAs = tls.rootCertificates || []
+      debug(`Using custom CA certificate with ${systemCAs.length} system CAs for SSL verification`)
+
+      // Read the custom CA content for combining with system CAs
+      const customCA = fs.readFileSync(inputs.NETWORK_SSL_CERT_FILE, 'utf8')
+
+      // Get system CAs and append custom CA (same approach as tool-cache-local.ts)
+      const combinedCAs = [customCA, ...systemCAs]
+
+      // Create custom HTTPS agent with combined CA certificates (same as tool-cache-local.ts)
+      const httpsAgent = new https.Agent({
+        ca: combinedCAs,
+        rejectUnauthorized: true
+      })
+
+      // Store the agent globally for this HttpClient instance to use
+      // We temporarily override the global agent during HttpClient creation
+      const originalGlobalAgent = https.globalAgent
+      https.globalAgent = httpsAgent
+
       _httpClientCache = new HttpClient(userAgent, [], {
         allowRetries: true,
-        maxRetries: 3,
-        cert: {
-          caFile: inputs.NETWORK_SSL_CERT_FILE
-        }
+        maxRetries: 3
       })
-      debug('HttpClient configured with custom CA certificate')
+
+      // Restore the original global agent immediately after creation
+      // This minimizes side effects while ensuring our HttpClient uses the combined CAs
+      https.globalAgent = originalGlobalAgent
+
+      debug('HttpClient configured with custom CA certificate combined with system CAs')
     } catch (err) {
       warning(`Failed to read custom CA certificate file, using default HttpClient: ${err}`)
       _httpClientCache = new HttpClient(userAgent)
