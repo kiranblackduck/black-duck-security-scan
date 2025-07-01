@@ -11,6 +11,7 @@ import {GithubData} from './input-data/github'
 import * as constants from '../application-constants'
 import {isBoolean, isPullRequestEvent, parseToBoolean} from './utility'
 import {SRM} from './input-data/srm'
+import {Network} from './input-data/common'
 
 export class BridgeToolsParameter {
   tempDir: string
@@ -32,9 +33,9 @@ export class BridgeToolsParameter {
   constructor(tempDir: string) {
     this.tempDir = tempDir
   }
-
   getFormattedCommandForPolaris(githubRepoName: string): string {
     let command = ''
+    const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     const assessmentTypeArray: string[] = []
     if (inputs.POLARIS_ASSESSMENT_TYPES) {
       // converting provided assessmentTypes to uppercase
@@ -63,6 +64,7 @@ export class BridgeToolsParameter {
 
     const polData: InputData<Polaris> = {
       data: {
+        network: {},
         polaris: {
           accesstoken: inputs.POLARIS_ACCESS_TOKEN,
           serverUrl: inputs.POLARIS_SERVER_URL,
@@ -74,6 +76,11 @@ export class BridgeToolsParameter {
               mode: inputs.POLARIS_ASSESSMENT_MODE
             })
           }
+        },
+        bridge: {
+          invoked: {
+            from: customHeader
+          }
         }
       }
     }
@@ -82,10 +89,20 @@ export class BridgeToolsParameter {
       polData.data.polaris.branch = {name: inputs.POLARIS_BRANCH_NAME}
     }
 
-    if (inputs.POLARIS_TEST_SCA_TYPE) {
-      polData.data.polaris.test = {
-        sca: {
+    if (inputs.POLARIS_TEST_SCA_TYPE || inputs.POLARIS_TEST_SAST_TYPE) {
+      polData.data.polaris.test = {}
+
+      if (inputs.POLARIS_TEST_SCA_TYPE) {
+        polData.data.polaris.test.sca = {
           type: inputs.POLARIS_TEST_SCA_TYPE
+        }
+      }
+
+      if (inputs.POLARIS_TEST_SAST_TYPE) {
+        const polarisTestSastTypeList: string[] = inputs.POLARIS_TEST_SAST_TYPE.split(',').map(polarisTestSastType => polarisTestSastType.trim())
+
+        polData.data.polaris.test.sast = {
+          type: polarisTestSastTypeList
         }
       }
     }
@@ -242,6 +259,8 @@ export class BridgeToolsParameter {
       polData.data.detect = {...polData.data.detect, ...detectArgs}
     }
 
+    polData.data.network = this.setNetworkObj()
+
     const inputJson = JSON.stringify(polData)
     const stateFilePath = path.join(this.tempDir, BridgeToolsParameter.POLARIS_STATE_FILE_NAME)
     fs.writeFileSync(stateFilePath, inputJson)
@@ -254,6 +273,7 @@ export class BridgeToolsParameter {
 
   getFormattedCommandForCoverity(githubRepoName: string): string {
     let command = ''
+    const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     let coverityStreamName = inputs.COVERITY_STREAM_NAME
     const isPrEvent = isPullRequestEvent()
 
@@ -277,6 +297,11 @@ export class BridgeToolsParameter {
             url: inputs.COVERITY_URL,
             project: {name: coverityProjectName},
             stream: {name: coverityStreamName}
+          }
+        },
+        bridge: {
+          invoked: {
+            from: customHeader
           }
         }
       }
@@ -324,9 +349,7 @@ export class BridgeToolsParameter {
       }
     }
 
-    if (isBoolean(inputs.ENABLE_NETWORK_AIR_GAP)) {
-      covData.data.network = {airGap: parseToBoolean(inputs.ENABLE_NETWORK_AIR_GAP)}
-    }
+    covData.data.network = this.setNetworkObj()
 
     covData.data.coverity = Object.assign({}, this.setCoverityDetectArgs(), covData.data.coverity)
 
@@ -343,7 +366,7 @@ export class BridgeToolsParameter {
 
   getFormattedCommandForBlackduck(): string {
     const failureSeverities: string[] = []
-
+    const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     if (inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES != null && inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES.length > 0) {
       try {
         const failureSeveritiesInput = inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES
@@ -366,7 +389,12 @@ export class BridgeToolsParameter {
           url: inputs.BLACKDUCKSCA_URL,
           token: inputs.BLACKDUCKSCA_TOKEN
         },
-        detect: {}
+        detect: {},
+        bridge: {
+          invoked: {
+            from: customHeader
+          }
+        }
       }
     }
 
@@ -497,9 +525,7 @@ export class BridgeToolsParameter {
       }
     }
 
-    if (isBoolean(inputs.ENABLE_NETWORK_AIR_GAP)) {
-      blackduckData.data.network = {airGap: parseToBoolean(inputs.ENABLE_NETWORK_AIR_GAP)}
-    }
+    blackduckData.data.network = this.setNetworkObj()
 
     blackduckData.data.detect = Object.assign({}, this.setDetectArgs(), blackduckData.data.detect)
 
@@ -516,6 +542,7 @@ export class BridgeToolsParameter {
 
   getFormattedCommandForSRM(githubRepoName: string): string {
     let command = ''
+    const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     let assessmentTypes: string[] = []
     if (inputs.SRM_ASSESSMENT_TYPES) {
       assessmentTypes = inputs.SRM_ASSESSMENT_TYPES.split(',')
@@ -527,6 +554,11 @@ export class BridgeToolsParameter {
           url: inputs.SRM_URL,
           apikey: inputs.SRM_API_KEY,
           assessment: {types: assessmentTypes}
+        },
+        bridge: {
+          invoked: {
+            from: customHeader
+          }
         }
       }
     }
@@ -766,5 +798,25 @@ export class BridgeToolsParameter {
       blackduckDetectData.args = inputs.DETECT_ARGS
     }
     return blackduckDetectData
+  }
+
+  private setNetworkObj(): Network {
+    const network: Network = {}
+    if (isBoolean(inputs.ENABLE_NETWORK_AIR_GAP)) {
+      network.airGap = parseToBoolean(inputs.ENABLE_NETWORK_AIR_GAP)
+    }
+
+    if (!network.ssl) {
+      network.ssl = {}
+    }
+
+    if (inputs.NETWORK_SSL_CERT_FILE) {
+      network.ssl.cert = {file: inputs.NETWORK_SSL_CERT_FILE}
+    }
+
+    if (inputs.NETWORK_SSL_TRUST_ALL) {
+      network.ssl.trustAll = parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)
+    }
+    return network
   }
 }

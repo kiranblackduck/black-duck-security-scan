@@ -85,6 +85,7 @@ export const POLARIS_PRCOMMENT_SEVERITIES_KEY = 'polaris_prComment_severities'
 export const POLARIS_BRANCH_NAME_KEY = 'polaris_branch_name'
 export const POLARIS_BRANCH_PARENT_NAME_KEY = 'polaris_branch_parent_name'
 export const POLARIS_TEST_SCA_TYPE_KEY = 'polaris_test_sca_type'
+export const POLARIS_TEST_SAST_TYPE_KEY = 'polaris_test_sast_type'
 export const POLARIS_REPORTS_SARIF_CREATE_KEY = 'polaris_reports_sarif_create'
 export const POLARIS_REPORTS_SARIF_FILE_PATH_KEY = 'polaris_reports_sarif_file_path'
 export const POLARIS_REPORTS_SARIF_SEVERITIES_KEY = 'polaris_reports_sarif_severities'
@@ -220,6 +221,8 @@ export const INCLUDE_DIAGNOSTICS_KEY = 'include_diagnostics'
 export const BRIDGE_NETWORK_AIRGAP_KEY = 'bridge_network_airgap'
 export const NETWORK_AIRGAP_KEY = 'network_airgap'
 export const DIAGNOSTICS_RETENTION_DAYS_KEY = 'diagnostics_retention_days'
+export const NETWORK_SSL_CERT_FILE_KEY = 'network_ssl_cert_file'
+export const NETWORK_SSL_TRUST_ALL_KEY = 'network_ssl_trustAll'
 
 // Bridge Exit Codes
 export const EXIT_CODE_MAP = new Map<string, string>([
@@ -307,3 +310,6 @@ export const TASK_RETURN_STATUS = 'status'
 export const BRIDGE_BREAK_EXIT_CODE = 8
 export const INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/polaris/sarif/report.sarif.json'
 export const INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/blackducksca/sarif/report.sarif.json'
+export const INTEGRATIONS_GITHUB_CLOUD = 'Integrations-github-cloud'
+export const INTEGRATIONS_GITHUB_EE = 'Integrations-github-ee'
+export const VERSION = '3.5.0'

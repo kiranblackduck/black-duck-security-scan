@@ -77,6 +77,30 @@ test('Test getFormattedCommandForPolaris with default values', () => {
   expect(resp).toContain('--stage polaris')
 })
 
+test('Test getFormattedCommandForPolaris with self-signed certificates', () => {
+  Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
+  Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
+  Object.defineProperty(inputs, 'POLARIS_ASSESSMENT_TYPES', {value: 'sca,sast'})
+  Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: '/'})
+  Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: true})
+
+  const stp: BridgeToolsParameter = new BridgeToolsParameter(tempPath)
+
+  const resp = stp.getFormattedCommandForPolaris('blackduck-security-action')
+
+  const jsonString = fs.readFileSync(tempPath.concat(polaris_input_file), 'utf-8')
+  const jsonData = JSON.parse(jsonString)
+
+  // Validate the expected values
+  expect(jsonData.data.polaris.application.name).toBe('blackduck-security-action')
+  expect(jsonData.data.polaris.project.name).toBe('blackduck-security-action')
+  expect(jsonData.data.network?.ssl?.cert?.file).toBe('/') // Optional chaining
+  expect(jsonData.data.network?.ssl?.trustAll).toBe(true)
+
+  expect(resp).not.toBeNull()
+  expect(resp).toContain('--stage polaris')
+})
+
 test('Test missing data error in getFormattedCommandForPolaris', () => {
   Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
   Object.defineProperty(inputs, 'POLARIS_PROJECT_NAME', {value: 'POLARIS_PROJECT_NAME'})
@@ -1138,6 +1162,33 @@ describe('test polaris values passed correctly to bridge for workflow simplifica
     const jsonString = fs.readFileSync(tempPath.concat(polaris_input_file), 'utf-8')
     const jsonData = JSON.parse(jsonString)
     expect(jsonData.data.polaris.policy.badges.create).toBe(false)
+  })
+
+  test('Test getFormattedCommandForPolaris - polaris test sca and sast type', () => {
+    Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: 'server_url'})
+    Object.defineProperty(inputs, 'POLARIS_ACCESS_TOKEN', {value: 'access_token'})
+    Object.defineProperty(inputs, 'POLARIS_APPLICATION_NAME', {value: 'POLARIS_APPLICATION_NAME'})
+    Object.defineProperty(inputs, 'POLARIS_PROJECT_NAME', {value: 'POLARIS_PROJECT_NAME'})
+    Object.defineProperty(inputs, 'POLARIS_ASSESSMENT_TYPES', {value: 'SCA,SAST'})
+    Object.defineProperty(inputs, 'POLARIS_BRANCH_NAME', {value: 'feature1'})
+    Object.defineProperty(inputs, 'POLARIS_TEST_SCA_TYPE', {value: 'SCA-SIGNATURE'})
+    Object.defineProperty(inputs, 'POLARIS_TEST_SAST_TYPE', {value: 'SAST_RAPID'})
+    const stp: BridgeToolsParameter = new BridgeToolsParameter(tempPath)
+    const resp = stp.getFormattedCommandForPolaris('blackduck-security-action')
+
+    expect(resp).not.toBeNull()
+    expect(resp).toContain('--stage polaris')
+
+    const jsonString = fs.readFileSync(tempPath.concat(polaris_input_file), 'utf-8')
+    const jsonData = JSON.parse(jsonString)
+    expect(jsonData.data.polaris.serverUrl).toContain('server_url')
+    expect(jsonData.data.polaris.accesstoken).toContain('access_token')
+    expect(jsonData.data.polaris.application.name).toContain('POLARIS_APPLICATION_NAME')
+    expect(jsonData.data.polaris.project.name).toContain('POLARIS_PROJECT_NAME')
+    expect(jsonData.data.polaris.assessment.types).toEqual(['SCA', 'SAST'])
+    expect(jsonData.data.polaris.branch.name).toContain('feature1')
+    expect(jsonData.data.polaris.test.sca.type).toContain('SCA-SIGNATURE')
+    expect(jsonData.data.polaris.test.sast.type).toContain('SAST_RAPID')
   })
 
   it('Test getFormattedCommandForPolaris - badges failure (empty github token)', () => {

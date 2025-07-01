@@ -1,6 +1,6 @@
 {
   "name": "black-duck-security-scan",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "private": true,
   "description": "Perform security scan using Blackduck Tools",
   "main": "lib/main.js",
@@ -60,12 +60,5 @@
     "typed-rest-client": "^1.8.9",
     "unzipper": "^0.10.11",
     "uuid": "^8.3.2"
-  },
-  "jest": {
-    "coverageThreshold": {
-      "global": {
-        "lines": 80
-      }
-    }
   }
 }

@@ -2,7 +2,8 @@ import {BlackDuckDetect} from './blackduck'
 import {CoverityDetect} from './coverity'
 import {GithubData} from './github'
 import {Reports} from './reports'
-import {AsyncMode} from './async-mode'
+import {Common, Network} from './common'
+import {Bridge} from './bridge'
 
 export interface Polaris {
   polaris: PolarisData
@@ -10,9 +11,11 @@ export interface Polaris {
   github?: GithubData
   coverity?: CoverityDetect
   detect?: Omit<BlackDuckDetect, 'install' | 'scan'>
+  network: Network
+  bridge: Bridge
 }
 
-export interface PolarisData extends AsyncMode {
+export interface PolarisData extends Common {
   accesstoken: string
   serverUrl: string
   application: {name: string}
@@ -54,5 +57,6 @@ export interface Branch {
 }
 
 export interface Test {
-  sca: {type: string}
+  sca?: {type: string}
+  sast?: {type: string[]}
 }
