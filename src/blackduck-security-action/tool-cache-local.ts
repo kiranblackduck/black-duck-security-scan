@@ -10,14 +10,12 @@ import * as stream from 'stream'
 import * as util from 'util'
 import * as https from 'https'
 import * as url from 'url'
-import * as tls from 'tls'
 
 import {OutgoingHttpHeaders} from 'http'
 import {v4 as uuidv4} from 'uuid'
 import os from 'os'
 import {NON_RETRY_HTTP_CODES, RETRY_COUNT, RETRY_DELAY_IN_MILLISECONDS} from '../application-constants'
-import * as inputs from './inputs'
-import {parseToBoolean} from './utility'
+import {getSSLConfig, createHTTPSRequestOptions} from './ssl-utils'
 
 export class HTTPError extends Error {
   constructor(readonly httpStatusCode: number | undefined) {
@@ -67,24 +65,12 @@ async function downloadToolAttempt(bridgeDownloadUrl: string, dest: string, auth
     throw new Error(`Destination file path ${dest} already exists`)
   }
 
-  // Check SSL configuration options
-  const trustAllCerts = parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)
-  let customCA: string | undefined
-
-  if (trustAllCerts) {
-    core.debug('SSL certificate verification disabled (NETWORK_SSL_TRUST_ALL=true)')
-  } else if (inputs.NETWORK_SSL_CERT_FILE) {
-    try {
-      customCA = fs.readFileSync(inputs.NETWORK_SSL_CERT_FILE, 'utf8')
-      core.debug('Custom CA certificate loaded successfully')
-    } catch (error) {
-      core.warning(`Failed to read custom CA certificate file: ${error}`)
-    }
-  }
+  // Get SSL configuration
+  const sslConfig = getSSLConfig()
 
   // Use direct Node.js https for custom SSL configuration (custom CA or trust all)
-  if (bridgeDownloadUrl.startsWith('https:') && (customCA || trustAllCerts)) {
-    return await downloadWithCustomCA(bridgeDownloadUrl, dest, customCA, auth, headers, trustAllCerts)
+  if (bridgeDownloadUrl.startsWith('https:') && (sslConfig.customCA || sslConfig.trustAllCerts)) {
+    return await downloadWithCustomSSL(bridgeDownloadUrl, dest, sslConfig, auth, headers)
   }
 
   // Fallback to @actions/http-client for standard cases
@@ -94,7 +80,7 @@ async function downloadToolAttempt(bridgeDownloadUrl: string, dest: string, auth
     }
 
     // Configure SSL options for @actions/http-client
-    if (trustAllCerts) {
+    if (sslConfig.trustAllCerts) {
       httpClientOptions.ignoreSslError = true
       core.debug('SSL certificate verification disabled for @actions/http-client')
     }
@@ -142,8 +128,8 @@ async function downloadToolAttempt(bridgeDownloadUrl: string, dest: string, auth
   }
 }
 
-async function downloadWithCustomCA(downloadUrl: string, dest: string, customCA: string | undefined, auth?: string, headers?: OutgoingHttpHeaders, trustAllCerts = false): Promise<string> {
-  if (trustAllCerts) {
+async function downloadWithCustomSSL(downloadUrl: string, dest: string, sslConfig: import('./ssl-utils').SSLConfig, auth?: string, headers?: OutgoingHttpHeaders): Promise<string> {
+  if (sslConfig.trustAllCerts) {
     core.debug('Using direct Node.js HTTPS with SSL verification disabled (trust all certificates)')
   } else {
     core.debug('Using direct Node.js HTTPS with custom CA certificate')
@@ -155,28 +141,23 @@ async function downloadWithCustomCA(downloadUrl: string, dest: string, customCA:
     let totalBytes = 0
     let downloadedBytes = 0
 
-    const requestOptions: https.RequestOptions = {
-      hostname: parsedUrl.hostname,
-      port: parsedUrl.port || 443,
-      path: parsedUrl.pathname + parsedUrl.search,
-      method: 'GET',
-      headers: {
-        'User-Agent': userAgent,
-        ...headers
+    // Create request options with SSL configuration
+    const headerRecord: Record<string, string> = {
+      'User-Agent': userAgent
+    }
+
+    // Convert OutgoingHttpHeaders to Record<string, string>
+    if (headers) {
+      for (const [key, value] of Object.entries(headers)) {
+        if (typeof value === 'string') {
+          headerRecord[key] = value
+        } else if (Array.isArray(value)) {
+          headerRecord[key] = value.join(', ')
+        }
       }
     }
 
-    // Configure SSL options based on settings
-    if (trustAllCerts) {
-      // Disable certificate verification completely
-      requestOptions.rejectUnauthorized = false
-      core.debug('SSL certificate verification disabled for this request')
-    } else if (customCA) {
-      // Get system CAs and append custom CA
-      const systemCAs = tls.rootCertificates || []
-      requestOptions.ca = [customCA, ...systemCAs]
-      core.debug(`Using custom CA certificate with ${systemCAs.length} system CAs for SSL verification`)
-    }
+    const requestOptions = createHTTPSRequestOptions(parsedUrl, sslConfig, headerRecord)
 
     if (auth) {
       if (requestOptions.headers) {

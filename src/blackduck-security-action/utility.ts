@@ -13,8 +13,7 @@ import {isNullOrEmptyValue} from './validators'
 import * as inputs from './inputs'
 import {debug, warning, info} from '@actions/core'
 import {HttpClient} from 'typed-rest-client/HttpClient'
-import tls from 'tls'
-import https from 'https'
+import {getSSLConfig, getSSLConfigHash} from './ssl-utils'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -194,15 +193,6 @@ let _httpClientCache: HttpClient | null = null
 let _httpClientConfigHash: string | null = null
 
 /**
- * Gets the current SSL configuration as a hash to detect changes
- */
-function getSSLConfigHash(): string {
-  const trustAll = parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)
-  const certFile = inputs.NETWORK_SSL_CERT_FILE?.trim() || ''
-  return `trustAll:${trustAll}|certFile:${certFile}`
-}
-
-/**
  * Creates an HttpClient instance with SSL configuration based on action inputs.
  * Uses singleton pattern to reuse the same client instance when configuration hasn't changed.
  *
@@ -218,52 +208,28 @@ export function createSSLConfiguredHttpClient(userAgent = 'BlackDuckSecurityActi
     return _httpClientCache
   }
 
-  // Create new HTTP client with current configuration
-  const trustAllCerts = parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)
+  // Get SSL configuration
+  const sslConfig = getSSLConfig()
 
-  if (trustAllCerts) {
+  if (sslConfig.trustAllCerts) {
     debug('SSL certificate verification disabled for HttpClient (NETWORK_SSL_TRUST_ALL=true)')
     _httpClientCache = new HttpClient(userAgent, [], {ignoreSslError: true})
-  } else if (inputs.NETWORK_SSL_CERT_FILE) {
+  } else if (sslConfig.customCA) {
     debug(`Using custom CA certificate for HttpClient: ${inputs.NETWORK_SSL_CERT_FILE}`)
     try {
-      // Read and validate the certificate file exists and is readable
-      fs.readFileSync(inputs.NETWORK_SSL_CERT_FILE, 'utf8')
-      debug('Successfully validated custom CA certificate file')
-
-      // Get system CAs count for logging (same approach as tool-cache-local.ts)
-      const systemCAs = tls.rootCertificates || []
-      debug(`Using custom CA certificate with ${systemCAs.length} system CAs for SSL verification`)
-
-      // Read the custom CA content for combining with system CAs
-      const customCA = fs.readFileSync(inputs.NETWORK_SSL_CERT_FILE, 'utf8')
-
-      // Get system CAs and append custom CA (same approach as tool-cache-local.ts)
-      const combinedCAs = [customCA, ...systemCAs]
-
-      // Create custom HTTPS agent with combined CA certificates (same as tool-cache-local.ts)
-      const httpsAgent = new https.Agent({
-        ca: combinedCAs,
-        rejectUnauthorized: true
-      })
-
-      // Store the agent globally for this HttpClient instance to use
-      // We temporarily override the global agent during HttpClient creation
-      const originalGlobalAgent = https.globalAgent
-      https.globalAgent = httpsAgent
-
+      // Note: typed-rest-client has limitations with combining system CAs + custom CAs
+      // For downloads, tool-cache-local.ts uses direct Node.js HTTPS which supports this properly
+      // For HttpClient, we fallback to the caFile option which only uses the custom CA
       _httpClientCache = new HttpClient(userAgent, [], {
         allowRetries: true,
-        maxRetries: 3
+        maxRetries: 3,
+        cert: {
+          caFile: inputs.NETWORK_SSL_CERT_FILE
+        }
       })
-
-      // Restore the original global agent immediately after creation
-      // This minimizes side effects while ensuring our HttpClient uses the combined CAs
-      https.globalAgent = originalGlobalAgent
-
-      debug('HttpClient configured with custom CA certificate combined with system CAs')
+      debug('HttpClient configured with custom CA certificate (Note: typed-rest-client limitation - system CAs not combined)')
     } catch (err) {
-      warning(`Failed to read custom CA certificate file, using default HttpClient: ${err}`)
+      warning(`Failed to configure custom CA certificate, using default HttpClient: ${err}`)
       _httpClientCache = new HttpClient(userAgent)
     }
   } else {
