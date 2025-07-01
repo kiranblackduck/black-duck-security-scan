@@ -12,7 +12,6 @@ import {GitHubClientServiceFactory} from '../../src/blackduck-security-action/fa
 import {GithubClientServiceCloud} from '../../src/blackduck-security-action/service/impl/cloud/github-client-service-cloud'
 import fs from 'fs'
 import * as core from '@actions/core'
-import * as constants from '../../src/application-constants'
 
 jest.mock('@actions/core')
 jest.mock('@actions/io', () => ({
@@ -136,7 +135,7 @@ describe('Black Duck Security Action: Handling isBridgeExecuted and Exit Code In
       await run()
     } catch (error: any) {
       expect(error.message).toContain('Bridge CLI execution failed with exit code 8')
-      expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, '/', 'blackduck_sarif_report_1749123407519')
+      expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith('Blackduck SCA SARIF Generator', '/', 'blackduck_sarif_report_1749123407519')
     }
   })
 
