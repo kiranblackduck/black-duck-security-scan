@@ -25,12 +25,6 @@ export async function run() {
     const sb = new Bridge()
     // Prepare bridge command
     formattedCommand = await sb.prepareCommand(tempDir)
-    // To enable SSL certificate verification
-    if (parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)) {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-    } else if (inputs.NETWORK_SSL_CERT_FILE && !parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)) {
-      process.env.NODE_EXTRA_CA_CERTS = inputs.NETWORK_SSL_CERT_FILE
-    }
     // Download bridge
     if (!inputs.ENABLE_NETWORK_AIR_GAP) {
       await sb.downloadBridge(tempDir)
