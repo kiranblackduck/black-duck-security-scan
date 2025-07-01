@@ -12,6 +12,7 @@ import {GitHubClientServiceFactory} from '../../src/blackduck-security-action/fa
 import {GithubClientServiceCloud} from '../../src/blackduck-security-action/service/impl/cloud/github-client-service-cloud'
 import fs from 'fs'
 import * as core from '@actions/core'
+import * as constants from '../../src/application-constants'
 
 jest.mock('@actions/core')
 jest.mock('@actions/io', () => ({
@@ -112,7 +113,49 @@ describe('Black Duck Security Action: Handling isBridgeExecuted and Exit Code In
       BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: '/',
       MARK_BUILD_STATUS: 'success'
     })
-    setupMocks()
+
+    jest.spyOn(Bridge.prototype, 'getBridgeVersionFromLatestURL').mockResolvedValueOnce('0.1.0')
+    const downloadFileResp: DownloadFileResponse = {
+      filePath: 'C://user/temp/download/',
+      fileName: 'C://user/temp/download/bridge-win.zip'
+    }
+    jest.spyOn(downloadUtility, 'getRemoteFile').mockResolvedValueOnce(downloadFileResp)
+    jest.spyOn(downloadUtility, 'extractZipped').mockResolvedValueOnce(true)
+    jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValueOnce('/home/bridge')
+
+    jest.spyOn(Bridge.prototype, 'executeBridgeCommand').mockRejectedValueOnce(new Error('Bridge CLI execution failed with exit code 8'))
+    jest.spyOn(utility, 'checkJobResult').mockReturnValue('success')
+    jest.spyOn(utility, 'isPullRequestEvent').mockReturnValue(false)
+    const uploadResponse: UploadArtifactResponse = {size: 0, id: 123}
+    jest.spyOn(diagnostics, 'uploadSarifReportAsArtifact').mockResolvedValueOnce(uploadResponse)
+
+    const error = new Error('Error: The process failed with exit code 8')
+    expect(getBridgeExitCode(error)).toBe(true)
+
+    try {
+      await run()
+    } catch (error: any) {
+      expect(error.message).toContain('Bridge CLI execution failed with exit code 8')
+      expect(diagnostics.uploadSarifReportAsArtifact).toHaveBeenCalledWith(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, '/', 'blackduck_sarif_report_1749123407519')
+    }
+  })
+
+  it('uploads SARIF report for exitCode 8 through new default path', async () => {
+    setupBlackDuckInputs({
+      BLACKDUCKSCA_REPORTS_SARIF_CREATE: 'true',
+      BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: '/',
+      MARK_BUILD_STATUS: 'success'
+    })
+
+    jest.spyOn(Bridge.prototype, 'getBridgeVersionFromLatestURL').mockResolvedValueOnce('3.5.0')
+    const downloadFileResp: DownloadFileResponse = {
+      filePath: 'C://user/temp/download/',
+      fileName: 'C://user/temp/download/bridge-win.zip'
+    }
+    jest.spyOn(downloadUtility, 'getRemoteFile').mockResolvedValueOnce(downloadFileResp)
+    jest.spyOn(downloadUtility, 'extractZipped').mockResolvedValueOnce(true)
+    jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValueOnce('/home/bridge')
+
     jest.spyOn(Bridge.prototype, 'executeBridgeCommand').mockRejectedValueOnce(new Error('Bridge CLI execution failed with exit code 8'))
     jest.spyOn(utility, 'checkJobResult').mockReturnValue('success')
     jest.spyOn(utility, 'isPullRequestEvent').mockReturnValue(false)
