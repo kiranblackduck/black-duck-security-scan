@@ -25,6 +25,7 @@ export async function run() {
     const sb = new Bridge()
     // Prepare bridge command
     formattedCommand = await sb.prepareCommand(tempDir)
+
     // Download bridge
     if (!inputs.ENABLE_NETWORK_AIR_GAP) {
       await sb.downloadBridge(tempDir)
