@@ -5,9 +5,11 @@ import {getGitHubWorkspaceDir as getGitHubWorkspaceDirV2} from 'actions-artifact
 import * as constants from './application-constants'
 import * as inputs from './blackduck-security-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-security-action/artifacts'
+import * as util from './blackduck-security-action/utility'
+import {readFileSync} from 'fs'
+import {join} from 'path'
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
-import * as util from './blackduck-security-action/utility'
 
 export async function run() {
   info('Black Duck Security Action started...')
@@ -16,13 +18,19 @@ export async function run() {
   let isBridgeExecuted = false
   let exitCode
   let bridgeVersion = ''
+  let productInputFileName = ''
+  let productInputFilPath = ''
 
   try {
     const sb = new Bridge()
-    // Get Bridge Version
-    bridgeVersion = await sb.getBridgeVersion()
     // Prepare bridge command
-    formattedCommand = await sb.prepareCommand(tempDir, bridgeVersion)
+    formattedCommand = await sb.prepareCommand(tempDir)
+    // To enable SSL certificate verification
+    if (parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    } else if (inputs.NETWORK_SSL_CERT_FILE && !parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)) {
+      process.env.NODE_EXTRA_CA_CERTS = inputs.NETWORK_SSL_CERT_FILE
+    }
     // Download bridge
     if (!inputs.ENABLE_NETWORK_AIR_GAP) {
       await sb.downloadBridge(tempDir)
@@ -30,6 +38,15 @@ export async function run() {
       info('Network air gap is enabled, skipping bridge CLI download.')
       await sb.validateBridgePath()
     }
+    // Get Bridge version from bridge Path
+    bridgeVersion = getBridgeVersion(sb.bridgePath)
+
+    //Extract input.json file and update sarif default file path based on bridge version
+    productInputFilPath = util.extractInputJsonFilename(formattedCommand)
+    // Extract product input file name from the path
+    productInputFileName = productInputFilPath.split('/').pop() || ''
+    // Based on bridge version and productInputFileName get the sarif file path
+    util.updateSarifFilePaths(productInputFileName, bridgeVersion, productInputFilPath)
     // Execute bridge command
     exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
     if (exitCode === 0) {
@@ -54,46 +71,44 @@ export async function run() {
         await uploadDiagnostics()
       }
       if (!isPullRequestEvent() && uploadSarifReportBasedOnExitCode) {
-        if (bridgeVersion < '3.5.0') {
+        if (bridgeVersion < constants.VERSION) {
+          // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
           if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
-        } else {
-          // Upload Black Duck sarif file as GitHub artifact
-          if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
-            await uploadSarifReportAsArtifact(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
-          }
-        }
-        if (bridgeVersion < '3.5.0') {
           // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
           if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, constants.POLARIS_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
         } else {
-          // Upload Polaris sarif file as GitHub artifact
+          // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
+          if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
+            await uploadSarifReportAsArtifact(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, constants.BLACKDUCK_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
+          }
+
+          // Upload Polaris sarif file as GitHub artifact (Deprecated Logic)
           if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
             await uploadSarifReportAsArtifact(constants.INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, constants.POLARIS_SARIF_ARTIFACT_NAME.concat(util.getRealSystemTime()))
           }
         }
         if (!isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
           const gitHubClientService = await GitHubClientServiceFactory.getGitHubClientServiceInstance()
-          if (bridgeVersion < '3.5.0') {
+          if (bridgeVersion < constants.VERSION) {
             // Upload Black Duck SARIF Report to code scanning tab
             if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
+            }
+
+            // Upload Polaris SARIF Report to code scanning tab
+            if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
+              await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
             }
           } else {
             // Upload Black Duck SARIF Report to code scanning tab
             if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
             }
-          }
-          if (bridgeVersion < '3.5.0') {
-            // Upload Polaris SARIF Report to code scanning tab
-            if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
-              await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
-            }
-          } else {
+
             // Upload Polaris SARIF Report to code scanning tab
             if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
@@ -140,6 +155,20 @@ export function markBuildStatusIfIssuesArePresent(status: number, taskResult: st
     info(`Marking the build ${taskResult} as configured in the task.`)
   } else {
     setFailed('Workflow failed! '.concat(logBridgeExitCodes(exitMessage)))
+  }
+}
+// Extract version number from bridge path
+function getBridgeVersion(bridgePath: string): string {
+  try {
+    const versionFilePath = join(bridgePath, 'versions.txt')
+    const content = readFileSync(versionFilePath, 'utf-8')
+    const match = content.match(/bridge-cli-bundle:\s*([0-9.]+)/)
+    if (match && match[1]) {
+      return match[1]
+    }
+    return ''
+  } catch (error) {
+    return ''
   }
 }
 

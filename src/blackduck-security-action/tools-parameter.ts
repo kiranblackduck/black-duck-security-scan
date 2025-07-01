@@ -33,7 +33,7 @@ export class BridgeToolsParameter {
   constructor(tempDir: string) {
     this.tempDir = tempDir
   }
-  getFormattedCommandForPolaris(githubRepoName: string, bridgeVersion: string): string {
+  getFormattedCommandForPolaris(githubRepoName: string): string {
     let command = ''
     const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     const assessmentTypeArray: string[] = []
@@ -216,17 +216,15 @@ export class BridgeToolsParameter {
             }
           }
         }
-        const sarifFilePath = bridgeVersion < constants.VERSION && isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH
-        info('SarifFilepath: '.concat(sarifFilePath))
         polData.data.polaris.reports = {
           sarif: {
             create: true,
             ...(inputs.POLARIS_REPORTS_SARIF_SEVERITIES && {
               severities: sarifReportFilterSeverities
             }),
-            ...(sarifFilePath && {
+            ...(inputs.POLARIS_REPORTS_SARIF_FILE_PATH && {
               file: {
-                path: sarifFilePath
+                path: inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
               }
             }),
             ...(inputs.POLARIS_REPORTS_SARIF_ISSUE_TYPES && {
@@ -366,7 +364,7 @@ export class BridgeToolsParameter {
     return command
   }
 
-  getFormattedCommandForBlackduck(bridgeVersion: string): string {
+  getFormattedCommandForBlackduck(): string {
     const failureSeverities: string[] = []
     const customHeader = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_SERVER_URL] === constants.GITHUB_CLOUD_URL ? constants.INTEGRATIONS_GITHUB_CLOUD : constants.INTEGRATIONS_GITHUB_EE
     if (inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES != null && inputs.BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES.length > 0) {
@@ -476,17 +474,15 @@ export class BridgeToolsParameter {
             }
           }
         }
-        const sarifFilePath = bridgeVersion < constants.VERSION && isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim() : constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH
-        info('SarifFilepath: '.concat(sarifFilePath))
         blackduckData.data.blackducksca.reports = {
           sarif: {
             create: true,
             ...(inputs.BLACKDUCKSCA_REPORTS_SARIF_SEVERITIES && {
               severities: sarifReportFilterSeverities
             }),
-            ...(sarifFilePath && {
+            ...(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH && {
               file: {
-                path: sarifFilePath
+                path: inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
               }
             }),
             groupSCAIssues: isBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES) ? JSON.parse(inputs.BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES) : true

@@ -121,7 +121,16 @@ describe('Black Duck Security Action: Handling isBridgeExecuted and Exit Code In
       BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: '/',
       MARK_BUILD_STATUS: 'success'
     })
-    setupMocks()
+
+    jest.spyOn(Bridge.prototype, 'getBridgeVersionFromLatestURL').mockResolvedValueOnce('0.1.0')
+    const downloadFileResp: DownloadFileResponse = {
+      filePath: 'C://user/temp/download/',
+      fileName: 'C://user/temp/download/bridge-win.zip'
+    }
+    jest.spyOn(downloadUtility, 'getRemoteFile').mockResolvedValueOnce(downloadFileResp)
+    jest.spyOn(downloadUtility, 'extractZipped').mockResolvedValueOnce(true)
+    jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValueOnce('/home/bridge')
+
     jest.spyOn(Bridge.prototype, 'executeBridgeCommand').mockRejectedValueOnce(new Error('Bridge CLI execution failed with exit code 8'))
     jest.spyOn(utility, 'checkJobResult').mockReturnValue('success')
     jest.spyOn(utility, 'isPullRequestEvent').mockReturnValue(false)
@@ -189,7 +198,7 @@ test('Not supported flow error - run', async () => {
     await run()
   } catch (error: any) {
     expect(error).toBeInstanceOf(Error)
-    expect(error.message).toContain('Requires at least one scan type: (polaris_server_url,coverity_url,blackducksca_url,srm_url)')
+    expect(error.message).toContain('Provide at least one of the product URL (polaris_server_url, coverity_url, blackducksca_url, or srm_url) to proceed.')
   }
 })
 
@@ -208,7 +217,7 @@ test('Not supported flow error (empty strings) - run', async () => {
     await run()
   } catch (error: any) {
     expect(error).toBeInstanceOf(Error)
-    expect(error.message).toContain('Requires at least one scan type: (polaris_server_url,coverity_url,blackducksca_url,srm_url)')
+    expect(error.message).toContain('Provide at least one of the product URL (polaris_server_url, coverity_url, blackducksca_url, or srm_url) to proceed.')
   }
 })
 
