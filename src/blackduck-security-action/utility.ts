@@ -12,8 +12,9 @@ import {Polaris} from './input-data/polaris'
 import {isNullOrEmptyValue} from './validators'
 import * as inputs from './inputs'
 import {debug, warning, info} from '@actions/core'
+import * as https from 'https'
 import {HttpClient} from 'typed-rest-client/HttpClient'
-import {getSSLConfig, getSSLConfigHash} from './ssl-utils'
+import {getSSLConfig, getSSLConfigHash, createHTTPSAgent} from './ssl-utils'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -188,13 +189,47 @@ export function updateSarifFilePaths(productInputFileName: string, bridgeVersion
   }
 }
 
-// Singleton HTTP client cache
+// Singleton HTTPS agent cache for downloads (with proper system + custom CA combination)
+let _httpsAgentCache: https.Agent | null = null
+let _httpsAgentConfigHash: string | null = null
+
+// Singleton HTTP client cache for GitHub API operations
 let _httpClientCache: HttpClient | null = null
 let _httpClientConfigHash: string | null = null
 
 /**
+ * Creates an HTTPS agent with SSL configuration based on action inputs.
+ * Uses singleton pattern to reuse the same agent instance when configuration hasn't changed.
+ * This properly combines system CAs with custom CAs unlike typed-rest-client.
+ * Use this for direct HTTPS operations like file downloads.
+ *
+ * @returns HTTPS agent configured with appropriate SSL settings
+ */
+export function createSSLConfiguredHttpsAgent(): https.Agent {
+  const currentConfigHash = getSSLConfigHash()
+
+  // Return cached agent if configuration hasn't changed
+  if (_httpsAgentCache && _httpsAgentConfigHash === currentConfigHash) {
+    debug('Reusing existing HTTPS agent instance')
+    return _httpsAgentCache
+  }
+
+  // Get SSL configuration and create agent
+  const sslConfig = getSSLConfig()
+  _httpsAgentCache = createHTTPSAgent(sslConfig)
+
+  // Cache the configuration hash
+  _httpsAgentConfigHash = currentConfigHash
+  debug('Created new HTTPS agent instance with SSL configuration')
+
+  return _httpsAgentCache
+}
+
+/**
  * Creates an HttpClient instance with SSL configuration based on action inputs.
  * Uses singleton pattern to reuse the same client instance when configuration hasn't changed.
+ * This uses typed-rest-client for structured API operations (GitHub API).
+ * Note: typed-rest-client has limitations with combining system CAs + custom CAs.
  *
  * @param userAgent The user agent string to use for the HTTP client (default: "BlackDuckSecurityAction")
  * @returns HttpClient instance configured with appropriate SSL settings
@@ -218,8 +253,8 @@ export function createSSLConfiguredHttpClient(userAgent = 'BlackDuckSecurityActi
     debug(`Using custom CA certificate for HttpClient: ${inputs.NETWORK_SSL_CERT_FILE}`)
     try {
       // Note: typed-rest-client has limitations with combining system CAs + custom CAs
-      // For downloads, tool-cache-local.ts uses direct Node.js HTTPS which supports this properly
-      // For HttpClient, we fallback to the caFile option which only uses the custom CA
+      // For downloads, use createSSLConfiguredHttpsAgent() which properly combines CAs
+      // For API operations, this fallback to caFile option (custom CA only) is acceptable
       _httpClientCache = new HttpClient(userAgent, [], {
         allowRetries: true,
         maxRetries: 3,
@@ -245,8 +280,20 @@ export function createSSLConfiguredHttpClient(userAgent = 'BlackDuckSecurityActi
 }
 
 /**
+ * Gets a shared HTTPS agent with SSL configuration.
+ * This properly combines system CAs with custom CAs for direct HTTPS operations.
+ * Use this for file downloads and direct HTTPS requests.
+ *
+ * @returns HTTPS agent configured with appropriate SSL settings
+ */
+export function getSharedHttpsAgent(): https.Agent {
+  return createSSLConfiguredHttpsAgent()
+}
+
+/**
  * Gets a shared HttpClient instance with SSL configuration.
- * This is a convenience method that uses a default user agent.
+ * This is for GitHub API operations using typed-rest-client.
+ * Use this for structured API operations that need typed responses.
  *
  * @returns HttpClient instance configured with appropriate SSL settings
  */
@@ -255,10 +302,12 @@ export function getSharedHttpClient(): HttpClient {
 }
 
 /**
- * Clears the HTTP client cache. Useful for testing or when you need to force recreation.
+ * Clears both HTTPS agent and HTTP client caches. Useful for testing or when you need to force recreation.
  */
 export function clearHttpClientCache(): void {
+  _httpsAgentCache = null
+  _httpsAgentConfigHash = null
   _httpClientCache = null
   _httpClientConfigHash = null
-  debug('HTTP client cache cleared')
+  debug('HTTP client and HTTPS agent caches cleared')
 }

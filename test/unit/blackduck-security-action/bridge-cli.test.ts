@@ -170,17 +170,16 @@ test('Validate bridge URL Linux', () => {
 })
 
 test('Test validateBridgeVersion', async () => {
-  const incomingMessage: IncomingMessage = new IncomingMessage(new Socket())
-
-  const httpResponse: Mocked<HttpClientResponse> = {
-    message: incomingMessage,
-    readBody: jest.fn()
-  }
-  httpResponse.readBody.mockResolvedValueOnce('\n' + '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">\n' + '<html>\n' + '<head><meta name="robots" content="noindex" />\n' + '<title>Index of bds-integrations-release/com/integration/blackduck-security-action</title>\n' + '</head>\n' + '<body>\n' + '<h1>Index of bds-integrations-release/com/integration/blackduck-security-action</h1>\n' + '<pre>Name    Last modified      Size</pre><hr/>\n' + '<pre><a href="../">../</a>\n' + '<a href="0.1.61/">0.1.61/</a>  04-Oct-2022 23:05    -\n' + '<a href="0.1.67/">0.1.67/</a>  07-Oct-2022 00:35    -\n' + '<a href="0.1.72/">0.1.72/</a>  17-Oct-2022 19:46    -\n' + '</pre>\n' + '<hr/><address style="font-size:small;">Artifactory/7.31.13 Server at sig-repo.blackduck.com Port 80</address></body></html>')
-  httpResponse.message.statusCode = 200
-  jest.spyOn(HttpClient.prototype, 'get').mockResolvedValueOnce(httpResponse)
-
   const sb = new Bridge()
+
+  // Mock the makeHttpsGetRequest method directly
+  const mockHttpsResponse = {
+    statusCode: 200,
+    body: '\n' + '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">\n' + '<html>\n' + '<head><meta name="robots" content="noindex" />\n' + '<title>Index of bds-integrations-release/com/integration/blackduck-security-action</title>\n' + '</head>\n' + '<body>\n' + '<h1>Index of bds-integrations-release/com/integration/blackduck-security-action</h1>\n' + '<pre>Name    Last modified      Size</pre><hr/>\n' + '<pre><a href="../">../</a>\n' + '<a href="0.1.61/">0.1.61/</a>  04-Oct-2022 23:05    -\n' + '<a href="0.1.67/">0.1.67/</a>  07-Oct-2022 00:35    -\n' + '<a href="0.1.72/">0.1.72/</a>  17-Oct-2022 19:46    -\n' + '</pre>\n' + '<hr/><address style="font-size:small;">Artifactory/7.31.13 Server at sig-repo.blackduck.com Port 80</address></body></html>'
+  }
+
+  jest.spyOn(sb as any, 'makeHttpsGetRequest').mockResolvedValueOnce(mockHttpsResponse)
+
   const response = await sb.validateBridgeVersion('0.1.67')
 
   expect(response).toBe(true)
@@ -240,15 +239,15 @@ test('Test getVersionUrl linux', () => {
 test('Latest URL Version success', async () => {
   Object.defineProperty(constants, 'LATEST_GLOBAL_VERSION_URL', {value: 'https://artifact.com/latest/version.txt'})
 
-  const incomingMessage: IncomingMessage = new IncomingMessage(new Socket())
   const sb = new Bridge()
-  const httpResponse: Mocked<HttpClientResponse> = {
-    message: incomingMessage,
-    readBody: jest.fn()
+
+  // Mock the makeHttpsGetRequest method directly
+  const mockHttpsResponse = {
+    statusCode: 200,
+    body: 'bridge-cli-bundle: 0.3.1'
   }
-  httpResponse.readBody.mockResolvedValue('bridge-cli-bundle: 0.3.1')
-  httpResponse.message.statusCode = 200
-  jest.spyOn(HttpClient.prototype, 'get').mockResolvedValueOnce(httpResponse)
+
+  jest.spyOn(sb as any, 'makeHttpsGetRequest').mockResolvedValueOnce(mockHttpsResponse)
 
   const response = await sb.getBridgeVersionFromLatestURL('https://artifact.com/latest/bridge-cli-bundle.zip')
   expect(response).toContain('0.3.1')
