@@ -96,7 +96,7 @@ async function downloadToolAttempt(bridgeDownloadUrl: string, dest: string, auth
     }
 
     const response: httpm.HttpClientResponse = await httpClient.get(bridgeDownloadUrl, headers)
-    if (response.message.statusCode !== 200) {
+    if (response.message.statusCode && (response.message.statusCode < 200 || response.message.statusCode >= 400)) {
       const err = new HTTPError(response.message.statusCode)
       core.debug(`Failed to download from "${bridgeDownloadUrl}". Code(${response.message.statusCode}) Message(${response.message.statusMessage})`)
       throw err
@@ -166,7 +166,7 @@ async function downloadWithCustomSSL(downloadUrl: string, dest: string, sslConfi
     }
 
     const req = https.request(requestOptions, res => {
-      if (res.statusCode !== 200) {
+      if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 400)) {
         reject(new HTTPError(res.statusCode))
         return
       }
