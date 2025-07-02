@@ -27,9 +27,9 @@ export class HTTPError extends Error {
 const userAgent = 'actions/tool-cache'
 
 /**
- * Download a tool from an bridgeDownloadUrl and stream it into a file
+ * Download a tool from a bridge download URL and stream it into a file
  *
- * @param bridgeDownloadUrl       bridgeDownloadUrl of tool to download
+ * @param bridgeDownloadUrl       URL of the bridge tool to download
  * @param dest      path to download tool
  * @param auth      authorization header
  * @param headers   other headers
@@ -98,7 +98,7 @@ async function downloadToolAttempt(bridgeDownloadUrl: string, dest: string, auth
     const response: httpm.HttpClientResponse = await httpClient.get(bridgeDownloadUrl, headers)
     if (response.message.statusCode !== 200) {
       const err = new HTTPError(response.message.statusCode)
-      core.debug(`Failed to download from "${url}". Code(${response.message.statusCode}) Message(${response.message.statusMessage})`)
+      core.debug(`Failed to download from "${bridgeDownloadUrl}". Code(${response.message.statusCode}) Message(${response.message.statusMessage})`)
       throw err
     }
 
