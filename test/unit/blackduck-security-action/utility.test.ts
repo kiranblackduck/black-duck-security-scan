@@ -1,4 +1,4 @@
-import {checkJobResult, cleanUrl, isBoolean, isPullRequestEvent} from '../../../src/blackduck-security-action/utility'
+import {checkJobResult, cleanUrl, isBoolean, isPullRequestEvent, createSSLConfiguredHttpClient, clearHttpClientCache} from '../../../src/blackduck-security-action/utility'
 import * as constants from '../../../src/application-constants'
 test('cleanUrl() trailing slash', () => {
   const validUrl = 'https://my-domain.com'
@@ -86,5 +86,86 @@ describe('checkJobResult', () => {
   it('should return undefined if the build status is not provided', () => {
     const result = checkJobResult()
     expect(result).toBeUndefined()
+  })
+})
+
+describe('SSL HTTP Client Functions', () => {
+  let originalTrustAll: string | undefined
+  let originalCertFile: string | undefined
+
+  beforeEach(() => {
+    originalTrustAll = process.env.NETWORK_SSL_TRUST_ALL
+    originalCertFile = process.env.NETWORK_SSL_CERT_FILE
+    clearHttpClientCache()
+  })
+
+  afterEach(() => {
+    if (originalTrustAll !== undefined) {
+      process.env.NETWORK_SSL_TRUST_ALL = originalTrustAll
+    } else {
+      delete process.env.NETWORK_SSL_TRUST_ALL
+    }
+    if (originalCertFile !== undefined) {
+      process.env.NETWORK_SSL_CERT_FILE = originalCertFile
+    } else {
+      delete process.env.NETWORK_SSL_CERT_FILE
+    }
+    clearHttpClientCache()
+  })
+
+  describe('createSSLConfiguredHttpClient', () => {
+    it('should create new HttpClient instance with default user agent', () => {
+      const client1 = createSSLConfiguredHttpClient()
+      expect(client1).toBeDefined()
+    })
+
+    it('should create new HttpClient instance with custom user agent', () => {
+      const customUserAgent = 'TestAgent'
+      const client = createSSLConfiguredHttpClient(customUserAgent)
+      expect(client).toBeDefined()
+    })
+
+    it('should reuse cached HttpClient instance when SSL config unchanged', () => {
+      const client1 = createSSLConfiguredHttpClient()
+      const client2 = createSSLConfiguredHttpClient()
+      expect(client1).toBe(client2)
+    })
+
+    it('should create new HttpClient instance when SSL config changes', () => {
+      const client1 = createSSLConfiguredHttpClient()
+      process.env.NETWORK_SSL_TRUST_ALL = 'true'
+      clearHttpClientCache()
+      const client2 = createSSLConfiguredHttpClient()
+      expect(client1).not.toBe(client2)
+    })
+
+    it('should handle NETWORK_SSL_TRUST_ALL=true configuration', () => {
+      process.env.NETWORK_SSL_TRUST_ALL = 'true'
+      const client = createSSLConfiguredHttpClient()
+      expect(client).toBeDefined()
+    })
+
+    it('should handle custom CA certificate file configuration', () => {
+      process.env.NETWORK_SSL_CERT_FILE = '/path/to/cert.pem'
+      const client = createSSLConfiguredHttpClient()
+      expect(client).toBeDefined()
+    })
+  })
+
+  describe('clearHttpClientCache', () => {
+    it('should clear cached HttpClient instance', () => {
+      const client1 = createSSLConfiguredHttpClient()
+      clearHttpClientCache()
+      const client2 = createSSLConfiguredHttpClient()
+      expect(client1).not.toBe(client2)
+    })
+
+    it('should allow recreation of HttpClient with different SSL config after cache clear', () => {
+      const client1 = createSSLConfiguredHttpClient()
+      clearHttpClientCache()
+      process.env.NETWORK_SSL_TRUST_ALL = 'true'
+      const client2 = createSSLConfiguredHttpClient()
+      expect(client1).not.toBe(client2)
+    })
   })
 })

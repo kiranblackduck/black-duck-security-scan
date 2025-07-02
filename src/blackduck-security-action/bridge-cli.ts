@@ -4,14 +4,15 @@ import {debug, error, info, warning} from '@actions/core'
 import {GITHUB_ENVIRONMENT_VARIABLES, NON_RETRY_HTTP_CODES, RETRY_COUNT, RETRY_DELAY_IN_MILLISECONDS, BRIDGE_CLI_DEFAULT_PATH_LINUX, BRIDGE_CLI_DEFAULT_PATH_MAC, BRIDGE_CLI_DEFAULT_PATH_WINDOWS, MAC_PLATFORM_NAME, LINUX_PLATFORM_NAME, WINDOWS_PLATFORM_NAME} from '../application-constants'
 import {tryGetExecutablePath} from '@actions/io/lib/io-util'
 import path from 'path'
-import {checkIfPathExists, cleanupTempDir, parseToBoolean, sleep} from './utility'
+import {checkIfPathExists, cleanupTempDir, parseToBoolean, sleep, getSharedHttpsAgent} from './utility'
+import * as https from 'https'
+import * as url from 'url'
 import * as inputs from './inputs'
 import {DownloadFileResponse, extractZipped, getRemoteFile} from './download-utility'
 import fs, {readFileSync} from 'fs'
 import {validateBlackDuckInputs, validateCoverityInputs, validatePolarisInputs, validateSRMInputs, validateScanTypes} from './validators'
 import {BridgeToolsParameter} from './tools-parameter'
 import * as constants from '../application-constants'
-import {HttpClient} from 'typed-rest-client/HttpClient'
 import DomParser from 'dom-parser'
 import os from 'os'
 import semver from 'semver'
@@ -247,40 +248,44 @@ export class Bridge {
 
   async getAllAvailableBridgeVersions(): Promise<string[]> {
     let htmlResponse = ''
-    const httpClient = new HttpClient('blackduck-task')
 
     let retryCountLocal = RETRY_COUNT
     let retryDelay = RETRY_DELAY_IN_MILLISECONDS
-    let httpResponse
+    let statusCode: number
     const versionArray: string[] = []
+
     do {
-      httpResponse = await httpClient.get(this.bridgeArtifactoryURL, {
-        Accept: 'text/html'
-      })
+      try {
+        const response = await this.makeHttpsGetRequest(this.bridgeArtifactoryURL)
+        statusCode = response.statusCode
+        htmlResponse = response.body
 
-      if (!NON_RETRY_HTTP_CODES.has(Number(httpResponse.message.statusCode))) {
-        retryDelay = await this.retrySleepHelper('Getting all available bridge versions has been failed, Retries left: ', retryCountLocal, retryDelay)
-        retryCountLocal--
-      } else {
-        retryCountLocal = 0
-        htmlResponse = await httpResponse.readBody()
+        if (!NON_RETRY_HTTP_CODES.has(Number(statusCode))) {
+          retryDelay = await this.retrySleepHelper('Getting all available bridge versions has been failed, Retries left: ', retryCountLocal, retryDelay)
+          retryCountLocal--
+        } else {
+          retryCountLocal = 0
 
-        const domParser = new DomParser()
-        const doms = domParser.parseFromString(htmlResponse)
-        const elems = doms.getElementsByTagName('a') //querySelectorAll('a')
+          const domParser = new DomParser()
+          const doms = domParser.parseFromString(htmlResponse)
+          const elems = doms.getElementsByTagName('a') //querySelectorAll('a')
 
-        if (elems != null) {
-          for (const el of elems) {
-            const content = el.textContent
-            if (content != null) {
-              const v = content.match('^[0-9]+.[0-9]+.[0-9]+')
+          if (elems != null) {
+            for (const el of elems) {
+              const content = el.textContent
+              if (content != null) {
+                const v = content.match('^[0-9]+.[0-9]+.[0-9]+')
 
-              if (v != null && v.length === 1) {
-                versionArray.push(v[0])
+                if (v != null && v.length === 1) {
+                  versionArray.push(v[0])
+                }
               }
             }
           }
         }
+      } catch (err) {
+        retryDelay = await this.retrySleepHelper('Getting all available bridge versions has been failed, Retries left: ', retryCountLocal, retryDelay)
+        retryCountLocal--
       }
 
       if (retryCountLocal === 0 && !(versionArray.length > 0)) {
@@ -378,27 +383,29 @@ export class Bridge {
 
   async getBridgeVersionFromLatestURL(latestVersionsUrl: string): Promise<string> {
     try {
-      const httpClient = new HttpClient('')
-
       let retryCountLocal = RETRY_COUNT
       let retryDelay = RETRY_DELAY_IN_MILLISECONDS
-      let httpResponse
+
       do {
-        httpResponse = await httpClient.get(latestVersionsUrl, {
-          Accept: 'text/html'
-        })
-        if (!NON_RETRY_HTTP_CODES.has(Number(httpResponse.message.statusCode))) {
-          retryDelay = await this.retrySleepHelper('Getting latest Bridge CLI versions has been failed, Retries left: ', retryCountLocal, retryDelay)
-          retryCountLocal--
-        } else if (httpResponse.message.statusCode === 200) {
-          retryCountLocal = 0
-          const htmlResponse = (await httpResponse.readBody()).trim()
-          const lines = htmlResponse.split('\n')
-          for (const line of lines) {
-            if (line.includes('bridge-cli-bundle')) {
-              return line.split(':')[1].trim()
+        try {
+          const response = await this.makeHttpsGetRequest(latestVersionsUrl)
+
+          if (!NON_RETRY_HTTP_CODES.has(Number(response.statusCode))) {
+            retryDelay = await this.retrySleepHelper('Getting latest Bridge CLI versions has been failed, Retries left: ', retryCountLocal, retryDelay)
+            retryCountLocal--
+          } else if (response.statusCode === 200) {
+            retryCountLocal = 0
+            const htmlResponse = response.body.trim()
+            const lines = htmlResponse.split('\n')
+            for (const line of lines) {
+              if (line.includes('bridge-cli-bundle')) {
+                return line.split(':')[1].trim()
+              }
             }
           }
+        } catch (err) {
+          retryDelay = await this.retrySleepHelper('Getting latest Bridge CLI versions has been failed, Retries left: ', retryCountLocal, retryDelay)
+          retryCountLocal--
         }
 
         if (retryCountLocal === 0) {
@@ -453,5 +460,54 @@ export class Bridge {
     // Delayed exponentially starting from 15 seconds
     retryDelay = retryDelay * 2
     return retryDelay
+  }
+
+  private async makeHttpsGetRequest(targetUrl: string): Promise<{statusCode: number; body: string}> {
+    return new Promise((resolve, reject) => {
+      const parsedUrl = new url.URL(targetUrl)
+      const agent = getSharedHttpsAgent()
+
+      const requestOptions: https.RequestOptions = {
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port || 443,
+        path: parsedUrl.pathname + parsedUrl.search,
+        method: 'GET',
+        agent,
+        headers: {
+          Accept: 'text/html',
+          'User-Agent': 'BlackDuckSecurityAction'
+        }
+      }
+
+      const req = https.request(requestOptions, res => {
+        let body = ''
+
+        res.on('data', chunk => {
+          body += chunk
+        })
+
+        res.on('end', () => {
+          resolve({
+            statusCode: res.statusCode || 0,
+            body
+          })
+        })
+
+        res.on('error', err => {
+          reject(err)
+        })
+      })
+
+      req.on('error', err => {
+        reject(err)
+      })
+
+      req.setTimeout(30000, () => {
+        req.destroy()
+        reject(new Error('Request timeout'))
+      })
+
+      req.end()
+    })
   }
 }
