@@ -84,7 +84,10 @@ export class BridgeToolsParameter {
         }
       }
     }
-
+    // Validate ssl cert and trust all certs validation
+    if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL) {
+      throw new Error(constants.NETWORK_SSL_VALIDATION_MESSAGE)
+    }
     if (inputs.POLARIS_BRANCH_NAME) {
       polData.data.polaris.branch = {name: inputs.POLARIS_BRANCH_NAME}
     }
