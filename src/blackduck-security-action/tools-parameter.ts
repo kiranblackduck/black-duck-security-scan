@@ -310,10 +310,10 @@ export class BridgeToolsParameter {
       }
     }
 
-    // // Validate ssl cert and trust all certs validation
-    // if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
-    //   throw new Error(constants.NETWORK_SSL_VALIDATION_MESSAGE)
-    // }
+    // Validate ssl cert and trust all certs validation
+    if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+      throw new Error(constants.NETWORK_SSL_VALIDATION_MESSAGE)
+    }
     if (inputs.COVERITY_LOCAL) {
       covData.data.coverity.local = true
     }
