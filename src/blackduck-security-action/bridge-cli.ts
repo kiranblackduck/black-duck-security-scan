@@ -224,7 +224,6 @@ export class Bridge {
       if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
         throw new Error(constants.NETWORK_SSL_VALIDATION_MESSAGE)
       }
-
       let validationErrors: string[] = []
       validationErrors = validationErrors.concat(polarisErrors)
       validationErrors = validationErrors.concat(coverityErrors)

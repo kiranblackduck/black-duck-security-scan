@@ -84,6 +84,10 @@ export class BridgeToolsParameter {
         }
       }
     }
+    // // Validate ssl cert and trust all certs validation
+    // if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+    //   throw new Error(constants.NETWORK_SSL_VALIDATION_MESSAGE)
+    // }
     if (inputs.POLARIS_BRANCH_NAME) {
       polData.data.polaris.branch = {name: inputs.POLARIS_BRANCH_NAME}
     }
@@ -306,6 +310,10 @@ export class BridgeToolsParameter {
       }
     }
 
+    // // Validate ssl cert and trust all certs validation
+    // if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+    //   throw new Error(constants.NETWORK_SSL_VALIDATION_MESSAGE)
+    // }
     if (inputs.COVERITY_LOCAL) {
       covData.data.coverity.local = true
     }
@@ -397,6 +405,10 @@ export class BridgeToolsParameter {
       }
     }
 
+    // // Validate ssl cert and trust all certs validation
+    // if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+    //   throw new Error(constants.NETWORK_SSL_VALIDATION_MESSAGE)
+    // }
     if (inputs.DETECT_INSTALL_DIRECTORY) {
       blackduckData.data.detect = blackduckData.data.detect || {}
       blackduckData.data.detect.install = {directory: inputs.DETECT_INSTALL_DIRECTORY}
@@ -562,6 +574,10 @@ export class BridgeToolsParameter {
       }
     }
 
+    // // Validate ssl cert and trust all certs validation
+    // if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+    //   throw new Error(constants.NETWORK_SSL_VALIDATION_MESSAGE)
+    // }
     if (inputs.SRM_BRANCH_NAME || inputs.SRM_BRANCH_PARENT) {
       srmData.data.srm.branch = {
         ...(inputs.SRM_BRANCH_NAME && {name: inputs.SRM_BRANCH_NAME}),
