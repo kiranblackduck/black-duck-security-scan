@@ -1414,3 +1414,17 @@ it('should pass SRM fields and project directory field to bridge', () => {
   expect(jsonData.data.srm.assessment.types).toEqual(['SCA', 'SAST'])
   expect(jsonData.data.project.directory).toBe('SRM_PROJECT_DIRECTORY')
 })
+
+describe('SSL Configuration Validation', () => {
+  it('throws error when both NETWORK_SSL_CERT_FILE and NETWORK_SSL_TRUST_ALL are set', async () => {
+    Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: '/path/to/cert.pem'})
+    Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: 'true'})
+
+    expect(() => {
+      new BridgeToolsParameter('/temp').getFormattedCommandForPolaris('repo-name')
+    }).toThrow('Both "network.ssl.cert.file" and "network.ssl.trustAll" are set. Only one of these resources should be set at a time.')
+
+    Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})
+    Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
+  })
+})
