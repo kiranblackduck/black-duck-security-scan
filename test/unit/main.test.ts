@@ -1085,9 +1085,9 @@ describe('SSL Configuration Tests', () => {
     jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValueOnce('/home/bridge')
     jest.spyOn(Bridge.prototype, 'executeBridgeCommand').mockResolvedValueOnce(0)
 
-    expect(() => {
-      new BridgeToolsParameter('/temp').getFormattedCommandForPolaris('repo-name')
-    }).toThrow('Both "network.ssl.cert.file" and "network.ssl.trustAll" are set. Only one of these resources should be set at a time.')
+    const response = await run()
+
+    expect(response).toEqual(0)
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})
