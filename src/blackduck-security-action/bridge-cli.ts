@@ -189,11 +189,17 @@ export class Bridge {
         return Promise.reject(new Error(constants.SCAN_TYPE_REQUIRED_ERROR.replace('{0}', constants.POLARIS_SERVER_URL_KEY).replace('{1}', constants.COVERITY_URL_KEY).replace('{2}', constants.BLACKDUCKSCA_URL_KEY).replace('{3}', constants.SRM_URL_KEY)))
       }
 
+      // Validate ssl cert and trust all certs validation
+      if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+        return Promise.reject(new Error(constants.NETWORK_SSL_VALIDATION_ERROR_MESSAGE))
+      }
+
       const githubRepo = process.env[GITHUB_ENVIRONMENT_VARIABLES.GITHUB_REPOSITORY]
       const githubRepoName = githubRepo !== undefined ? githubRepo.substring(githubRepo.indexOf('/') + 1, githubRepo.length).trim() : ''
 
       // validating and preparing command for polaris
       const polarisErrors: string[] = validatePolarisInputs()
+
       if (polarisErrors.length === 0 && inputs.POLARIS_SERVER_URL) {
         const polarisCommandFormatter = new BridgeToolsParameter(tempDir)
         formattedCommand = formattedCommand.concat(polarisCommandFormatter.getFormattedCommandForPolaris(githubRepoName))

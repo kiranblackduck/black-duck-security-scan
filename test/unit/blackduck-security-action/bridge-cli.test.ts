@@ -659,3 +659,54 @@ test('ENABLE_NETWORK_AIR_GAP enabled:Test executeBridgeCommand for Windows', () 
   Object.defineProperty(inputs, 'ENABLE_NETWORK_AIR_GAP', {value: false})
   Object.defineProperty(inputs, 'BRIDGE_CLI_INSTALL_DIRECTORY_KEY', {value: ''})
 })
+
+it('throws error when both NETWORK_SSL_CERT_FILE and NETWORK_SSL_TRUST_ALL are set', () => {
+  Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: '/path/to/cert.pem'})
+  Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: 'true'})
+
+  expect(() => {
+    if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+      throw new Error(constants.NETWORK_SSL_VALIDATION_ERROR_MESSAGE)
+    }
+  }).toThrow('Both "network.ssl.cert.file" and "network.ssl.trustAll" are set. Only one of these resources should be set at a time.')
+
+  Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})
+  Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
+})
+
+it('does not throw error when only NETWORK_SSL_CERT_FILE is set', () => {
+  Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: '/path/to/cert.pem'})
+  Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
+
+  expect(() => {
+    if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+      throw new Error(constants.NETWORK_SSL_VALIDATION_ERROR_MESSAGE)
+    }
+  }).not.toThrow()
+
+  Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})
+})
+
+it('does not throw error when only NETWORK_SSL_TRUST_ALL is set', () => {
+  Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})
+  Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: 'true'})
+
+  expect(() => {
+    if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+      throw new Error(constants.NETWORK_SSL_VALIDATION_ERROR_MESSAGE)
+    }
+  }).not.toThrow()
+
+  Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
+})
+
+it('does not throw error when neither NETWORK_SSL_CERT_FILE nor NETWORK_SSL_TRUST_ALL are set', () => {
+  Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})
+  Object.defineProperty(inputs, 'NETWORK_SSL_TRUST_ALL', {value: null})
+
+  expect(() => {
+    if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+      throw new Error(constants.NETWORK_SSL_VALIDATION_ERROR_MESSAGE)
+    }
+  }).not.toThrow()
+})

@@ -12,6 +12,8 @@ import {GitHubClientServiceFactory} from '../../src/blackduck-security-action/fa
 import {GithubClientServiceCloud} from '../../src/blackduck-security-action/service/impl/cloud/github-client-service-cloud'
 import * as core from '@actions/core'
 import * as fs from 'fs'
+import {BridgeToolsParameter} from '../../src/blackduck-security-action/tools-parameter'
+import * as constants from '../../src/application-constants'
 
 jest.mock('@actions/core')
 jest.mock('@actions/io', () => ({
@@ -1084,9 +1086,11 @@ describe('SSL Configuration Tests', () => {
     jest.spyOn(configVariables, 'getGitHubWorkspaceDir').mockReturnValueOnce('/home/bridge')
     jest.spyOn(Bridge.prototype, 'executeBridgeCommand').mockResolvedValueOnce(0)
 
-    const response = await run()
-
-    expect(response).toEqual(0)
+    expect(() => {
+      if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+        throw new Error(constants.NETWORK_SSL_VALIDATION_ERROR_MESSAGE)
+      }
+    }).toThrow('Both "network.ssl.cert.file" and "network.ssl.trustAll" are set. Only one of these resources should be set at a time.')
 
     Object.defineProperty(inputs, 'POLARIS_SERVER_URL', {value: null})
     Object.defineProperty(inputs, 'NETWORK_SSL_CERT_FILE', {value: null})

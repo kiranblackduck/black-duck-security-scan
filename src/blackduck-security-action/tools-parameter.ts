@@ -306,7 +306,6 @@ export class BridgeToolsParameter {
         }
       }
     }
-
     if (inputs.COVERITY_LOCAL) {
       covData.data.coverity.local = true
     }
