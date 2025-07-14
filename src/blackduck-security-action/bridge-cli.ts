@@ -192,6 +192,11 @@ export class Bridge {
       const githubRepo = process.env[GITHUB_ENVIRONMENT_VARIABLES.GITHUB_REPOSITORY]
       const githubRepoName = githubRepo !== undefined ? githubRepo.substring(githubRepo.indexOf('/') + 1, githubRepo.length).trim() : ''
 
+      // Validate ssl cert and trust all certs validation
+      if (inputs.NETWORK_SSL_CERT_FILE && inputs.NETWORK_SSL_TRUST_ALL === 'true') {
+        throw new Error(constants.NETWORK_SSL_VALIDATION_ERROR_MESSAGE)
+      }
+
       // validating and preparing command for polaris
       const polarisErrors: string[] = validatePolarisInputs()
       if (polarisErrors.length === 0 && inputs.POLARIS_SERVER_URL) {
