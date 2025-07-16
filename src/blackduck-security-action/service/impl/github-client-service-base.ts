@@ -1,7 +1,7 @@
 import * as inputs from '../../inputs'
 import * as fs from 'fs'
 import * as zlib from 'zlib'
-import {checkIfPathExists, getDefaultSarifReportPath, sleep, getSharedHttpClient} from '../../utility'
+import {checkIfPathExists, getDefaultSarifReportPath, sleep, getSharedHttpClient, getIntegrationDefaultSarifReportPath} from '../../utility'
 import {debug, info} from '@actions/core'
 import * as constants from '../../../application-constants'
 import {GithubClientServiceInterface} from '../github-client-service-interface'
@@ -34,12 +34,17 @@ export class GithubClientServiceBase implements GithubClientServiceInterface {
     info('Uploading SARIF results to GitHub')
     let retryCountLocal = constants.RETRY_COUNT
     let retryDelay = constants.RETRY_DELAY_IN_MILLISECONDS
+    let sarifFilePath = ''
     const stringFormat = (url: string, ...args: string[]): string => {
       return url.replace(/{(\d+)}/g, (match, index) => args[index] || '')
     }
     const endpoint = stringFormat(this.githubApiURL.concat(this.gitHubCodeScanningUrl), this.repoOwner, this.repoName)
-    const sarifFilePath = userSarifFilePath ? userSarifFilePath : getDefaultSarifReportPath(defaultSarifReportDirectory, true)
-
+    if (defaultSarifReportDirectory === constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY || defaultSarifReportDirectory === constants.POLARIS_SARIF_GENERATOR_DIRECTORY) {
+      sarifFilePath = userSarifFilePath ? userSarifFilePath : getDefaultSarifReportPath(defaultSarifReportDirectory, true)
+    } else {
+      sarifFilePath = userSarifFilePath ? userSarifFilePath : getIntegrationDefaultSarifReportPath(defaultSarifReportDirectory, true)
+    }
+    info(`Sarif file path:::: ${sarifFilePath}`)
     if (checkIfPathExists(sarifFilePath)) {
       try {
         const sarifContent = fs.readFileSync(sarifFilePath, 'utf8')
