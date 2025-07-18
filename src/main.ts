@@ -7,7 +7,7 @@ import * as inputs from './blackduck-security-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-security-action/artifacts'
 import * as util from './blackduck-security-action/utility'
 import {readFileSync} from 'fs'
-import {join} from 'path'
+import {join, basename} from 'path'
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
 
@@ -38,8 +38,8 @@ export async function run() {
 
     //Extract input.json file and update sarif default file path based on bridge version
     productInputFilPath = util.extractInputJsonFilename(formattedCommand)
-    // Extract product input file name from the path
-    productInputFileName = productInputFilPath.split('/').pop() || ''
+    // Extract product input file name from the path (cross-platform compatible)
+    productInputFileName = basename(productInputFilPath)
     // Based on bridge version and productInputFileName get the sarif file path
     util.updateSarifFilePaths(productInputFileName, bridgeVersion, productInputFilPath)
     // Execute bridge command
