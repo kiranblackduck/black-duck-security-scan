@@ -76,6 +76,11 @@ export function getIntegrationDefaultSarifReportPath(sarifReportDirectory: strin
   info(`Using Integration SARIF Report Directory: ${sarifReportDirectory}`)
   const uploadPath = !appendFilePath ? path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory) : path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory, constants.SARIF_DEFAULT_FILE_NAME)
   info(`Upload default path: ${uploadPath}`)
+
+  // Ensure the directory structure exists before Bridge CLI execution
+  const directoryPath = !appendFilePath ? uploadPath : path.dirname(uploadPath)
+  ensureSarifDirectoryExists(directoryPath, 'Integration')
+
   return uploadPath
 }
 
@@ -92,6 +97,18 @@ export function isGitHubCloud(): boolean {
 
 export function getRealSystemTime(): string {
   return String(new Date().getTime())
+}
+
+// Common utility function to ensure SARIF directory exists
+export function ensureSarifDirectoryExists(directoryPath: string, toolName: string): void {
+  if (!fs.existsSync(directoryPath)) {
+    try {
+      fs.mkdirSync(directoryPath, {recursive: true})
+      info(`Created ${toolName} SARIF directory: ${directoryPath}`)
+    } catch (error) {
+      warning(`Failed to create ${toolName} SARIF directory ${directoryPath}: ${error}`)
+    }
+  }
 }
 
 export function checkJobResult(buildStatus?: string): string | undefined {
@@ -180,11 +197,25 @@ export function extractInputJsonFilename(command: string): string {
 export function updateSarifFilePaths(productInputFileName: string, bridgeVersion: string, productInputFilPath: string): void {
   if (productInputFileName === 'polaris_input.json') {
     const sarifPath = bridgeVersion < constants.VERSION ? (isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${constants.POLARIS_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()) : isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
+
+    // Ensure the directory structure exists before updating the configuration
+    const sarifDir = path.dirname(sarifPath)
+    const pwd = getGitHubWorkspaceDir()
+    const fullSarifDir = path.isAbsolute(sarifDir) ? sarifDir : path.join(pwd, sarifDir)
+    ensureSarifDirectoryExists(fullSarifDir, 'Polaris')
+
     updatePolarisSarifPath(productInputFilPath, sarifPath)
   }
 
   if (productInputFileName === 'bd_input.json') {
     const sarifPath = bridgeVersion < constants.VERSION ? (isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()) : isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
+
+    // Ensure the directory structure exists before updating the configuration
+    const sarifDir = path.dirname(sarifPath)
+    const pwd = getGitHubWorkspaceDir()
+    const fullSarifDir = path.isAbsolute(sarifDir) ? sarifDir : path.join(pwd, sarifDir)
+    ensureSarifDirectoryExists(fullSarifDir, 'Black Duck SCA')
+
     updateBlackDuckSarifPath(productInputFilPath, sarifPath)
   }
 }
