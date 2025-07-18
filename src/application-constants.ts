@@ -1,3 +1,5 @@
+import path from 'path'
+
 export const BRIDGE_CLI_DEFAULT_PATH_MAC = '/bridge-cli-bundle' //Path will be in home
 export const BRIDGE_CLI_DEFAULT_PATH_WINDOWS = '\\bridge-cli-bundle'
 export const BRIDGE_CLI_DEFAULT_PATH_LINUX = '/bridge-cli-bundle'
@@ -242,10 +244,10 @@ export const GITHUB_CLOUD_API_URL = 'https://api.github.com'
 export const BRIDGE_LOCAL_DIRECTORY = '.bridge'
 export const INTEGRATIONS_LOCAL_DIRECTORY = '.blackduck/integrations'
 export const BLACKDUCK_SARIF_GENERATOR_DIRECTORY = 'Blackduck SCA SARIF Generator'
-export const INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY = '/blackducksca/sarif'
+export const INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY = path.join('blackducksca', 'sarif')
 export const BLACKDUCK_SARIF_ARTIFACT_NAME = 'blackduck_sarif_report_'
 export const POLARIS_SARIF_GENERATOR_DIRECTORY = 'Polaris SARIF Generator'
-export const INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY = '/polaris/sarif'
+export const INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY = path.join('polaris', 'sarif')
 export const POLARIS_SARIF_ARTIFACT_NAME = 'polaris_sarif_report_'
 export const SARIF_DEFAULT_FILE_NAME = 'report.sarif.json'
 export const X_RATE_LIMIT_RESET = 'x-ratelimit-reset'
@@ -308,8 +310,8 @@ export enum BUILD_STATUS {
 export const MARK_BUILD_STATUS_DEFAULT = BUILD_STATUS.FAILURE
 export const TASK_RETURN_STATUS = 'status'
 export const BRIDGE_BREAK_EXIT_CODE = 8
-export const INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/polaris/sarif/report.sarif.json'
-export const INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH = '.blackduck/integrations/blackducksca/sarif/report.sarif.json'
+export const INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH = path.join('.blackduck', 'integrations', 'polaris', 'sarif', 'report.sarif.json')
+export const INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH = path.join('.blackduck', 'integrations', 'blackducksca', 'sarif', 'report.sarif.json')
 export const INTEGRATIONS_GITHUB_CLOUD = 'Integrations-github-cloud'
 export const INTEGRATIONS_GITHUB_EE = 'Integrations-github-ee'
 export const VERSION = '3.5.0'
