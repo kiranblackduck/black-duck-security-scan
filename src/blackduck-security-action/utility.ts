@@ -106,8 +106,6 @@ export function checkJobResult(buildStatus?: string): string | undefined {
 // Update SARIF file path in the input JSON
 export function updatePolarisSarifPath(productInputFilPath: string, sarifPath: string): void {
   try {
-    info(sarifPath)
-    info(productInputFilPath)
     // Read and parse the JSON file
     const jsonContent = readFileSync(productInputFilPath, 'utf-8')
     const config = JSON.parse(jsonContent) as InputData<Polaris>

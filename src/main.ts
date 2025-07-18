@@ -40,6 +40,8 @@ export async function run() {
     productInputFilPath = util.extractInputJsonFilename(formattedCommand)
     // Extract product input file name from the path
     productInputFileName = productInputFilPath.split('/').pop() || ''
+    info(productInputFilPath)
+    info(productInputFileName)
     // Based on bridge version and productInputFileName get the sarif file path
     util.updateSarifFilePaths(productInputFileName, bridgeVersion, productInputFilPath)
     // Execute bridge command
