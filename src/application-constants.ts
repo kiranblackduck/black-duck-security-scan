@@ -94,6 +94,7 @@ export const POLARIS_REPORTS_SARIF_SEVERITIES_KEY = 'polaris_reports_sarif_sever
 export const POLARIS_REPORTS_SARIF_GROUP_SCA_ISSUES_KEY = 'polaris_reports_sarif_groupSCAIssues'
 export const POLARIS_REPORTS_SARIF_ISSUE_TYPES_KEY = 'polaris_reports_sarif_issue_types'
 export const POLARIS_UPLOAD_SARIF_REPORT_KEY = 'polaris_upload_sarif_report'
+export const POLARIS_ISSUES_CREATE_ENABLED_KEY = 'polaris_issues_create_enabled'
 export const POLARIS_WAITFORSCAN_KEY = 'polaris_waitForScan'
 export const POLARIS_ASSESSMENT_MODE_KEY = 'polaris_assessment_mode'
 export const PROJECT_SOURCE_ARCHIVE_KEY = 'project_source_archive'
@@ -182,6 +183,7 @@ export const BLACKDUCKSCA_REPORTS_SARIF_GROUP_SCA_ISSUES_KEY = 'blackducksca_rep
  */
 export const BLACKDUCK_UPLOAD_SARIF_REPORT_KEY = 'blackduck_upload_sarif_report'
 export const BLACKDUCKSCA_UPLOAD_SARIF_REPORT_KEY = 'blackducksca_upload_sarif_report'
+export const BLACKDUCKSCA_ISSUES_CREATE_ENABLED_KEY = 'blackducksca_issues_create_enabled'
 /**
  * @deprecated Use blackducksca_waitForScan instead. This can be removed in future release.
  */

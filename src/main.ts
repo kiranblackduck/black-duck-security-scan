@@ -10,6 +10,7 @@ import {readFileSync} from 'fs'
 import {join, basename} from 'path'
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
+import {GitHubIssuesService} from './blackduck-security-action/service/github-issues-service'
 
 export async function run() {
   info('Black Duck Security Action started...')
@@ -88,15 +89,35 @@ export async function run() {
         }
         if (!isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
           const gitHubClientService = await GitHubClientServiceFactory.getGitHubClientServiceInstance()
+          const gitHubIssuesService = new GitHubIssuesService()
+
           if (bridgeVersion < constants.VERSION) {
             // Upload Black Duck SARIF Report to code scanning tab
             if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
             }
 
+            // Create issues from Black Duck SARIF report
+            if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_ISSUES_CREATE_ENABLED)) {
+              try {
+                await gitHubIssuesService.createIssuesFromSarif(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, 'Black Duck SCA')
+              } catch (error) {
+                info(`Failed to create GitHub Issues from Black Duck SARIF report: ${error}`)
+              }
+            }
+
             // Upload Polaris SARIF Report to code scanning tab
             if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
+            }
+
+            // Create issues from Polaris SARIF report
+            if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_ISSUES_CREATE_ENABLED)) {
+              try {
+                await gitHubIssuesService.createIssuesFromSarif(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, 'Polaris')
+              } catch (error) {
+                info(`Failed to create GitHub Issues from Polaris SARIF report: ${error}`)
+              }
             }
           } else {
             // Upload Black Duck SARIF Report to code scanning tab
@@ -104,9 +125,27 @@ export async function run() {
               await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
             }
 
+            // Create issues from Black Duck SARIF report
+            if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_ISSUES_CREATE_ENABLED)) {
+              try {
+                await gitHubIssuesService.createIssuesFromSarif(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, 'Black Duck SCA')
+              } catch (error) {
+                info(`Failed to create GitHub Issues from Black Duck SARIF report: ${error}`)
+              }
+            }
+
             // Upload Polaris SARIF Report to code scanning tab
             if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
               await gitHubClientService.uploadSarifReport(constants.INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
+            }
+
+            // Create issues from Polaris SARIF report
+            if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_ISSUES_CREATE_ENABLED)) {
+              try {
+                await gitHubIssuesService.createIssuesFromSarif(constants.INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, 'Polaris')
+              } catch (error) {
+                info(`Failed to create GitHub Issues from Polaris SARIF report: ${error}`)
+              }
             }
           }
         }
