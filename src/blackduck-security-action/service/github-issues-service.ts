@@ -9,9 +9,6 @@ export interface SarifResult {
     text: string
   }
   ruleId: string
-  properties?: {
-    'security-severity'?: string
-  }
   locations?: {
     physicalLocation: {
       artifactLocation: {
@@ -35,6 +32,9 @@ export interface SarifRule {
   help?: {
     markdown?: string
     text?: string
+  }
+  properties?: {
+    'security-severity'?: string
   }
 }
 
@@ -168,24 +168,22 @@ export class GitHubIssuesService {
   private createIssueFromResult(result: SarifResult, rules: Map<string, SarifRule>, run: SarifRun): GitHubIssue {
     const rule = rules.get(result.ruleId)
     const toolName = run.tool.driver.name
-    const securitySeverityRating = result.properties?.['security-severity']
+    const securitySeverityRating = rule?.properties?.['security-severity']
     const severity = this.mapSeverityFromRating(securitySeverityRating) || 'Unknown'
     const ruleTitle = rule?.shortDescription?.text || result.ruleId
-    const ruleDescription = rule?.fullDescription?.text || rule?.shortDescription?.text || result.message?.text
+    let ruleDescription = rule?.fullDescription?.text || rule?.shortDescription?.text || result.message?.text
+    if (result.message?.text) {
+      ruleDescription += `\n${result.message.text}\n\n`
+    }
 
-    const title = `[Black Duck: Automated Issue: ${toolName}] ${ruleTitle} - ${severity} (${result.ruleId})`
+    const title = `[Black Duck: Automated Issue][${severity}] ${ruleTitle}`
 
-    let body = `<------ This a automatically generated issue from Black Duck Security Action ------>\n\n`
-    body += `## Issue Details\n`
+    let body = `## Issue Details\n`
     body += `**Tool:** ${toolName}\n`
     body += `**Rule ID:** ${result.ruleId}\n`
     body += `**Severity:** ${severity}\n\n`
 
-    body += `\nDescription \n${ruleDescription}\n\n`
-
-    if (result.message?.text) {
-      body += `**Message:**\n${result.message.text}\n\n`
-    }
+    body += `## Description \n ${ruleDescription}\n\n`
 
     if (rule?.help?.markdown) {
       body += `${rule.help.markdown}\n\n`
