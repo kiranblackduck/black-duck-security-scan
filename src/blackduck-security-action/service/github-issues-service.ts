@@ -9,8 +9,10 @@ export interface SarifResult {
     text: string
   }
   ruleId: string
-  level: string
-  locations?: Array<{
+  properties?: {
+    'security-severity'?: string
+  }
+  locations?: {
     physicalLocation: {
       artifactLocation: {
         uri: string
@@ -19,7 +21,7 @@ export interface SarifResult {
         startLine: number
       }
     }
-  }>
+  }[]
 }
 
 export interface SarifRule {
@@ -81,8 +83,8 @@ export class GitHubIssuesService {
     this.githubApiURL = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_API_URL] || ''
   }
 
-  async createIssuesFromSarif(defaultSarifReportDirectory: string, userSarifFilePath: string, toolName: string): Promise<void> {
-    info(`Creating GitHub Issues from ${toolName} SARIF report`)
+  async createIssuesFromSarif(defaultSarifReportDirectory: string, userSarifFilePath: string, _toolName: string): Promise<void> {
+    info(`Creating GitHub Issues from SARIF report`)
 
     let sarifFilePath = ''
     if (defaultSarifReportDirectory === constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY || defaultSarifReportDirectory === constants.POLARIS_SARIF_GENERATOR_DIRECTORY) {
@@ -101,19 +103,19 @@ export class GitHubIssuesService {
       const sarifContent = fs.readFileSync(sarifFilePath, 'utf8')
       const sarifReport: SarifReport = JSON.parse(sarifContent)
 
-      await this.processResults(sarifReport, toolName)
+      await this.processResults(sarifReport)
     } catch (error) {
       throw new Error(`Failed to create GitHub Issues from SARIF report: ${error}`)
     }
   }
 
-  private async processResults(sarifReport: SarifReport, toolName: string): Promise<void> {
+  private async processResults(sarifReport: SarifReport): Promise<void> {
     for (const run of sarifReport.runs) {
       const rules = this.extractRules(run.tool.driver)
       const processedIssues = new Set<string>()
 
       for (const result of run.results) {
-        const issue = this.createIssueFromResult(result, rules, toolName)
+        const issue = this.createIssueFromResult(result, rules, run)
         const issueKey = `${issue.title}`
 
         if (!processedIssues.has(issueKey)) {
@@ -140,28 +142,59 @@ export class GitHubIssuesService {
     return rulesMap
   }
 
-  private createIssueFromResult(result: SarifResult, rules: Map<string, SarifRule>, toolName: string): GitHubIssue {
+  private mapSeverityFromRating(rating: string | undefined): string | null {
+    if (!rating) {
+      return null
+    }
+
+    const numericRating = parseFloat(rating)
+    if (isNaN(numericRating)) {
+      return rating // Return as-is if not a number
+    }
+
+    if (numericRating > 8) {
+      return 'Critical'
+    } else if (numericRating > 6) {
+      return 'High'
+    } else if (numericRating > 4) {
+      return 'Medium'
+    } else if (numericRating > 0) {
+      return 'Low'
+    } else {
+      return 'Info'
+    }
+  }
+
+  private createIssueFromResult(result: SarifResult, rules: Map<string, SarifRule>, run: SarifRun): GitHubIssue {
     const rule = rules.get(result.ruleId)
-    const ruleDescription = rule?.fullDescription?.text || rule?.shortDescription?.text || result.ruleId
+    const toolName = run.tool.driver.name
+    const securitySeverityRating = result.properties?.['security-severity']
+    const severity = this.mapSeverityFromRating(securitySeverityRating) || 'Unknown'
+    const ruleTitle = rule?.shortDescription?.text || result.ruleId
+    const ruleDescription = rule?.fullDescription?.text || rule?.shortDescription?.text || result.message?.text
 
-    const title = `[${toolName}] ${ruleDescription} (${result.ruleId})`
+    const title = `[Black Duck: Automated Issue: ${toolName}] ${ruleTitle} - ${severity} (${result.ruleId})`
 
-    let body = `**Tool:** ${toolName}\n`
+    let body = `<------ This a automatically generated issue from Black Duck Security Action ------>\n\n`
+    body += `## Issue Details\n`
+    body += `**Tool:** ${toolName}\n`
     body += `**Rule ID:** ${result.ruleId}\n`
-    body += `**Severity:** ${result.level || 'Unknown'}\n\n`
+    body += `**Severity:** ${severity}\n\n`
+
+    body += `\nDescription \n${ruleDescription}\n\n`
 
     if (result.message?.text) {
-      body += `**Description:**\n${result.message.text}\n\n`
+      body += `**Message:**\n${result.message.text}\n\n`
     }
 
     if (rule?.help?.markdown) {
-      body += `**Help:**\n${rule.help.markdown}\n\n`
+      body += `${rule.help.markdown}\n\n`
     } else if (rule?.help?.text) {
-      body += `**Help:**\n${rule.help.text}\n\n`
+      body += `${rule.help.text}\n\n`
     }
 
     if (result.locations && result.locations.length > 0) {
-      body += `**Location(s):**\n`
+      body += `## Location(s) \n`
       for (const location of result.locations) {
         const file = location.physicalLocation.artifactLocation.uri
         const line = location.physicalLocation.region.startLine
@@ -269,7 +302,7 @@ export class GitHubIssuesService {
     }
   }
 
-  private async handleRateLimit(headers: any, retryCount: number): Promise<void> {
+  private async handleRateLimit(headers: Record<string, string | string[] | undefined>, retryCount: number): Promise<void> {
     const rateLimitResetHeader = headers[constants.X_RATE_LIMIT_RESET] || ''
     const rateLimitReset = Array.isArray(rateLimitResetHeader) ? rateLimitResetHeader[0] : rateLimitResetHeader
     const currentTimeInSeconds = Math.floor(Date.now() / 1000)
