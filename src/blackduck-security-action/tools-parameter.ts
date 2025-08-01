@@ -195,6 +195,16 @@ export class BridgeToolsParameter {
       }
     }
     if (!isPrEvent) {
+      if (parseToBoolean(inputs.POLARIS_ISSUES_CREATE_ENABLED)) {
+        if (!parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
+          /** Throw error if GitHub Issue Create is enabled but SARIF create is not enabled */
+          throw new Error(constants.SARIF_CREATE_VALIDATION_ISSUE_CREATE_ERROR)
+        }
+        if (isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
+          /** Throw error if GitHub Issue Create is enabled but GitHub token is empty */
+          throw new Error(constants.GITHUB_TOKEN_VALIDATION_ISSUE_CREATE_ERROR)
+        }
+      }
       if (parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
         /** Set Polaris SARIF inputs in case of non PR context */
         const sarifReportFilterSeverities: string[] = []
@@ -240,19 +250,14 @@ export class BridgeToolsParameter {
         /** Throw error if SARIF upload is enabled but GitHub token is empty */
         throw new Error(constants.GITHUB_TOKEN_VALIDATION_SARIF_UPLOAD_ERROR)
       }
-      if (parseToBoolean(inputs.POLARIS_ISSUES_CREATE_ENABLED)) {
-        /** Validate GitHub Issues creation dependencies */
-        if (!parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE)) {
-          throw new Error('polaris_reports_sarif_create must be enabled when polaris_issues_create_enabled is set to true')
-        }
-        if (isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
-          throw new Error('github_token is required when polaris_issues_create_enabled is set to true')
-        }
-      }
     } else {
       if (parseToBoolean(inputs.POLARIS_REPORTS_SARIF_CREATE) || parseToBoolean(inputs.POLARIS_UPLOAD_SARIF_REPORT)) {
         /** Log info if SARIF create is enabled in PR context */
         info(constants.SARIF_REPORT_LOG_INFO_FOR_PR_SCANS)
+      }
+      if (parseToBoolean(inputs.POLARIS_ISSUES_CREATE_ENABLED)) {
+        /** Log info if Issue create is enabled in PR context */
+        info(constants.GITHUB_ISSUES_CREATE_LOG_INFO_FOR_PR_SCANS)
       }
     }
 
@@ -471,6 +476,16 @@ export class BridgeToolsParameter {
       }
     }
     if (!isPrEvent) {
+      if (parseToBoolean(inputs.BLACKDUCKSCA_ISSUES_CREATE_ENABLED)) {
+        if (!parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
+          /** Throw error if GitHub Issue Create is enabled but SARIF create is not enabled */
+          throw new Error(constants.SARIF_CREATE_VALIDATION_ISSUE_CREATE_ERROR)
+        }
+        if (isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
+          /** Throw error if GitHub Issue Create is enabled but GitHub token is empty */
+          throw new Error(constants.GITHUB_TOKEN_VALIDATION_ISSUE_CREATE_ERROR)
+        }
+      }
       if (parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
         /** Set Black Duck SARIF inputs in case of non PR context */
         const sarifReportFilterSeverities: string[] = []
@@ -501,19 +516,14 @@ export class BridgeToolsParameter {
         /** Throw error if SARIF upload is enabled but GitHub token is empty */
         throw new Error(constants.GITHUB_TOKEN_VALIDATION_SARIF_UPLOAD_ERROR)
       }
-      if (parseToBoolean(inputs.BLACKDUCKSCA_ISSUES_CREATE_ENABLED)) {
-        /** Validate GitHub Issues creation dependencies */
-        if (!parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE)) {
-          throw new Error('blackducksca_reports_sarif_create must be enabled when blackducksca_issues_create_enabled is set to true')
-        }
-        if (isNullOrEmptyValue(inputs.GITHUB_TOKEN)) {
-          throw new Error('github_token is required when blackducksca_issues_create_enabled is set to true')
-        }
-      }
     } else {
       if (parseToBoolean(inputs.BLACKDUCKSCA_REPORTS_SARIF_CREATE) || parseToBoolean(inputs.BLACKDUCK_UPLOAD_SARIF_REPORT)) {
         /** Log info if SARIF create/upload is enabled in PR context */
         info(constants.SARIF_REPORT_LOG_INFO_FOR_PR_SCANS)
+      }
+      if (parseToBoolean(inputs.BLACKDUCKSCA_ISSUES_CREATE_ENABLED)) {
+        /** Log info if Issue create is enabled in PR context */
+        info(constants.GITHUB_ISSUES_CREATE_LOG_INFO_FOR_PR_SCANS)
       }
     }
 
