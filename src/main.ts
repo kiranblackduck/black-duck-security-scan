@@ -100,7 +100,7 @@ export async function run() {
             // Create issues from Black Duck SARIF report
             if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_ISSUES_CREATE_ENABLED)) {
               try {
-                await gitHubIssuesService.createIssuesFromSarif(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, 'Black Duck SCA')
+                await gitHubIssuesService.createIssuesFromSarif(constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
               } catch (error) {
                 info(`Failed to create GitHub Issues from Black Duck SARIF report: ${error}`)
               }
@@ -114,7 +114,7 @@ export async function run() {
             // Create issues from Polaris SARIF report
             if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_ISSUES_CREATE_ENABLED)) {
               try {
-                await gitHubIssuesService.createIssuesFromSarif(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, 'Polaris')
+                await gitHubIssuesService.createIssuesFromSarif(constants.POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
               } catch (error) {
                 info(`Failed to create GitHub Issues from Polaris SARIF report: ${error}`)
               }
@@ -128,7 +128,7 @@ export async function run() {
             // Create issues from Black Duck SARIF report
             if (inputs.BLACKDUCKSCA_URL && parseToBoolean(inputs.BLACKDUCKSCA_ISSUES_CREATE_ENABLED)) {
               try {
-                await gitHubIssuesService.createIssuesFromSarif(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH, 'Black Duck SCA')
+                await gitHubIssuesService.createIssuesFromSarif(constants.INTEGRATIONS_BLACKDUCK_SARIF_GENERATOR_DIRECTORY, inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH)
               } catch (error) {
                 info(`Failed to create GitHub Issues from Black Duck SARIF report: ${error}`)
               }
@@ -142,7 +142,7 @@ export async function run() {
             // Create issues from Polaris SARIF report
             if (inputs.POLARIS_SERVER_URL && parseToBoolean(inputs.POLARIS_ISSUES_CREATE_ENABLED)) {
               try {
-                await gitHubIssuesService.createIssuesFromSarif(constants.INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH, 'Polaris')
+                await gitHubIssuesService.createIssuesFromSarif(constants.INTEGRATIONS_POLARIS_SARIF_GENERATOR_DIRECTORY, inputs.POLARIS_REPORTS_SARIF_FILE_PATH)
               } catch (error) {
                 info(`Failed to create GitHub Issues from Polaris SARIF report: ${error}`)
               }

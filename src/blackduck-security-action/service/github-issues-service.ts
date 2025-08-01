@@ -83,7 +83,7 @@ export class GitHubIssuesService {
     this.githubApiURL = process.env[constants.GITHUB_ENVIRONMENT_VARIABLES.GITHUB_API_URL] || ''
   }
 
-  async createIssuesFromSarif(defaultSarifReportDirectory: string, userSarifFilePath: string, _toolName: string): Promise<void> {
+  async createIssuesFromSarif(defaultSarifReportDirectory: string, userSarifFilePath: string): Promise<void> {
     info(`Creating GitHub Issues from SARIF report`)
 
     let sarifFilePath = ''
