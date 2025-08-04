@@ -248,7 +248,7 @@ export class Bridge {
       const errorObject = e as Error
       await cleanupTempDir(tempDir)
       debug(errorObject.stack === undefined ? '' : errorObject.stack.toString())
-      return Promise.reject(errorObject.message)
+      return Promise.reject(errorObject)
     }
   }
 
