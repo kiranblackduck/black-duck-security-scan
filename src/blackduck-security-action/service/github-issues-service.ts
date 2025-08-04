@@ -152,11 +152,11 @@ export class GitHubIssuesService {
       return rating // Return as-is if not a number
     }
 
-    if (numericRating > 8) {
+    if (numericRating >= 9) {
       return 'Critical'
-    } else if (numericRating > 6) {
+    } else if (numericRating >= 7) {
       return 'High'
-    } else if (numericRating > 4) {
+    } else if (numericRating >= 4) {
       return 'Medium'
     } else if (numericRating > 0) {
       return 'Low'
