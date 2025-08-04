@@ -116,7 +116,8 @@ export class Bridge {
       let bridgeVersion = ''
       if (inputs.BRIDGE_CLI_DOWNLOAD_URL) {
         bridgeUrl = BRIDGE_CLI_DOWNLOAD_URL
-        const versionInfo = bridgeUrl.match('.*bridge-cli-bundle-([0-9.]*).*')
+        //const versionInfo = bridgeUrl.match('.*bridge-cli-bundle-([0-9.]*).*')
+        const versionInfo = bridgeUrl.match('.*bridge-cli-bundle-([0-9.]+(?:rc[0-9]+)?)')
         if (versionInfo != null) {
           bridgeVersion = versionInfo[1]
           if (!bridgeVersion) {
