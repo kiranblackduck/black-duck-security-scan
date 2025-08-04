@@ -757,7 +757,8 @@ test('test black duck sca flow for mandatory github token for uploading sarif re
   try {
     await run()
   } catch (error: any) {
-    expect(error).toContain('Missing required GitHub token for uploading SARIF report to GitHub Advanced Security')
+    const errorObject = error as Error
+    expect(errorObject.message).toContain('Missing required GitHub token for uploading SARIF report to GitHub Advanced Security')
   }
 })
 
@@ -889,7 +890,8 @@ test('test polaris flow for mandatory github token for uploading sarif result to
   try {
     await run()
   } catch (error: any) {
-    expect(error).toContain('Missing required GitHub token for uploading SARIF report to GitHub Advanced Security')
+    const errorObject = error as Error
+    expect(errorObject.message).toContain('Missing required GitHub token for uploading SARIF report to GitHub Advanced Security')
   }
 })
 
