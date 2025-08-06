@@ -66,6 +66,9 @@ export interface GitHubIssueResponse {
   number: number
   title: string
   state: string
+  pull_request?: {
+    url: string
+  }
 }
 
 export class GitHubIssuesService {
@@ -262,7 +265,9 @@ export class GitHubIssuesService {
 
         if (httpResponse.message.statusCode === constants.HTTP_STATUS_OK) {
           const responseBody = await httpResponse.readBody()
-          return JSON.parse(responseBody) as GitHubIssueResponse[]
+          const allItems = JSON.parse(responseBody) as GitHubIssueResponse[]
+          // Filter out pull requests since issues API includes both issues and pull requests
+          return allItems.filter(item => !item.pull_request)
         } else if (httpResponse.message.statusCode === constants.HTTP_STATUS_FORBIDDEN) {
           const rateLimitRemaining = httpResponse.message?.headers[constants.X_RATE_LIMIT_REMAINING] || ''
           if (rateLimitRemaining === '0') {
