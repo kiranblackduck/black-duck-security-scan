@@ -1,0 +1,103 @@
+name: sync-tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SYNC VERSION'
+        required: true
+        default: ""
+        type: string
+  release:
+    types: [published]
+
+jobs:
+  sync-tags:
+    runs-on: ubuntu-latest
+    # Skip if the release is marked as prerelease in GitHub
+    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set version
+        id: set-version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            version=${{ github.event.release.tag_name }}
+            echo "Triggered by release: $version"
+          else
+            version=${{ github.event.inputs.version }}
+            echo "Manually triggered with version: $version"
+          fi
+
+          version=${version#v}
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+          if [[ $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            major=${BASH_REMATCH[1]}
+            echo "MAJOR=$major" >> $GITHUB_ENV
+            echo "Parsed version - Major: $major"
+          else
+            echo "Error: Invalid version format. Expected format: x.y.z"
+            exit 1
+          fi
+
+      - name: Validate version tag exists
+        run: |
+          if ! git tag --list | grep -q "^v${{ env.VERSION }}$"; then
+            echo "Error: Tag v${{ env.VERSION }} does not exist"
+            git tag --list | sort -V
+            exit 1
+          fi
+          echo "Tag v${{ env.VERSION }} exists"
+
+      - name: Update major version tag
+        run: |
+          major_tag="v${{ env.MAJOR }}"
+          echo "Updating major version tag: $major_tag"
+
+          # Delete existing major tag if it exists
+          if git tag --list | grep -q "^$major_tag$"; then
+            echo "Deleting existing local tag: $major_tag"
+            git tag -d $major_tag
+          fi
+          if git ls-remote --tags origin | grep -q "refs/tags/$major_tag$"; then
+            echo "Deleting existing remote tag: $major_tag"
+            git push origin :refs/tags/$major_tag
+          fi
+
+          # Create new major tag
+          echo "Creating new major tag: $major_tag -> v${{ env.VERSION }}"
+          git tag $major_tag v${{ env.VERSION }}
+          git push origin $major_tag
+
+      - name: Update latest tag
+        run: |
+          latest_tag="latest"
+          echo "Updating latest tag"
+
+          # Delete existing latest tag if it exists
+          if git tag --list | grep -q "^$latest_tag$"; then
+            echo "Deleting existing local tag: $latest_tag"
+            git tag -d $latest_tag
+          fi
+          if git ls-remote --tags origin | grep -q "refs/tags/$latest_tag$"; then
+            echo "Deleting existing remote tag: $latest_tag"
+            git push origin :refs/tags/$latest_tag
+          fi
+
+          # Create new latest tag
+          echo "Creating new latest tag: $latest_tag -> v${{ env.VERSION }}"
+          git tag $latest_tag v${{ env.VERSION }}
+          git push origin $latest_tag
+
+      - name: Summary
+        run: |
+          echo "=== TAG SYNC SUMMARY ==="
+          echo "Version: v${{ env.VERSION }}"
+          echo "Updated major version tag: v${{ env.MAJOR }}"
+          echo "Updated latest tag: v${{ env.MAJOR }}"
+          echo "Current tags pointing to v${{ env.VERSION }}:"
+          git tag --points-at v${{ env.VERSION }} | sort
