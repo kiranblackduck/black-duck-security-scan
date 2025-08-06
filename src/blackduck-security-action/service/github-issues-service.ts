@@ -74,6 +74,8 @@ export class GitHubIssuesService {
   repoName: string
   repoOwner: string
   githubApiURL: string
+  private cachedIssues: GitHubIssueResponse[] | null = null
+  private readonly ISSUES_PER_PAGE = 100
 
   constructor() {
     this.githubToken = inputs.GITHUB_TOKEN
@@ -110,6 +112,8 @@ export class GitHubIssuesService {
   }
 
   private async processResults(sarifReport: SarifReport): Promise<void> {
+    await this.fetchAllIssues()
+
     for (const run of sarifReport.runs) {
       const rules = this.extractRules(run.tool.driver)
       const processedIssues = new Set<string>()
@@ -121,7 +125,7 @@ export class GitHubIssuesService {
         if (!processedIssues.has(issueKey)) {
           processedIssues.add(issueKey)
 
-          const isDuplicate = await this.checkForDuplicateIssue(issue.title)
+          const isDuplicate = this.checkForDuplicateIssue(issue.title)
           if (!isDuplicate) {
             await this.createGitHubIssue(issue)
           } else {
@@ -205,8 +209,44 @@ export class GitHubIssuesService {
     return {title, body}
   }
 
-  private async checkForDuplicateIssue(title: string): Promise<boolean> {
-    const endpoint = `${this.githubApiURL}/repos/${this.repoOwner}/${this.repoName}/issues`
+  private async fetchAllIssues(): Promise<void> {
+    if (this.cachedIssues !== null) {
+      return
+    }
+
+    this.cachedIssues = []
+    let page = 1
+    let hasMorePages = true
+
+    info(`Fetching open issues with pagination (${this.ISSUES_PER_PAGE} per page)`)
+
+    while (hasMorePages) {
+      const pageIssues = await this.fetchIssuesPage(page)
+      this.cachedIssues.push(...pageIssues)
+
+      hasMorePages = pageIssues.length === this.ISSUES_PER_PAGE
+
+      if (hasMorePages) {
+        debug(`Fetched ${pageIssues.length} issues from page ${page}, continuing to page ${page + 1}`)
+      } else {
+        debug(`Fetched ${pageIssues.length} issues from page ${page}, no more pages`)
+      }
+
+      page++
+    }
+
+    info(`Successfully fetched ${this.cachedIssues.length} open issues across ${page - 1} pages`)
+  }
+
+  private async fetchIssuesPage(page: number): Promise<GitHubIssueResponse[]> {
+    const baseUrl = `${this.githubApiURL}/repos/${this.repoOwner}/${this.repoName}/issues`
+    const params = new URLSearchParams({
+      state: 'open',
+      per_page: this.ISSUES_PER_PAGE.toString(),
+      page: page.toString()
+    })
+    const endpoint = `${baseUrl}?${params.toString()}`
+
     let retryCount = constants.RETRY_COUNT
     let retryDelay = constants.RETRY_DELAY_IN_MILLISECONDS
 
@@ -218,13 +258,11 @@ export class GitHubIssuesService {
           Accept: 'application/vnd.github+json'
         })
 
-        debug(`List Issues HTTP Status Code: ${httpResponse.message.statusCode}`)
+        debug(`Fetch Issues Page ${page} HTTP Status Code: ${httpResponse.message.statusCode}`)
 
         if (httpResponse.message.statusCode === constants.HTTP_STATUS_OK) {
           const responseBody = await httpResponse.readBody()
-          const issues: GitHubIssueResponse[] = JSON.parse(responseBody)
-
-          return issues.some(issue => issue.title === title && issue.state === 'open')
+          return JSON.parse(responseBody) as GitHubIssueResponse[]
         } else if (httpResponse.message.statusCode === constants.HTTP_STATUS_FORBIDDEN) {
           const rateLimitRemaining = httpResponse.message?.headers[constants.X_RATE_LIMIT_REMAINING] || ''
           if (rateLimitRemaining === '0') {
@@ -234,20 +272,28 @@ export class GitHubIssuesService {
           }
         }
 
-        throw new Error(`Failed to list issues: HTTP ${httpResponse.message.statusCode}`)
+        throw new Error(`Failed to fetch issues page ${page}: HTTP ${httpResponse.message.statusCode}`)
       } catch (error) {
         if (retryCount <= 1) {
-          throw new Error(`Failed to check for duplicate issues: ${error}`)
+          throw new Error(`Failed to fetch issues page ${page}: ${error}`)
         }
 
-        info(`Retrying duplicate issue check, attempts left: ${retryCount - 1}`)
+        info(`Retrying fetch issues page ${page}, attempts left: ${retryCount - 1}`)
         await this.sleep(retryDelay)
         retryDelay = retryDelay * 2
         retryCount--
       }
     }
 
-    return false
+    return []
+  }
+
+  private checkForDuplicateIssue(title: string): boolean {
+    if (!this.cachedIssues) {
+      return false
+    }
+
+    return this.cachedIssues.some(issue => issue.title === title)
   }
 
   private async createGitHubIssue(issue: GitHubIssue): Promise<void> {
