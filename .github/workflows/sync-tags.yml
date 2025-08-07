@@ -2,12 +2,6 @@ name: sync-tags
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'SYNC VERSION'
-        required: true
-        default: ""
-        type: string
   release:
     types: [published]
 
@@ -28,7 +22,11 @@ jobs:
             version=${{ github.event.release.tag_name }}
             echo "Triggered by release: $version"
           else
-            version=${{ github.event.inputs.version }}
+            version=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n 1)
+            if [ -z "$version" ]; then
+              echo "Error: No version tags found"
+              exit 1
+            fi
             echo "Manually triggered with version: $version"
           fi
 
