@@ -36,8 +36,6 @@ jobs:
             [ -z "$version" ] && echo "Error: No version tags found. Ensure at least one valid version tag exists."  && exit 1
           fi
           version=${version#v}
-
-          version=${version#v}
           echo "VERSION=$version" >> $GITHUB_ENV
 
           if [[ $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
@@ -103,8 +101,5 @@ jobs:
       - name: Summary
         run: |
           echo "=== TAG SYNC SUMMARY ==="
-          echo "Version: v${{ env.VERSION }}"
-          echo "Updated major version tag: v${{ env.MAJOR }}"
-          echo "Updated latest tag: v${{ env.MAJOR }}"
           echo "Current tags pointing to v${{ env.VERSION }}:"
           git tag --points-at v${{ env.VERSION }} | sort
