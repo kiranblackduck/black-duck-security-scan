@@ -2,14 +2,26 @@ name: sync-tags
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+    inputs:
+      version:
+        description: 'SYNC VERSION'
+        default: ""
+        type: string
+      update_latest_tag:
+        description: 'Update latest tag'
+        required: false
+        default: true
+        type: boolean
+      update_major_tag:
+        description: 'Update major version tag'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   sync-tags:
     runs-on: ubuntu-latest
-    # Skip if the release is marked as prerelease in GitHub
-    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    if: github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,17 +30,12 @@ jobs:
       - name: Set version
         id: set-version
         run: |
-          if [ "${{ github.event_name }}" == "release" ]; then
-            version=${{ github.event.release.tag_name }}
-            echo "Triggered by release: $version"
-          else
+          version="${{ github.event.inputs.version }}"
+          if [ -z "$version" ]; then
             version=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n 1)
-            if [ -z "$version" ]; then
-              echo "Error: No version tags found"
-              exit 1
-            fi
-            echo "Manually triggered with version: $version"
+            [ -z "$version" ] && echo "Error: No version tags found. Ensure at least one valid version tag exists."  && exit 1
           fi
+          version=${version#v}
 
           version=${version#v}
           echo "VERSION=$version" >> $GITHUB_ENV
@@ -38,20 +45,21 @@ jobs:
             echo "MAJOR=$major" >> $GITHUB_ENV
             echo "Parsed version - Major: $major"
           else
-            echo "Error: Invalid version format. Expected format: x.y.z"
+            echo "Error: Invalid version format. Expected format: x.y.z. Found: $version"
             exit 1
           fi
 
       - name: Validate version tag exists
         run: |
           if ! git tag --list | grep -q "^v${{ env.VERSION }}$"; then
-            echo "Error: Tag v${{ env.VERSION }} does not exist"
+            echo "Error: Tag v${{ env.VERSION }} does not exist. Ensure the correct version is provided."
             git tag --list | sort -V
             exit 1
           fi
           echo "Tag v${{ env.VERSION }} exists"
 
       - name: Update major version tag
+        if: ${{ github.event.inputs.update_major_tag == 'true' }}
         run: |
           major_tag="v${{ env.MAJOR }}"
           echo "Updating major version tag: $major_tag"
@@ -72,6 +80,7 @@ jobs:
           git push origin $major_tag
 
       - name: Update latest tag
+        if: ${{ github.event.inputs.update_latest_tag == 'true' }}
         run: |
           latest_tag="latest"
           echo "Updating latest tag"
