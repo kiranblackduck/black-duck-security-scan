@@ -68,7 +68,9 @@ jobs:
           git config --local user.name "$(git log -n 1 --pretty=format:%an)"
           git config --local user.email "$(git log -n 1 --pretty=format:%ae)"
           git config set advice.addIgnoredFile false
-          git checkout -b action_version_update
+          
+          BRANCH_NAME="action_version_update_${{ env.NEW_VERSION }}"
+          git checkout -b "$BRANCH_NAME"
           
           echo "Running npm version to update version to ${{ env.NEW_VERSION }}"
           npm version ${{ env.NEW_VERSION }} --no-git-tag-version
@@ -83,6 +85,6 @@ jobs:
           git commit -am "upgrade action version to ${{ env.NEW_VERSION }} [skip ci]"
           git push origin action_version_update --force
           
-          gh pr create --base main --head action_version_update --title "Action version upgrade to ${{ env.NEW_VERSION }}" --body "${{ env.ACTION_NAME }} version upgrade to ${{ env.NEW_VERSION }}" --fill
+          gh pr create --base ${{ github.event.repository.default_branch }} --head action_version_update --title "Action version upgrade to ${{ env.NEW_VERSION }}" --body "${{ env.ACTION_NAME }} version upgrade to ${{ env.NEW_VERSION }}" --fill
           
           echo "Successfully updated action version in package.json and package-lock.json files..."
