@@ -83,8 +83,8 @@ jobs:
           git add package.json package-lock.json dist/
           
           git commit -am "upgrade action version to ${{ env.NEW_VERSION }} [skip ci]"
-          git push origin action_version_update --force
+          git push origin "$BRANCH_NAME" --force
           
-          gh pr create --base ${{ github.event.repository.default_branch }} --head action_version_update --title "Action version upgrade to ${{ env.NEW_VERSION }}" --body "${{ env.ACTION_NAME }} version upgrade to ${{ env.NEW_VERSION }}" --fill
+          gh pr create --base ${{ github.event.repository.default_branch }} --head "$BRANCH_NAME" --title "Action version upgrade to ${{ env.NEW_VERSION }}" --body "${{ env.ACTION_NAME }} version upgrade to ${{ env.NEW_VERSION }}" --fill
           
           echo "Successfully updated action version in package.json and package-lock.json files..."
