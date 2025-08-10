@@ -94,7 +94,8 @@ export class BridgeToolsParameter {
 
       if (inputs.POLARIS_TEST_SCA_TYPE) {
         polData.data.polaris.test.sca = {
-          type: inputs.POLARIS_TEST_SCA_TYPE
+          type: inputs.POLARIS_TEST_SCA_TYPE,
+          location: inputs.POLARIS_TEST_SCA_LOCATION
         }
       }
 
@@ -102,7 +103,8 @@ export class BridgeToolsParameter {
         const polarisTestSastTypeList: string[] = inputs.POLARIS_TEST_SAST_TYPE.split(',').map(polarisTestSastType => polarisTestSastType.trim())
 
         polData.data.polaris.test.sast = {
-          type: polarisTestSastTypeList
+          type: polarisTestSastTypeList,
+          location: inputs.POLARIS_TEST_SAST_LOCATION
         }
       }
     }
