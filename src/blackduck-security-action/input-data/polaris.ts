@@ -59,10 +59,10 @@ export interface Branch {
 export interface Test {
   sca?: {
     type: string
-    location: string
+    location?: string
   }
   sast?: {
     type: string[]
-    location: string
+    location?: string
   }
 }

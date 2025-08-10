@@ -88,23 +88,35 @@ export class BridgeToolsParameter {
     if (inputs.POLARIS_BRANCH_NAME) {
       polData.data.polaris.branch = {name: inputs.POLARIS_BRANCH_NAME}
     }
+    if (inputs.POLARIS_TEST_SCA_LOCATION || inputs.POLARIS_TEST_SAST_LOCATION) {
+      polData.data.polaris.test = {}
+      if (inputs.POLARIS_TEST_SCA_LOCATION) {
+        polData.data.polaris.test.sca = {
+          type: '',
+          location: inputs.POLARIS_TEST_SCA_LOCATION
+        }
+      }
+      if (inputs.POLARIS_TEST_SAST_LOCATION) {
+        polData.data.polaris.test.sca = {
+          type: '',
+          location: inputs.POLARIS_TEST_SAST_LOCATION
+        }
+      }
+    }
 
     if (inputs.POLARIS_TEST_SCA_TYPE || inputs.POLARIS_TEST_SAST_TYPE) {
       polData.data.polaris.test = {}
 
       if (inputs.POLARIS_TEST_SCA_TYPE) {
         polData.data.polaris.test.sca = {
-          type: inputs.POLARIS_TEST_SCA_TYPE,
-          location: inputs.POLARIS_TEST_SCA_LOCATION
+          type: inputs.POLARIS_TEST_SCA_TYPE
         }
       }
-
       if (inputs.POLARIS_TEST_SAST_TYPE) {
         const polarisTestSastTypeList: string[] = inputs.POLARIS_TEST_SAST_TYPE.split(',').map(polarisTestSastType => polarisTestSastType.trim())
 
         polData.data.polaris.test.sast = {
-          type: polarisTestSastTypeList,
-          location: inputs.POLARIS_TEST_SAST_LOCATION
+          type: polarisTestSastTypeList
         }
       }
     }
