@@ -96,7 +96,7 @@ export class BridgeToolsParameter {
         }
       }
       if (inputs.POLARIS_TEST_SAST_LOCATION) {
-        polData.data.polaris.test.sca = {
+        polData.data.polaris.test.sast = {
           location: inputs.POLARIS_TEST_SAST_LOCATION
         }
       }
