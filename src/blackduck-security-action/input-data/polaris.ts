@@ -58,11 +58,11 @@ export interface Branch {
 
 export interface Test {
   sca?: {
-    type: string
+    type?: string
     location?: string
   }
   sast?: {
-    type: string[]
+    type?: string[]
     location?: string
   }
 }

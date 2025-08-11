@@ -92,13 +92,11 @@ export class BridgeToolsParameter {
       polData.data.polaris.test = {}
       if (inputs.POLARIS_TEST_SCA_LOCATION) {
         polData.data.polaris.test.sca = {
-          type: '',
           location: inputs.POLARIS_TEST_SCA_LOCATION
         }
       }
       if (inputs.POLARIS_TEST_SAST_LOCATION) {
         polData.data.polaris.test.sca = {
-          type: '',
           location: inputs.POLARIS_TEST_SAST_LOCATION
         }
       }
