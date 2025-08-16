@@ -1,17 +1,20 @@
 import * as fs from 'fs'
+import {readFileSync, writeFileSync} from 'fs'
 import * as os from 'os'
 import path from 'path'
-import {APPLICATION_NAME, GITHUB_ENVIRONMENT_VARIABLES} from '../application-constants'
+import * as constants from '../application-constants'
+import {APPLICATION_NAME, GITHUB_ENVIRONMENT_VARIABLES, LINUX_PLATFORM_NAME, MAC_PLATFORM_NAME, WINDOWS_PLATFORM_NAME} from '../application-constants'
 import {rmRF} from '@actions/io'
 import {getGitHubWorkspaceDir} from 'actions-artifact-v2/lib/internal/shared/config'
-import * as constants from '../application-constants'
-import {debug, info} from '@actions/core'
-import {readFileSync, writeFileSync} from 'fs'
 import {InputData} from './input-data/input-data'
 import {BlackDuckSCA} from './input-data/blackduck'
 import {Polaris} from './input-data/polaris'
 import {isNullOrEmptyValue} from './validators'
 import * as inputs from './inputs'
+import {debug, info, warning} from '@actions/core'
+import * as https from 'https'
+import {HttpClient} from 'typed-rest-client/HttpClient'
+import {createHTTPSAgent, getSSLConfig, getSSLConfigHash} from './ssl-utils'
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
@@ -38,24 +41,15 @@ export function checkIfGithubHostedAndLinux(): boolean {
 }
 
 export function parseToBoolean(value: string | boolean): boolean {
-  if (value !== null && value !== '' && (value.toString().toLowerCase() === 'true' || value === true)) {
-    return true
-  }
-  return false
+  return value !== null && value !== '' && (value.toString().toLowerCase() === 'true' || value === true)
 }
 
 export function isBoolean(value: string | boolean): boolean {
-  if (value !== null && value !== '' && (value.toString().toLowerCase() === 'true' || value === true || value.toString().toLowerCase() === 'false' || value === false)) {
-    return true
-  }
-  return false
+  return value !== null && value !== '' && (value.toString().toLowerCase() === 'true' || value === true || value.toString().toLowerCase() === 'false' || value === false)
 }
 
 export function checkIfPathExists(fileOrDirectoryPath: string): boolean {
-  if (fileOrDirectoryPath && fs.existsSync(fileOrDirectoryPath.trim())) {
-    return true
-  }
-  return false
+  return !!(fileOrDirectoryPath && fs.existsSync(fileOrDirectoryPath.trim()))
 }
 
 export async function sleep(duration: number): Promise<void> {
@@ -74,6 +68,19 @@ export function getIntegrationDefaultSarifReportPath(sarifReportDirectory: strin
   const uploadPath = !appendFilePath ? path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory) : path.join(pwd, constants.INTEGRATIONS_LOCAL_DIRECTORY, sarifReportDirectory, constants.SARIF_DEFAULT_FILE_NAME)
   info(`Upload default path: ${uploadPath}`)
   return uploadPath
+}
+
+export function getOSPlatform(): string {
+  if (process.platform === MAC_PLATFORM_NAME) {
+    return os.cpus()[0].model.includes('Intel') ? 'macosx' : 'macos_arm'
+  }
+  if (process.platform === LINUX_PLATFORM_NAME) {
+    return /^(arm.*|aarch.*)$/.test(process.arch) ? 'linux_arm' : 'linux64'
+  }
+  if (process.platform === WINDOWS_PLATFORM_NAME) {
+    return 'win64'
+  }
+  return ''
 }
 
 export function isPullRequestEvent(): boolean {
@@ -176,12 +183,135 @@ export function extractInputJsonFilename(command: string): string {
 
 export function updateSarifFilePaths(productInputFileName: string, bridgeVersion: string, productInputFilPath: string): void {
   if (productInputFileName === 'polaris_input.json') {
-    const sarifPath = bridgeVersion < constants.VERSION ? (isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${constants.POLARIS_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()) : isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
+    const sarifPath = bridgeVersion < constants.VERSION ? (isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? path.join(constants.BRIDGE_LOCAL_DIRECTORY, constants.POLARIS_SARIF_GENERATOR_DIRECTORY, constants.SARIF_DEFAULT_FILE_NAME) : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()) : isNullOrEmptyValue(inputs.POLARIS_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_POLARIS_DEFAULT_SARIF_FILE_PATH : inputs.POLARIS_REPORTS_SARIF_FILE_PATH.trim()
     updatePolarisSarifPath(productInputFilPath, sarifPath)
   }
 
   if (productInputFileName === 'bd_input.json') {
-    const sarifPath = bridgeVersion < constants.VERSION ? (isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? `${constants.BRIDGE_LOCAL_DIRECTORY}/${constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY}/${constants.SARIF_DEFAULT_FILE_NAME}` : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()) : isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
+    const sarifPath = bridgeVersion < constants.VERSION ? (isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? path.join(constants.BRIDGE_LOCAL_DIRECTORY, constants.BLACKDUCK_SARIF_GENERATOR_DIRECTORY, constants.SARIF_DEFAULT_FILE_NAME) : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()) : isNullOrEmptyValue(inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH) ? constants.INTEGRATIONS_BLACKDUCK_SCA_DEFAULT_SARIF_FILE_PATH : inputs.BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH.trim()
     updateBlackDuckSarifPath(productInputFilPath, sarifPath)
   }
+}
+
+// Singleton HTTPS agent cache for downloads (with proper system + custom CA combination)
+let _httpsAgentCache: https.Agent | null = null
+let _httpsAgentConfigHash: string | null = null
+
+// Singleton HTTP client cache for GitHub API operations
+let _httpClientCache: HttpClient | null = null
+let _httpClientConfigHash: string | null = null
+
+/**
+ * Creates an HTTPS agent with SSL configuration based on action inputs.
+ * Uses singleton pattern to reuse the same agent instance when configuration hasn't changed.
+ * This properly combines system CAs with custom CAs unlike typed-rest-client.
+ * Use this for direct HTTPS operations like file downloads.
+ *
+ * @returns HTTPS agent configured with appropriate SSL settings
+ */
+export function createSSLConfiguredHttpsAgent(): https.Agent {
+  const currentConfigHash = getSSLConfigHash()
+
+  // Return cached agent if configuration hasn't changed
+  if (_httpsAgentCache && _httpsAgentConfigHash === currentConfigHash) {
+    debug('Reusing existing HTTPS agent instance')
+    return _httpsAgentCache
+  }
+
+  // Get SSL configuration and create agent
+  const sslConfig = getSSLConfig()
+  _httpsAgentCache = createHTTPSAgent(sslConfig)
+
+  // Cache the configuration hash
+  _httpsAgentConfigHash = currentConfigHash
+  debug('Created new HTTPS agent instance with SSL configuration')
+
+  return _httpsAgentCache
+}
+
+/**
+ * Creates an HttpClient instance with SSL configuration based on action inputs.
+ * Uses singleton pattern to reuse the same client instance when configuration hasn't changed.
+ * This uses typed-rest-client for structured API operations (GitHub API).
+ * Note: typed-rest-client has limitations with combining system CAs + custom CAs.
+ *
+ * @param userAgent The user agent string to use for the HTTP client (default: "BlackDuckSecurityAction")
+ * @returns HttpClient instance configured with appropriate SSL settings
+ */
+export function createSSLConfiguredHttpClient(userAgent = 'BlackDuckSecurityAction'): HttpClient {
+  const currentConfigHash = getSSLConfigHash()
+
+  // Return cached client if configuration hasn't changed
+  if (_httpClientCache && _httpClientConfigHash === currentConfigHash) {
+    debug(`Reusing existing HttpClient instance with user agent: ${userAgent}`)
+    return _httpClientCache
+  }
+
+  // Get SSL configuration
+  const sslConfig = getSSLConfig()
+
+  if (sslConfig.trustAllCerts) {
+    debug('SSL certificate verification disabled for HttpClient (NETWORK_SSL_TRUST_ALL=true)')
+    _httpClientCache = new HttpClient(userAgent, [], {ignoreSslError: true})
+  } else if (sslConfig.customCA) {
+    debug(`Using custom CA certificate for HttpClient: ${inputs.NETWORK_SSL_CERT_FILE}`)
+    try {
+      // Note: typed-rest-client has limitations with combining system CAs + custom CAs
+      // For downloads, use createSSLConfiguredHttpsAgent() which properly combines CAs
+      // For API operations, this fallback to caFile option (custom CA only) is acceptable
+      _httpClientCache = new HttpClient(userAgent, [], {
+        allowRetries: true,
+        maxRetries: 3,
+        cert: {
+          caFile: inputs.NETWORK_SSL_CERT_FILE
+        }
+      })
+      debug('HttpClient configured with custom CA certificate (Note: typed-rest-client limitation - system CAs not combined)')
+    } catch (err) {
+      warning(`Failed to configure custom CA certificate, using default HttpClient: ${err}`)
+      _httpClientCache = new HttpClient(userAgent)
+    }
+  } else {
+    debug('Using default HttpClient with system SSL certificates')
+    _httpClientCache = new HttpClient(userAgent)
+  }
+
+  // Cache the configuration hash
+  _httpClientConfigHash = currentConfigHash
+  debug(`Created new HttpClient instance with user agent: ${userAgent}`)
+
+  return _httpClientCache
+}
+
+/**
+ * Gets a shared HTTPS agent with SSL configuration.
+ * This properly combines system CAs with custom CAs for direct HTTPS operations.
+ * Use this for file downloads and direct HTTPS requests.
+ *
+ * @returns HTTPS agent configured with appropriate SSL settings
+ */
+export function getSharedHttpsAgent(): https.Agent {
+  return createSSLConfiguredHttpsAgent()
+}
+
+/**
+ * Gets a shared HttpClient instance with SSL configuration.
+ * This is for GitHub API operations using typed-rest-client.
+ * Use this for structured API operations that need typed responses.
+ *
+ * @returns HttpClient instance configured with appropriate SSL settings
+ */
+export function getSharedHttpClient(): HttpClient {
+  return createSSLConfiguredHttpClient('BlackDuckSecurityAction')
+}
+
+/**
+ * Clears both HTTPS agent and HTTP client caches. Useful for testing or when you need to force recreation.
+ */
+export function clearHttpClientCache(): void {
+  _httpsAgentCache = null
+  _httpsAgentConfigHash = null
+  _httpClientCache = null
+  _httpClientConfigHash = null
+  debug('HTTP client and HTTPS agent caches cleared')
 }

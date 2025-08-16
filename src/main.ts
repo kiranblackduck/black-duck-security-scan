@@ -1,17 +1,15 @@
 import {debug, info, setFailed, setOutput} from '@actions/core'
+import * as util from './blackduck-security-action/utility'
 import {checkJobResult, cleanupTempDir, createTempDir, isPullRequestEvent, parseToBoolean} from './blackduck-security-action/utility'
-import {Bridge} from './blackduck-security-action/bridge-cli'
-import {getGitHubWorkspaceDir as getGitHubWorkspaceDirV2} from 'actions-artifact-v2/lib/internal/shared/config'
 import * as constants from './application-constants'
 import * as inputs from './blackduck-security-action/inputs'
 import {uploadDiagnostics, uploadSarifReportAsArtifact} from './blackduck-security-action/artifacts'
-import * as util from './blackduck-security-action/utility'
-import {readFileSync} from 'fs'
-import {join} from 'path'
+import {basename} from 'path'
 import {isNullOrEmptyValue} from './blackduck-security-action/validators'
 import {GitHubClientServiceFactory} from './blackduck-security-action/factory/github-client-service-factory'
+import {createBridgeClient} from './blackduck-security-action/bridge/bridge-client-factory'
 
-export async function run() {
+export async function run(): Promise<number> {
   info('Black Duck Security Action started...')
   const tempDir = await createTempDir()
   let formattedCommand = ''
@@ -20,35 +18,22 @@ export async function run() {
   let bridgeVersion = ''
   let productInputFileName = ''
   let productInputFilPath = ''
-
   try {
-    const sb = new Bridge()
-    // Prepare bridge command
+    const sb = createBridgeClient()
     formattedCommand = await sb.prepareCommand(tempDir)
-    // To enable SSL certificate verification
-    if (parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)) {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-    } else if (inputs.NETWORK_SSL_CERT_FILE && !parseToBoolean(inputs.NETWORK_SSL_TRUST_ALL)) {
-      process.env.NODE_EXTRA_CA_CERTS = inputs.NETWORK_SSL_CERT_FILE
-    }
-    // Download bridge
-    if (!inputs.ENABLE_NETWORK_AIR_GAP) {
-      await sb.downloadBridge(tempDir)
-    } else {
-      info('Network air gap is enabled, skipping bridge CLI download.')
-      await sb.validateBridgePath()
-    }
-    // Get Bridge version from bridge Path
-    bridgeVersion = getBridgeVersion(sb.bridgePath)
 
-    //Extract input.json file and update sarif default file path based on bridge version
+    // Download bridge
+    await sb.downloadBridge(tempDir)
+    // Get Bridge version from bridge Path
+    bridgeVersion = await sb.getBridgeVersion()
+    //Extract input.yml file and update sarif default file path based on bridge version
     productInputFilPath = util.extractInputJsonFilename(formattedCommand)
-    // Extract product input file name from the path
-    productInputFileName = productInputFilPath.split('/').pop() || ''
+    // Extract product input file name from the path (cross-platform compatible)
+    productInputFileName = basename(productInputFilPath)
     // Based on bridge version and productInputFileName get the sarif file path
     util.updateSarifFilePaths(productInputFileName, bridgeVersion, productInputFilPath)
     // Execute bridge command
-    exitCode = await sb.executeBridgeCommand(formattedCommand, getGitHubWorkspaceDirV2())
+    exitCode = await sb.executeBridgeCommand(formattedCommand, '/tmp')
     if (exitCode === 0) {
       info('Black Duck Security Action workflow execution completed successfully.')
       isBridgeExecuted = true
@@ -155,20 +140,6 @@ export function markBuildStatusIfIssuesArePresent(status: number, taskResult: st
     info(`Marking the build ${taskResult} as configured in the task.`)
   } else {
     setFailed('Workflow failed! '.concat(logBridgeExitCodes(exitMessage)))
-  }
-}
-// Extract version number from bridge path
-function getBridgeVersion(bridgePath: string): string {
-  try {
-    const versionFilePath = join(bridgePath, 'versions.txt')
-    const content = readFileSync(versionFilePath, 'utf-8')
-    const match = content.match(/bridge-cli-bundle:\s*([0-9.]+)/)
-    if (match && match[1]) {
-      return match[1]
-    }
-    return ''
-  } catch (error) {
-    return ''
   }
 }
 
