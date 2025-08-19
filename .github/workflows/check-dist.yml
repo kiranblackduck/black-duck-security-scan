@@ -60,6 +60,7 @@ jobs:
       polaris_server_url: ${{ vars.POLARIS_SERVER_URL }}
       polaris_application_name: ${{ github.repository_owner }}
       polaris_branch_name: ${{ github.head_ref || github.ref_name }}
+      polaris_branch_parent_name: ${{ github.branch.parent.name || github.ref_name }}
       polaris_project_name: ${{ github.event.repository.name }}
       polaris_assessment_types: "SCA,SAST"
       polaris_prComment_enabled: true
