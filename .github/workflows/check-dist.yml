@@ -63,6 +63,7 @@ jobs:
       polaris_application_name: "integrations"
       polaris_project_name: "blackduck-security-action"
       polaris_branch_name: ${{ github.head_ref || github.ref_name }}
+      polaris_branch_parent_name: ${{ github.base_ref || 'main' }}
       bridgecli_download_url: ${{ vars.BRIDGECLI_DOWNLOAD_URL }}
     secrets:
       POLARIS_ACCESS_TOKEN: ${{ secrets.POLARIS_ACCESS_TOKEN }}
