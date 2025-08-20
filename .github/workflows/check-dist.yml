@@ -61,7 +61,7 @@ jobs:
       polaris_assessment_types: "SCA,SAST"
       polaris_prComment_enabled: true
       polaris_application_name: "integrations"
-      polaris_project_name: ${{ github.event.repository.name }}
+      polaris_project_name: "blackduck-security-action"
       polaris_branch_name: "main"
       polaris_branch_parent_name: "main"
       bridgecli_download_url: ${{ vars.BRIDGECLI_DOWNLOAD_URL }}
