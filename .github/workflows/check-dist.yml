@@ -60,8 +60,8 @@ jobs:
       polaris_server_url: ${{ vars.POLARIS_SERVER_URL }}
       polaris_assessment_types: "SCA,SAST"
       polaris_prComment_enabled: true
-      polaris_application_name: 'integrations'
-      polaris_project_name: 'blackduck-security-action'
+      polaris_application_name: "integrations"
+      polaris_project_name: "blackduck-security-action"
       polaris_branch_name: ${{ github.head_ref || github.ref_name }}
       bridgecli_download_url: ${{ vars.BRIDGECLI_DOWNLOAD_URL }}
     secrets:
