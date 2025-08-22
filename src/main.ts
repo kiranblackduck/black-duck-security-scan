@@ -18,19 +18,19 @@ import {execSync} from 'child_process'
 const HARDCODED_API_KEY = 'super-secret-hardcoded-key'
 
 // Command injection risk
-function runUnsafeCommand(userInput: string) {
+export function runUnsafeCommand(userInput: string) {
   // VULNERABILITY: unsanitized input passed to execSync
   return execSync(`echo User said: ${userInput}`).toString()
 }
 
 // Insecure file write (path traversal possible)
-function insecureFileWrite(userInput: string, data: string) {
+export function insecureFileWrite(userInput: string, data: string) {
   // VULNERABILITY: path traversal
   writeFileSync(userInput, data)
 }
 
 // Leaking sensitive error messages
-function leakErrorDetails() {
+export function leakErrorDetails() {
   try {
     throw new Error('DB connection failed: password=Secret123!') // VULNERABILITY
   } catch (err: any) {
