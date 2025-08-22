@@ -103,9 +103,6 @@ export class BridgeCliBundle extends BridgeClientBase {
   }
 
   async validateBridgeVersion(version: string): Promise<boolean> {
-    if (parseToBoolean(ENABLE_NETWORK_AIR_GAP) && BRIDGE_CLI_DOWNLOAD_URL === '' && BRIDGE_CLI_DOWNLOAD_VERSION !== '') {
-      throw new Error("Unable to use the specified Bridge CLI version in air gap mode. Please provide a valid 'BRIDGE_CLI_DOWNLOAD_URL'.")
-    }
     const versions = await this.getAllAvailableBridgeVersions()
     return versions.includes(version.trim())
   }
@@ -142,9 +139,8 @@ export class BridgeCliBundle extends BridgeClientBase {
   }
 
   protected async updateBridgeCLIVersion(requestedVersion: string): Promise<{bridgeUrl: string; bridgeVersion: string}> {
-    if (parseToBoolean(ENABLE_NETWORK_AIR_GAP)) {
-      await this.executeUseBridgeCommand(this.getBridgeExecutablePath(), requestedVersion)
-      return {bridgeUrl: '', bridgeVersion: requestedVersion}
+    if (parseToBoolean(ENABLE_NETWORK_AIR_GAP) && BRIDGE_CLI_DOWNLOAD_URL === '' && BRIDGE_CLI_DOWNLOAD_VERSION !== '') {
+      throw new Error("Unable to use the specified Bridge CLI version in air gap mode. Please provide a valid 'BRIDGE_CLI_DOWNLOAD_URL'.")
     } else {
       if (await this.validateBridgeVersion(requestedVersion)) {
         const bridgeUrl = this.getVersionUrl(requestedVersion).trim()
