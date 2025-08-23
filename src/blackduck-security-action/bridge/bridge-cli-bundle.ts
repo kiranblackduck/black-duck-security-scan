@@ -113,7 +113,7 @@ export class BridgeCliBundle extends BridgeClientBase {
 
   protected initializeUrls(): void {
     this.bridgeArtifactoryURL = constants.BRIDGE_CLI_ARTIFACTORY_URL.concat(this.getBridgeType()).concat('/')
-    this.bridgeUrlPattern = this.bridgeArtifactoryURL.concat('$version/').concat(this.getBridgeType()).concat('-$platform.zip')
+    this.bridgeUrlPattern = this.bridgeArtifactoryURL.concat('$version/').concat(this.getBridgeType()).concat('-$version-$platform.zip')
     this.osPlatform = getOSPlatform()
     this.bridgeUrlLatestPattern = constants.BRIDGE_CLI_ARTIFACTORY_URL.concat(this.getBridgeType()).concat('/').concat('latest/').concat(this.getBridgeType()).concat(`-${this.osPlatform}.zip`)
   }
