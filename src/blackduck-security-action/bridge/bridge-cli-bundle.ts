@@ -143,6 +143,7 @@ export class BridgeCliBundle extends BridgeClientBase {
       throw new Error("Unable to use the specified Bridge CLI version in air gap mode. Please provide a valid 'BRIDGE_CLI_DOWNLOAD_URL'.")
     } else {
       if (await this.validateBridgeVersion(requestedVersion)) {
+        debug('here')
         const bridgeUrl = this.getVersionUrl(requestedVersion).trim()
         return {bridgeUrl, bridgeVersion: requestedVersion}
       }
