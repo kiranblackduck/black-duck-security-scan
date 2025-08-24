@@ -367,7 +367,8 @@ export abstract class BridgeClientBase {
     } else if (osName === WINDOWS_PLATFORM_NAME) {
       platform = this.WINDOWS_PLATFORM
     }
-
+    const url = this.bridgeUrlPattern.replace(/\$version/g, version).replace('$platform', platform)
+    info(`Bridge CLI download URL: ${url}`)
     return this.bridgeUrlPattern.replace(/\$version/g, version).replace('$platform', platform)
   }
 
