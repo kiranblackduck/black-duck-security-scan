@@ -209,6 +209,7 @@ export abstract class BridgeClientBase {
     }
 
     if (inputs.BRIDGE_CLI_DOWNLOAD_VERSION) {
+      info(`Bridge CLI download version: ${inputs.BRIDGE_CLI_DOWNLOAD_VERSION}`)
       return await this.processVersion()
     }
 
@@ -232,10 +233,14 @@ export abstract class BridgeClientBase {
 
   private async processVersion(): Promise<{bridgeUrl: string; bridgeVersion: string}> {
     const requestedVersion = inputs.BRIDGE_CLI_DOWNLOAD_VERSION
+    info(`Processing Bridge CLI version: ${requestedVersion}`)
+
     if (await this.isBridgeInstalled(requestedVersion)) {
       info('Bridge CLI already exists')
       return {bridgeUrl: '', bridgeVersion: requestedVersion}
     }
+
+    info(`Bridge CLI version ${requestedVersion} not found locally, proceeding with download`)
     return await this.updateBridgeCLIVersion(requestedVersion)
   }
 
