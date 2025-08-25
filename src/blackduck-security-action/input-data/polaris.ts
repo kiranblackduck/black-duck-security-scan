@@ -55,12 +55,13 @@ export interface Branch {
   name?: string
   parent?: {name?: string}
 }
-export interface TestTypeLocation {
-  type?: string | string[]
-  location?: string
-}
-
 export interface Test {
-  sca?: TestTypeLocation
-  sast?: TestTypeLocation
+  sca?: {
+    type?: string
+    location?: string
+  }
+  sast?: {
+    type?: string[]
+    location?: string
+  }
 }
