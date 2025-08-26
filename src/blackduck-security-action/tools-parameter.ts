@@ -88,21 +88,6 @@ export class BridgeToolsParameter {
     if (inputs.POLARIS_BRANCH_NAME) {
       polData.data.polaris.branch = {name: inputs.POLARIS_BRANCH_NAME}
     }
-    if (inputs.POLARIS_TEST_SCA_LOCATION || inputs.POLARIS_TEST_SAST_LOCATION) {
-      polData.data.polaris.test = {}
-      if (inputs.POLARIS_TEST_SCA_LOCATION) {
-        polData.data.polaris.test.sca = {
-          location: inputs.POLARIS_TEST_SCA_LOCATION
-        }
-        debug(`Polaris sca location: ${polData.data.polaris.test.sca.location}`)
-      }
-      if (inputs.POLARIS_TEST_SAST_LOCATION) {
-        polData.data.polaris.test.sast = {
-          location: inputs.POLARIS_TEST_SAST_LOCATION
-        }
-        debug(`Polaris sast location: ${polData.data.polaris.test.sast.location}`)
-      }
-    }
     if (inputs.POLARIS_TEST_SCA_TYPE || inputs.POLARIS_TEST_SAST_TYPE) {
       polData.data.polaris.test = {}
 
@@ -117,6 +102,22 @@ export class BridgeToolsParameter {
         polData.data.polaris.test.sast = {
           type: polarisTestSastTypeList
         }
+      }
+    }
+
+    if (inputs.POLARIS_TEST_SCA_LOCATION || inputs.POLARIS_TEST_SAST_LOCATION) {
+      polData.data.polaris.test = {}
+      if (inputs.POLARIS_TEST_SCA_LOCATION) {
+        polData.data.polaris.test.sca = {
+          location: inputs.POLARIS_TEST_SCA_LOCATION
+        }
+        info(`Polaris sca location: ${polData.data.polaris.test.sca.location}`)
+      }
+      if (inputs.POLARIS_TEST_SAST_LOCATION) {
+        polData.data.polaris.test.sast = {
+          location: inputs.POLARIS_TEST_SAST_LOCATION
+        }
+        info(`Polaris sast location: ${polData.data.polaris.test.sast.location}`)
       }
     }
 
