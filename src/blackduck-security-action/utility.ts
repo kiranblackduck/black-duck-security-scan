@@ -311,3 +311,8 @@ export function clearHttpClientCache(): void {
   _httpClientConfigHash = null
   debug('HTTP client and HTTPS agent caches cleared')
 }
+export function validateSourceUploadValue(bridgeVersion: string): void {
+  if (bridgeVersion >= constants.BRIDGE_VERSION && inputs.POLARIS_ASSESSMENT_MODE === 'SOURCE_UPLOAD') {
+    warning("The 'SOURCE_UPLOAD' assessment mode for Polaris is deprecated and will be removed in future releases. Please use the polaris.test.sast.location='remote' to get this feature.")
+  }
+}
