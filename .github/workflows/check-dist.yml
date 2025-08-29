@@ -51,8 +51,7 @@ jobs:
       - name: Run tests and collect results
         id: results
         run: |
-          npm test -- --json --outputFile=test.json || true
-          npm test -- --coverage --collectCoverageFrom='src/**/*.{ts,jxs}' --coverageReporters=json-summary || true
+          npm test -- --json --outputFile=test.json --coverage --collectCoverageFrom='src/**/*.{ts,jxs}' --coverageReporters=json-summary
           echo "passed=$(jq '.numPassedTests' test.json)" >> $GITHUB_OUTPUT
           echo "failed=$(jq '.numFailedTests' test.json)" >> $GITHUB_OUTPUT
           echo "total=$(jq '.numTotalTests' test.json)" >> $GITHUB_OUTPUT
