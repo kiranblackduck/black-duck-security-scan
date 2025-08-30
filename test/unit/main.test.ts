@@ -325,6 +325,10 @@ describe('GitHub Enterprise and Cloud Tests', () => {
     jest.restoreAllMocks()
   })
 
+  beforeEach(() => {
+    setupGitHubInputs()
+  })
+
   it('Should run successfully for github.com URL', async () => {
     process.env['GITHUB_SERVER_URL'] = 'https://github.com'
     Object.defineProperty(inputs, 'BLACKDUCKSCA_PRCOMMENT_ENABLED', {value: true})
@@ -339,6 +343,7 @@ describe('GitHub Enterprise and Cloud Tests', () => {
   it('Should run for enterprise github URL but fail for bridge client', async () => {
     process.env['GITHUB_SERVER_URL'] = 'https://github.enterprise.com'
     Object.defineProperty(inputs, 'BLACKDUCKSCA_PRCOMMENT_ENABLED', {value: true})
+    Object.defineProperty(inputs, 'BLACKDUCKSCA_URL', {value: 'https://blackduck.example.com'}) // Ensure product URL is set
 
     setupGitHubMocks()
     jest.spyOn(BridgeClientBase.prototype, 'executeBridgeCommand').mockRejectedValueOnce(new Error('Bridge execution failed'))

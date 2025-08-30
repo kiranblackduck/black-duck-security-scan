@@ -20,7 +20,6 @@ export class BridgeCliBundle extends BridgeClientBase {
   private static get VERSION_PATTERN(): RegExp {
     return new RegExp(`${this.BRIDGE_TYPE}:\\s*([0-9.]+)`)
   }
-  private static readonly WORKFLOW_VERSIONS = [POLARIS_WORKFLOW_VERSION, BLACKDUCKSCA_WORKFLOW_VERSION, SRM_WORKFLOW_VERSION, COVERITY_WORKFLOW_VERSION]
 
   async downloadBridge(tempDir: string): Promise<void> {
     debug('Starting bridge download process...')
@@ -119,9 +118,9 @@ export class BridgeCliBundle extends BridgeClientBase {
   }
 
   protected initializeUrls(): void {
+    this.osPlatform = getOSPlatform()
     this.bridgeArtifactoryURL = constants.BRIDGE_CLI_ARTIFACTORY_URL.concat(this.getBridgeType()).concat('/')
     this.bridgeUrlPattern = this.bridgeArtifactoryURL.concat('$version/').concat(this.getBridgeType()).concat('-$version-$platform.zip')
-    this.osPlatform = getOSPlatform()
     this.bridgeUrlLatestPattern = constants.BRIDGE_CLI_ARTIFACTORY_URL.concat(this.getBridgeType()).concat('/').concat('latest/').concat(this.getBridgeType()).concat(`-${this.osPlatform}.zip`)
   }
 
@@ -178,7 +177,7 @@ export class BridgeCliBundle extends BridgeClientBase {
   }
 
   private logWorkflowVersionInfo(): void {
-    if (BridgeCliBundle.WORKFLOW_VERSIONS.some(version => version)) {
+    if (POLARIS_WORKFLOW_VERSION || BLACKDUCKSCA_WORKFLOW_VERSION || SRM_WORKFLOW_VERSION || COVERITY_WORKFLOW_VERSION) {
       info('Detected workflow version for Polaris, Black Duck SCA, Coverity, or SRM is not applicable for Bridge CLI Bundle.')
     }
   }

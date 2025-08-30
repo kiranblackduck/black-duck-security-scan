@@ -484,7 +484,7 @@ export abstract class BridgeClientBase {
     return this.WINDOWS_PLATFORM
   }
 
-  protected async validateAirGapExecutable(bridgePath: string): Promise<void> {
+  async validateAirGapExecutable(bridgePath: string): Promise<void> {
     const executablePath = path.join(bridgePath, this.getBridgeFileType())
     debug(`Validating air gap executable at: ${executablePath}`)
 
